@@ -6,6 +6,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Direct.Services;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 
 namespace Direct.ViewModels;
@@ -30,18 +31,27 @@ public partial class MainViewModel : ObservableObject
         _dispatcherQueue = dispatcherQueue;
 
         Theme = _storageService.AppData.Theme;
+        SelectedTheme = Theme.ToString();
     }
 
     public ObservableCollection<ContactViewModel> Contacts = new();
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(CanSendMessage))]
+    [NotifyPropertyChangedFor(nameof(MessageBoxIsVisible))]
     private ContactViewModel? selectedContact;
 
     [ObservableProperty]
     private ElementTheme theme;
 
-    public bool CanSendMessage => SelectedContact is not null;
+    [ObservableProperty]
+    private string selectedTheme;
+
+    public bool MessageBoxIsVisible => SelectedContact is not null;
+
+    public void SelectedContactChanged(object sender, SelectionChangedEventArgs e)
+    {
+        SelectedContact!.HasUnreadMessages = false;
+    }
 
     public async Task MessageBoxKeyUpAsync(object sender, KeyRoutedEventArgs e)
     {
@@ -58,6 +68,8 @@ public partial class MainViewModel : ObservableObject
 
         if (e.Key == Windows.System.VirtualKey.Enter)
         {
+            SelectedContact!.MessageTextIsReadOnly = true;
+
             if (SelectedContact!.EditingMessageId.HasValue)
             {
                 await UpdateMessageAsync(SelectedContact!.EditingMessageId.Value);
@@ -80,9 +92,16 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
-    public void ToggleTheme()
+    public void ThemeChanged(object sender, SelectionChangedEventArgs e)
     {
-        Theme = Theme == ElementTheme.Light ? ElementTheme.Dark : ElementTheme.Light;
+        if (SelectedTheme == ElementTheme.Light.ToString())
+        {
+            Theme = ElementTheme.Light;
+        }
+        else
+        {
+            Theme = ElementTheme.Dark;
+        }
 
         foreach (var contact in Contacts)
         {
@@ -93,7 +112,7 @@ public partial class MainViewModel : ObservableObject
         }
 
         _storageService.AppData.Theme = Theme;
-        _storageService.Store();
+        _storageService.Save();
     }
 
     private async Task SendNewMessageAsync()
@@ -169,6 +188,7 @@ public partial class MainViewModel : ObservableObject
                 {
                     recipientContact.Messages.Add(message);
                     recipientContact.MessageText = string.Empty;
+                    recipientContact.MessageTextIsReadOnly = false;
                 });
             }
         }
@@ -180,6 +200,11 @@ public partial class MainViewModel : ObservableObject
                 _dispatcherQueue.TryEnqueue(() =>
                 {
                     senderContact.Messages.Add(message);
+
+                    if (senderContact != SelectedContact)
+                    {
+                        senderContact.HasUnreadMessages = true;
+                    }
                 });
             }
         }
@@ -197,10 +222,10 @@ public partial class MainViewModel : ObservableObject
                 {
                     _dispatcherQueue.TryEnqueue(() =>
                     {
-                        message.Text = e.Message.Text;
-                        message.SetTheme(_storageService.AppData.Theme);
+                        message.Update(e.Message.Text, e.Message.EditedAtUtc!.Value, _storageService.AppData.Theme);
 
                         recipientContact.MessageText = string.Empty;
+                        recipientContact.MessageTextIsReadOnly = false;
                         recipientContact.EditingMessageId = null;
                     });
                 }
@@ -216,8 +241,7 @@ public partial class MainViewModel : ObservableObject
                 {
                     _dispatcherQueue.TryEnqueue(() =>
                     {
-                        message.Text = e.Message.Text;
-                        message.SetTheme(_storageService.AppData.Theme);
+                        message.Update(e.Message.Text, e.Message.EditedAtUtc!.Value, _storageService.AppData.Theme);
                     });
                 }
             }

@@ -35,7 +35,8 @@
                              PlaceholderText="Nickname"
                              MaxLength="25" />
 
-                    <PasswordBox IsEnabled="{x:Bind ViewModel.InputsEnabled, Mode=OneWay}"
+                    <PasswordBox Visibility="{x:Bind ViewModel.PasswordBoxVisible}"
+                                 IsEnabled="{x:Bind ViewModel.InputsEnabled, Mode=OneWay}"
                                  Password="{x:Bind ViewModel.Password, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  FontFamily="{StaticResource DefaultFontFamily}"
                                  PlaceholderText="Password"

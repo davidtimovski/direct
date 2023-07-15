@@ -6,8 +6,8 @@ public static partial class Validation
 {
     private const int NicknameMinLength = 2;
     private const int NicknameMaxLength = 25;
-    private const int PasswordHashMinLength = 20;
-    private const int PasswordHashMaxLength = 100;
+    private const int PasswordHashMinLength = 50;
+    private const int PasswordHashMaxLength = 200;
 
     public static string? ValidateNickname(string nickname)
     {

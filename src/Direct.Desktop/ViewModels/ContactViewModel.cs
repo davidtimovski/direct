@@ -31,5 +31,11 @@ public partial class ContactViewModel : ObservableObject
     public ObservableCollection<MessageViewModel> Messages = new();
 
     [ObservableProperty]
+    private bool hasUnreadMessages;
+
+    [ObservableProperty]
     private string messageText = string.Empty;
+
+    [ObservableProperty]
+    private bool messageTextIsReadOnly;
 }

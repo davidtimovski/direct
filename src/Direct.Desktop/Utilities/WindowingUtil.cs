@@ -5,17 +5,17 @@ using Microsoft.UI.Xaml;
 using Windows.Graphics;
 using WinRT.Interop;
 
-namespace Chat.Utilities;
+namespace Direct.Utilities;
 
 internal static class WindowingUtil
 {
-    public static SizeInt32 GetSize(Window window)
+    internal static SizeInt32 GetSize(Window window)
     {
         AppWindow appWindow = GetAppWindow(window);
         return appWindow.Size;
     }
 
-    public static void Resize(Window window, SizeInt32 size)
+    internal static void Resize(Window window, SizeInt32 size)
     {
         AppWindow appWindow = GetAppWindow(window);
         appWindow.Resize(size);

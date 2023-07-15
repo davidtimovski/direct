@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
-using Direct.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Direct.Services;
+using Direct.Utilities;
 using Microsoft.UI.Xaml;
 
 namespace Direct.ViewModels;
@@ -9,13 +10,14 @@ public partial class LobbyViewModel : ObservableObject
 {
     private readonly IStorageService _storageService;
     private readonly IChatService _chatService;
+    private readonly string _passwordHash;
 
     public LobbyViewModel(IStorageService storageService, IChatService chatService)
     {
         _storageService = storageService;
         _chatService = chatService;
 
-        Password = _storageService.AppData.PasswordHash;
+        _passwordHash = _storageService.AppData.PasswordHash;
         Nickname = _storageService.AppData.Nickname;
         Theme = _storageService.AppData.Theme;
     }
@@ -38,12 +40,21 @@ public partial class LobbyViewModel : ObservableObject
 
     public bool InputsEnabled => !Connecting;
 
+    public bool PasswordBoxVisible => _passwordHash == string.Empty;
+
     public bool ConnectButtonEnabled => Nickname.Trim().Length > 1 && !Connecting;
 
     public async Task ConnectAsync()
     {
         Connecting = true;
 
-        await _chatService.ConnectAsync(Password, Nickname.Trim());
+        var passwordHashed = _passwordHash == string.Empty ? CryptographyUtil.Hash(Password) : _passwordHash;
+        var nicknameTrimmed = Nickname.Trim();
+
+        await _chatService.ConnectAsync(passwordHashed, nicknameTrimmed);
+
+        _storageService.AppData.PasswordHash = passwordHashed;
+        _storageService.AppData.Nickname = nicknameTrimmed;
+        _storageService.Save();
     }
 }

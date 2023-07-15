@@ -1,5 +1,5 @@
-using Chat.Utilities;
 using Direct.Services;
+using Direct.Utilities;
 using Direct.ViewModels;
 using Microsoft.UI.Xaml;
 
@@ -33,7 +33,7 @@ public sealed partial class MainWindow : Window
 
         _storageService.AppData.WindowWidth = windowSize.Width;
         _storageService.AppData.WindowHeight = windowSize.Height;
-        _storageService.Store();
+        _storageService.Save();
 
         await _chatService.DisconnectAsync();
     }

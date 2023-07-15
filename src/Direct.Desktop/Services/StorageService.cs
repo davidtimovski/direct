@@ -6,7 +6,7 @@ namespace Direct.Services;
 public interface IStorageService
 {
     AppData AppData { get; }
-    void Store();
+    void Save();
 }
 
 public class StorageService : IStorageService
@@ -35,7 +35,7 @@ public class StorageService : IStorageService
 
     public AppData AppData { get; }
 
-    public void Store()
+    public void Save()
     {
         ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
 

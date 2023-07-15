@@ -24,15 +24,12 @@ public interface IChatService
 
 public class ChatService : IChatService
 {
-    private readonly IStorageService _storageService;
     private readonly HubConnection _connection;
 
     private Guid? userId;
 
-    public ChatService(IStorageService storageService)
+    public ChatService()
     {
-        _storageService = storageService;
-
         _connection = new HubConnectionBuilder()
            .WithUrl(Globals.ServerUri + "/chatHub")
            .AddMessagePackProtocol()
@@ -78,9 +75,6 @@ public class ChatService : IChatService
     {
         await _connection.StartAsync();
         await _connection.InvokeAsync(ServerEvent.Join, passwordHash, nickname);
-
-        _storageService.AppData.PasswordHash = passwordHash;
-        _storageService.AppData.Nickname = nickname;
     }
 
     public async Task DisconnectAsync()

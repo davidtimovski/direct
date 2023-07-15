@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Direct.Shared.Models;
 using Microsoft.UI;
@@ -33,6 +34,8 @@ public partial class MessageViewModel : ObservableObject
 
         Text = message.Text;
         SentAtFormatted = message.SentAtUtc.ToLocalTime().ToString("HH:mm:ss");
+        Edited = message.EditedAtUtc.HasValue;
+        EditedAt = message.EditedAtUtc.HasValue ? $"Edited at {message.EditedAtUtc.Value.ToLocalTime():HH:mm:ss}" : string.Empty;
 
         if (message.UserIsSender)
         {
@@ -60,10 +63,16 @@ public partial class MessageViewModel : ObservableObject
     private string text;
 
     [ObservableProperty]
-    private SolidColorBrush background;
+    private Brush background;
 
     [ObservableProperty]
-    private SolidColorBrush foreground;
+    private Brush foreground;
+
+    [ObservableProperty]
+    private bool edited;
+
+    [ObservableProperty]
+    private string editedAt;
 
     public void SetTheme(ElementTheme theme)
     {
@@ -77,6 +86,14 @@ public partial class MessageViewModel : ObservableObject
             Background = SenderMessageBackgroundBrushes[theme];
             Foreground = SenderMessageForegroundBrushes[theme];
         }
+    }
+
+    public void Update(string text, DateTime editedAtUtc, ElementTheme theme)
+    {
+        Text = text;
+        EditedAt = editedAtUtc.ToLocalTime().ToString("HH:mm:ss");
+        Edited = true;
+        SetTheme(theme);
     }
 
     public void SetEditing()

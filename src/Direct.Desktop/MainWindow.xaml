@@ -58,14 +58,32 @@
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
 
-                                <Border Grid.Row="0" Grid.Column="0" Padding="10">
-                                    <Image Source="{x:Bind ImageUri}" />
+                                <Border Grid.Column="0" Padding="10">
+                                    <FontIcon Glyph="&#xE77B;"
+                                              FontFamily="Segoe MDL2 Assets"
+                                              FontSize="40" />
                                 </Border>
-                                <Border Grid.Row="0" Grid.Column="1" Padding="5 0 0 0">
-                                    <TextBlock Text="{x:Bind Nickname}"
-                                               FontFamily="{StaticResource DefaultFontFamily}"
-                                               FontSize="18"
-                                               VerticalAlignment="Center" />
+                                
+                                <Border Grid.Column="1" Padding="5 0 0 0">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock Grid.Column="0"
+                                                   Text="{x:Bind Nickname}"
+                                                   FontFamily="{StaticResource DefaultFontFamily}"
+                                                   FontSize="18"
+                                                   VerticalAlignment="Center" />
+
+                                        <Ellipse Grid.Column="1"
+                                                 Visibility="{x:Bind HasUnreadMessages, Mode=OneWay}"
+                                                 Width="10"
+                                                 Height="10"
+                                                 Fill="#964119"
+                                                 VerticalAlignment="Center" />
+                                    </Grid>
                                 </Border>
                             </Grid>
                         </DataTemplate>
@@ -74,12 +92,19 @@
                     <ListView 
                         ItemsSource="{x:Bind ViewModel.Contacts}"
                         SelectedItem="{x:Bind ViewModel.SelectedContact, Mode=TwoWay}"
+                        SelectionChanged="{x:Bind ViewModel.SelectedContactChanged}"
                         ItemTemplate="{StaticResource ContactListViewTemplate}" />
 
                 </Border>
 
                 <Border Grid.Row="1">
-                    <Button Content="Toggle theme" HorizontalAlignment="Center" Click="{x:Bind ViewModel.ToggleTheme}" />
+                    <ComboBox SelectionChanged="{x:Bind ViewModel.ThemeChanged}"
+                              SelectedItem="{x:Bind ViewModel.SelectedTheme, Mode=TwoWay}"
+                              Header="Theme"
+                              HorizontalAlignment="Center">
+                        <x:String>Dark</x:String>
+                        <x:String>Light</x:String>
+                    </ComboBox>
                 </Border>
             </Grid>
 
@@ -95,15 +120,28 @@
                             <Border Padding="0 6">
                                 <StackPanel HorizontalAlignment="{x:Bind Alignment}">
                                     <Border HorizontalAlignment="{x:Bind Alignment}">
-                                        <TextBlock Text="{x:Bind SentAtFormatted}"
-                                                   FontFamily="{StaticResource DefaultFontFamilyLight}"
-                                                   FontSize="13"
-                                                   Foreground="{ThemeResource MessageSentAtForeground}" />
+                                        <StackPanel Orientation="Horizontal">
+                                            <FontIcon
+                                                Visibility="{x:Bind Edited, Mode=OneWay}"
+                                                ToolTipService.ToolTip="{x:Bind EditedAt, Mode=OneWay}"
+                                                Foreground="{ThemeResource MessageSentAtForeground}"
+                                                Glyph="&#xE70F;"
+                                                FontFamily="Segoe MDL2 Assets"
+                                                FontSize="11"
+                                                VerticalAlignment="Center"
+                                                Margin="0 0 5 0" />
+
+                                            <TextBlock Text="{x:Bind SentAtFormatted}"
+                                                       FontFamily="{StaticResource DefaultFontFamilyLight}"
+                                                       FontSize="13"
+                                                       Foreground="{ThemeResource MessageSentAtForeground}" />
+                                        </StackPanel>
                                     </Border>
+                                    
                                     <Border
                                         Background="{x:Bind Background, Mode=OneWay}"
                                         HorizontalAlignment="{x:Bind Alignment}"
-                                        Padding="15 5">
+                                        Padding="12 5">
                                         <TextBlock
                                             Text="{x:Bind Text, Mode=OneWay}"
                                             FontFamily="{StaticResource DefaultFontFamily}"
@@ -124,8 +162,8 @@
                         <ListView.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <ItemsStackPanel
-                                        ItemsUpdatingScrollMode="KeepLastItemInView"
-                                        VerticalAlignment="Bottom"/>
+                                    ItemsUpdatingScrollMode="KeepLastItemInView"
+                                    VerticalAlignment="Bottom"/>
                             </ItemsPanelTemplate>
                         </ListView.ItemsPanel>
 
@@ -134,7 +172,8 @@
                     <Border Grid.Row="1" Padding="0 10 0 0">
                         <TextBox Text="{x:Bind ViewModel.SelectedContact.MessageText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  KeyUp="{x:Bind ViewModel.MessageBoxKeyUpAsync}"
-                                 Visibility="{x:Bind ViewModel.CanSendMessage, Mode=OneWay}"
+                                 Visibility="{x:Bind ViewModel.MessageBoxIsVisible, Mode=OneWay}"
+                                 IsReadOnly="{x:Bind ViewModel.SelectedContact.MessageTextIsReadOnly, Mode=OneWay}"
                                  MaxLength="1000" />
                     </Border>
                 </Grid>

@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
-using Chat.Utilities;
 using Direct.Services;
+using Direct.Utilities;
 using Direct.ViewModels;
 using Microsoft.UI.Xaml;
 using Windows.Graphics;
