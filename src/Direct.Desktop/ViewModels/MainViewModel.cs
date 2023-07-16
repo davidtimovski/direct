@@ -8,6 +8,7 @@ using Direct.Services;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Input;
+using Windows.ApplicationModel.DataTransfer;
 using VirtualKey = Windows.System.VirtualKey;
 
 namespace Direct.ViewModels;
@@ -35,17 +36,26 @@ public partial class MainViewModel : ObservableObject
         SelectedTheme = Theme.ToString();
     }
 
-    public ObservableCollection<ContactViewModel> Contacts = new();
+    [ObservableProperty]
+    private bool connected;
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(MessageBoxIsVisible))]
-    private ContactViewModel? selectedContact;
+    private string userId = string.Empty;
+
+    [ObservableProperty]
+    private string nickname = string.Empty;
 
     [ObservableProperty]
     private ElementTheme theme;
 
     [ObservableProperty]
     private string selectedTheme;
+
+    public ObservableCollection<ContactViewModel> Contacts = new();
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(MessageBoxIsVisible))]
+    private ContactViewModel? selectedContact;
 
     public bool MessageBoxIsVisible => SelectedContact is not null;
 
@@ -83,6 +93,13 @@ public partial class MainViewModel : ObservableObject
         {
             DeselectLastSentMessage();
         }
+    }
+
+    public void CopyUserID()
+    {
+        var package = new DataPackage();
+        package.SetText(UserId);
+        Clipboard.SetContent(package);
     }
 
     public void ThemeChanged()
@@ -154,6 +171,10 @@ public partial class MainViewModel : ObservableObject
     {
         _dispatcherQueue.TryEnqueue(() =>
         {
+            Connected = true;
+            Nickname = _storageService.AppData.Nickname;
+            UserId = e.UserId.ToString();
+
             if (e.Contacts.Count == 0)
             {
                 return;

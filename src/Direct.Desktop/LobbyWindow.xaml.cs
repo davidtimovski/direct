@@ -1,7 +1,9 @@
+using System;
 using System.Threading.Tasks;
 using Direct.Services;
 using Direct.Utilities;
 using Direct.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Windows.Graphics;
 
@@ -10,11 +12,11 @@ namespace Direct;
 public sealed partial class LobbyWindow : Window
 {
     private readonly IStorageService _storageService;
-    private readonly MainWindow _mainWindow;
+    private readonly IServiceProvider _serviceProvider;
 
     public LobbyViewModel ViewModel { get; }
 
-    public LobbyWindow(IStorageService storageService, MainWindow mainWindow, LobbyViewModel viewModel)
+    public LobbyWindow(IStorageService storageService, IServiceProvider serviceProvider, LobbyViewModel viewModel)
     {
         InitializeComponent();
 
@@ -22,17 +24,19 @@ public sealed partial class LobbyWindow : Window
         SetTitleBar(AppTitleBar);
 
         _storageService = storageService;
-        _mainWindow = mainWindow;
+        _serviceProvider = serviceProvider;
         ViewModel = viewModel;
     }
 
     public async Task ConnectAsync()
     {
+        var mainWindow = _serviceProvider.GetRequiredService<MainWindow>();
+
         await ViewModel.ConnectAsync();
 
         Close();
 
-        WindowingUtil.Resize(_mainWindow, new SizeInt32(_storageService.AppData.WindowWidth, _storageService.AppData.WindowHeight));
-        _mainWindow.Activate();
+        WindowingUtil.Resize(mainWindow, new SizeInt32(_storageService.AppData.WindowWidth, _storageService.AppData.WindowHeight));
+        mainWindow.Activate();
     }
 }

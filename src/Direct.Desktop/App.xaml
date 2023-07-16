@@ -11,8 +11,8 @@
             </ResourceDictionary.MergedDictionaries>
             <!-- Other app resources here -->
 
-            <FontFamily x:Key="DefaultFontFamily">/Assets/Fonts/Poppins-Regular.ttf#Poppins</FontFamily>
-            <FontFamily x:Key="DefaultFontFamilyLight">/Assets/Fonts/Poppins-Light.ttf#Poppins</FontFamily>
+            <FontFamily x:Key="DefaultFontFamily">/Assets/Fonts/Nunito-Regular.ttf#Nunito</FontFamily>
+            <FontFamily x:Key="DefaultFontFamilyLight">/Assets/Fonts/Nunito-Light.ttf#Nunito</FontFamily>
 
             <SolidColorBrush x:Key="HighlightBrush" Color="#c97608" />
             

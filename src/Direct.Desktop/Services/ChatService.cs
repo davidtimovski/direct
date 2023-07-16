@@ -25,8 +25,7 @@ public interface IChatService
 public class ChatService : IChatService
 {
     private readonly HubConnection _connection;
-
-    private Guid? userId;
+    private Guid? _userId;
 
     public ChatService()
     {
@@ -38,8 +37,8 @@ public class ChatService : IChatService
 
         _connection.On<Guid, List<ContactDto>>(ClientEvent.Joined, (userId, contacts) =>
         {
-            this.userId = userId;
-            Joined?.Invoke(this, new JoinedEventArgs(contacts));
+            _userId = userId;
+            Joined?.Invoke(this, new JoinedEventArgs(userId, contacts));
         });
 
         _connection.On<ContactDto>(ClientEvent.ContactJoined, (contact) =>
@@ -54,13 +53,13 @@ public class ChatService : IChatService
 
         _connection.On<MessageDto>(ClientEvent.MessageSent, (message) =>
         {
-            message.UserIsSender = message.SenderId == userId;
+            message.UserIsSender = message.SenderId == _userId!.Value;
             MessageSent?.Invoke(this, new MessageSentEventArgs(message));
         });
 
         _connection.On<MessageDto>(ClientEvent.MessageUpdated, (message) =>
         {
-            message.UserIsSender = message.SenderId == userId;
+            message.UserIsSender = message.SenderId == _userId!.Value;
             MessageUpdated?.Invoke(this, new MessageUpdatedEventArgs(message));
         });
     }
@@ -96,11 +95,13 @@ public class ChatService : IChatService
 
 public class JoinedEventArgs : EventArgs
 {
-    public JoinedEventArgs(List<ContactDto> contacts)
+    public JoinedEventArgs(Guid userId, List<ContactDto> contacts)
     {
+        UserId = userId;
         Contacts = contacts;
     }
 
+    public Guid UserId { get; init; }
     public List<ContactDto> Contacts { get; init; }
 }
 

@@ -51,10 +51,10 @@ public partial class LobbyViewModel : ObservableObject
         var passwordHashed = _passwordHash == string.Empty ? CryptographyUtil.Hash(Password) : _passwordHash;
         var nicknameTrimmed = Nickname.Trim();
 
-        await _chatService.ConnectAsync(passwordHashed, nicknameTrimmed);
-
         _storageService.AppData.PasswordHash = passwordHashed;
         _storageService.AppData.Nickname = nicknameTrimmed;
         _storageService.Save();
+
+        await _chatService.ConnectAsync(passwordHashed, nicknameTrimmed);
     }
 }

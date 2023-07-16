@@ -39,7 +39,7 @@
 
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="300" />
+                <ColumnDefinition Width="330" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
@@ -48,26 +48,108 @@
 
             <Grid Grid.Row="0" Grid.Column="0" Background="{ThemeResource SidebarBackground}">
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
-                    <RowDefinition Height="80" />
                 </Grid.RowDefinitions>
 
-                <Border Grid.Row="0" Padding="5 10">
+                <Expander Grid.Row="0" 
+                          HorizontalAlignment="Stretch" 
+                          HorizontalContentAlignment="Stretch">
+                    <Expander.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <FontIcon Glyph="&#xE700;"
+                                      Margin="0 0 20 0" />
+
+                            <TextBlock Text="{x:Bind ViewModel.Nickname, Mode=OneWay}"
+                                   FontFamily="{StaticResource DefaultFontFamily}"
+                                   FontSize="20"/>
+                        </StackPanel>
+                    </Expander.Header>
+                    
+                    <Expander.Content>
+                        <StackPanel>
+                            <Border BorderThickness="0 0 0 1"
+                                    BorderBrush="#666"
+                                    Padding="0 0 0 25"
+                                    Margin="0 0 0 20">
+
+                                <StackPanel>
+                                    <TextBlock Text="User ID. Share with others you wish to talk to."
+                                               Margin="0 0 0 10" />
+
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBox Grid.Column="0"
+                                                 ToolTipService.ToolTip="User ID"
+                                                 Text="{x:Bind ViewModel.UserId, Mode=OneWay}"
+                                                 FontFamily="{StaticResource DefaultFontFamily}"
+                                                 IsReadOnly="True"
+                                                 TextAlignment="Center"
+                                                 FontSize="12"
+                                                 VerticalAlignment="Center" />
+
+                                        <Button Grid.Column="1"
+                                                IsEnabled="{x:Bind ViewModel.Connected}"
+                                                Click="{x:Bind ViewModel.CopyUserID}"
+                                                ToolTipService.ToolTip="Copy"
+                                                VerticalAlignment="Stretch"
+                                                Margin="10 0 0 0">
+                                            <FontIcon
+                                                Foreground="{ThemeResource MessageSentAtForeground}"
+                                                Glyph="&#xE8C8;"
+                                                FontFamily="Segoe MDL2 Assets"
+                                                FontSize="12" />
+                                        </Button>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <Border>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Grid.Column="0"
+                                               Text="Theme"
+                                               FontFamily="{StaticResource DefaultFontFamily}"
+                                               VerticalAlignment="Center" />
+
+                                    <ComboBox Grid.Column="1"
+                                              SelectionChanged="{x:Bind ViewModel.ThemeChanged}"
+                                              SelectedItem="{x:Bind ViewModel.SelectedTheme, Mode=TwoWay}"
+                                              FontFamily="{StaticResource DefaultFontFamily}"
+                                              HorizontalAlignment="Right">
+                                        <x:String>Dark</x:String>
+                                        <x:String>Light</x:String>
+                                    </ComboBox>
+                                </Grid>
+                            </Border>
+                        </StackPanel>
+                    </Expander.Content>
+                </Expander>
+
+                <Border Grid.Row="1" Padding="5 10">
 
                     <Border.Resources>
                         <DataTemplate x:Key="ContactListViewTemplate" x:DataType="local:ContactViewModel">
                             <Grid>
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="60" />
+                                    <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
 
-                                <Border Grid.Column="0" Padding="10">
+                                <Border Grid.Column="0" Padding="10 15 15 15">
                                     <FontIcon Glyph="&#xE77B;"
                                               FontFamily="Segoe MDL2 Assets"
-                                              FontSize="40" />
+                                              FontSize="36" />
                                 </Border>
-                                
+
                                 <Border Grid.Column="1" Padding="5 0 0 0">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
@@ -99,16 +181,6 @@
                         SelectionChanged="{x:Bind ViewModel.SelectedContactChanged}"
                         ItemTemplate="{StaticResource ContactListViewTemplate}" />
 
-                </Border>
-
-                <Border Grid.Row="1">
-                    <ComboBox SelectionChanged="{x:Bind ViewModel.ThemeChanged}"
-                              SelectedItem="{x:Bind ViewModel.SelectedTheme, Mode=TwoWay}"
-                              Header="Theme"
-                              HorizontalAlignment="Center">
-                        <x:String>Dark</x:String>
-                        <x:String>Light</x:String>
-                    </ComboBox>
                 </Border>
             </Grid>
 
@@ -195,6 +267,7 @@
                                  SelectionStart="{x:Bind ViewModel.SelectedContact.MessageSelectionStart, Mode=OneWay}"
                                  Visibility="{x:Bind ViewModel.MessageBoxIsVisible, Mode=OneWay}"
                                  IsReadOnly="{x:Bind ViewModel.SelectedContact.MessageTextIsReadOnly, Mode=OneWay}"
+                                 IsSpellCheckEnabled="True"
                                  MaxLength="1000" />
                     </Border>
                 </Grid>

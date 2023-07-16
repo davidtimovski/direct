@@ -23,7 +23,7 @@
             <Border Width="250">
                 <StackPanel VerticalAlignment="Center">
                     <TextBlock Text="Log in"
-                               FontFamily="{StaticResource DefaultFontFamily}"
+                               FontFamily="{StaticResource DefaultFontFamilyLight}"
                                FontSize="24"
                                HorizontalAlignment="Center"
                                Foreground="#888"
