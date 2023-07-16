@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Direct.Shared.Models;
 using Microsoft.UI.Xaml;
@@ -12,23 +13,25 @@ public partial class ContactViewModel : ObservableObject
 
     public Guid? EditingMessageId { get; set; }
 
-    public ContactViewModel(ContactDto contact, ElementTheme theme)
+    public ContactViewModel(ContactDto contact, ElementTheme theme, DateOnly localDate)
     {
         Contact = contact;
 
         Nickname = contact.Nickname;
         ImageUri = contact.ImageUri;
 
-        foreach (var message in contact.Messages)
-        {
-            Messages.Add(new MessageViewModel(message, theme));
-        }
+        var query = from messageVm in contact.Messages.Select(x => new MessageViewModel(x, theme))
+                    group messageVm by DateOnly.FromDateTime(messageVm.Message.SentAtUtc.ToLocalTime()) into g
+                    orderby g.Key
+                    select new DailyMessageGroup(g.ToList(), g.Key, localDate);
+
+        MessageGroups = new ObservableCollection<DailyMessageGroup>(query);
     }
 
     public string Nickname { get; set; }
     public string ImageUri { get; set; }
 
-    public ObservableCollection<MessageViewModel> Messages = new();
+    public ObservableCollection<DailyMessageGroup> MessageGroups;
 
     [ObservableProperty]
     private bool hasUnreadMessages;
@@ -38,4 +41,7 @@ public partial class ContactViewModel : ObservableObject
 
     [ObservableProperty]
     private bool messageTextIsReadOnly;
+
+    [ObservableProperty]
+    private int messageSelectionStart;
 }

@@ -9,6 +9,10 @@
           Background="{ThemeResource WindowBackground}">
         <Grid.Resources>
             <ResourceDictionary>
+                <CollectionViewSource x:Name="MessageGroups"
+                            IsSourceGrouped="True"
+                            Source="{x:Bind ViewModel.SelectedContact.MessageGroups, Mode=OneWay}" />
+
                 <ResourceDictionary.ThemeDictionaries>
                     <ResourceDictionary x:Key="Light">
                         <SolidColorBrush x:Key="SidebarBackground" Color="#eee" />
@@ -21,8 +25,8 @@
                     </ResourceDictionary>
                 </ResourceDictionary.ThemeDictionaries>
             </ResourceDictionary>
-        </Grid.Resources>
 
+        </Grid.Resources>
 
         <Grid.RowDefinitions>
             <RowDefinition Height="28" />
@@ -81,7 +85,7 @@
                                                  Visibility="{x:Bind HasUnreadMessages, Mode=OneWay}"
                                                  Width="10"
                                                  Height="10"
-                                                 Fill="#964119"
+                                                 Fill="{StaticResource HighlightBrush}"
                                                  VerticalAlignment="Center" />
                                     </Grid>
                                 </Border>
@@ -140,6 +144,7 @@
                                     
                                     <Border
                                         Background="{x:Bind Background, Mode=OneWay}"
+                                        CornerRadius="{StaticResource ComboBoxItemCornerRadius}"
                                         HorizontalAlignment="{x:Bind Alignment}"
                                         Padding="12 5">
                                         <TextBlock
@@ -156,7 +161,7 @@
                     <ListView
                         Grid.Row="0"
                         SelectionMode="None"
-                        ItemsSource="{x:Bind ViewModel.SelectedContact.Messages, Mode=OneWay}"
+                        ItemsSource="{x:Bind MessageGroups.View, Mode=OneWay}"
                         ItemTemplate="{StaticResource MessageListTemplate}">
 
                         <ListView.ItemsPanel>
@@ -167,11 +172,27 @@
                             </ItemsPanelTemplate>
                         </ListView.ItemsPanel>
 
+                        <ListView.GroupStyle>
+                            <GroupStyle>
+                                <GroupStyle.HeaderTemplate>
+                                    <DataTemplate x:DataType="local:DailyMessageGroup">
+                                        <TextBlock Text="{x:Bind DateLabel}"
+                                                   AutomationProperties.AccessibilityView="Raw"
+                                                   Foreground="{ThemeResource MessageSentAtForeground}"
+                                                   FontFamily="{StaticResource DefaultFontFamilyLight}"
+                                                   FontSize="14"
+                                                   HorizontalAlignment="Stretch" />
+                                    </DataTemplate>
+                                </GroupStyle.HeaderTemplate>
+                            </GroupStyle>
+                        </ListView.GroupStyle>
+
                     </ListView>
 
                     <Border Grid.Row="1" Padding="0 10 0 0">
                         <TextBox Text="{x:Bind ViewModel.SelectedContact.MessageText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  KeyUp="{x:Bind ViewModel.MessageBoxKeyUpAsync}"
+                                 SelectionStart="{x:Bind ViewModel.SelectedContact.MessageSelectionStart, Mode=OneWay}"
                                  Visibility="{x:Bind ViewModel.MessageBoxIsVisible, Mode=OneWay}"
                                  IsReadOnly="{x:Bind ViewModel.SelectedContact.MessageTextIsReadOnly, Mode=OneWay}"
                                  MaxLength="1000" />

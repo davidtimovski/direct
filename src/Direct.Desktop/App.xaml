@@ -14,6 +14,15 @@
             <FontFamily x:Key="DefaultFontFamily">/Assets/Fonts/Poppins-Regular.ttf#Poppins</FontFamily>
             <FontFamily x:Key="DefaultFontFamilyLight">/Assets/Fonts/Poppins-Light.ttf#Poppins</FontFamily>
 
+            <SolidColorBrush x:Key="HighlightBrush" Color="#c97608" />
+            
+            <!-- Messages -->
+            <SolidColorBrush x:Key="SenderMessageBackgroundBrushLight" Color="#e6e6e6" />
+            <SolidColorBrush x:Key="SenderMessageForegroundBrushLight" Color="Black" />
+            <SolidColorBrush x:Key="SenderMessageBackgroundBrushDark" Color="#323232" />
+            <SolidColorBrush x:Key="SenderMessageForegroundBrushDark" Color="White" />
+            <SolidColorBrush x:Key="MessageEditingBackgroundBrush" Color="#964119" />
+
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceDictionary x:Key="Light">
                     <SolidColorBrush x:Key="WindowBackground" Color="#fafafa" />

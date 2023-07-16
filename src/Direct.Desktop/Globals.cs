@@ -1,4 +1,6 @@
-﻿namespace Direct;
+﻿using System.Globalization;
+
+namespace Direct;
 
 public static class Globals
 {
@@ -7,4 +9,6 @@ public static class Globals
 #else
     public const string ServerUri = "https://direct.davidtimovski.com";
 #endif
+
+    public static CultureInfo Culture = new("en-US");
 }
