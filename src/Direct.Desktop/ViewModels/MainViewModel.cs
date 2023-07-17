@@ -15,13 +15,13 @@ namespace Direct.ViewModels;
 
 public partial class MainViewModel : ObservableObject
 {
-    private readonly IStorageService _storageService;
+    private readonly ISettingsService _settingsService;
     private readonly IChatService _chatService;
     private readonly DispatcherQueue _dispatcherQueue;
 
-    public MainViewModel(IStorageService storageService, IChatService chatService, DispatcherQueue dispatcherQueue)
+    public MainViewModel(ISettingsService settingsService, IChatService chatService, DispatcherQueue dispatcherQueue)
     {
-        _storageService = storageService;
+        _settingsService = settingsService;
 
         _chatService = chatService;
         _chatService.Joined += Joined;
@@ -32,7 +32,7 @@ public partial class MainViewModel : ObservableObject
 
         _dispatcherQueue = dispatcherQueue;
 
-        Theme = _storageService.AppData.Theme;
+        Theme = _settingsService.Theme;
         SelectedTheme = Theme.ToString();
     }
 
@@ -119,8 +119,7 @@ public partial class MainViewModel : ObservableObject
             }
         }
 
-        _storageService.AppData.Theme = Theme;
-        _storageService.Save();
+        _settingsService.Theme = Theme;
     }
 
     private async Task SendNewMessageAsync()
@@ -153,7 +152,7 @@ public partial class MainViewModel : ObservableObject
         SelectedContact!.EditingMessageId = null;
         SelectedContact!.MessageText = string.Empty;
 
-        message?.SetTheme(_storageService.AppData.Theme);
+        message?.SetTheme(_settingsService.Theme);
     }
 
     private async Task UpdateMessageAsync(Guid id)
@@ -172,7 +171,7 @@ public partial class MainViewModel : ObservableObject
         _dispatcherQueue.TryEnqueue(() =>
         {
             Connected = true;
-            Nickname = _storageService.AppData.Nickname;
+            Nickname = _settingsService.Nickname;
             UserId = e.UserId.ToString();
 
             if (e.Contacts.Count == 0)
@@ -182,7 +181,7 @@ public partial class MainViewModel : ObservableObject
 
             foreach (var contact in e.Contacts)
             {
-                Contacts.Add(new ContactViewModel(contact, _storageService.AppData.Theme, localDate: DateOnly.FromDateTime(DateTime.Now)));
+                Contacts.Add(new ContactViewModel(contact, _settingsService.Theme, localDate: DateOnly.FromDateTime(DateTime.Now)));
             }
 
             SelectedContact = Contacts[0];
@@ -193,7 +192,7 @@ public partial class MainViewModel : ObservableObject
     {
         _dispatcherQueue.TryEnqueue(() =>
         {
-            Contacts.Add(new ContactViewModel(e.Contact, _storageService.AppData.Theme, localDate: DateOnly.FromDateTime(DateTime.Now)));
+            Contacts.Add(new ContactViewModel(e.Contact, _settingsService.Theme, localDate: DateOnly.FromDateTime(DateTime.Now)));
         });
     }
 
@@ -212,7 +211,7 @@ public partial class MainViewModel : ObservableObject
     private void MessageSent(object? _, MessageSentEventArgs e)
     {
         var localDate = DateOnly.FromDateTime(DateTime.Now);
-        var message = new MessageViewModel(e.Message, _storageService.AppData.Theme);
+        var message = new MessageViewModel(e.Message, _settingsService.Theme);
 
         if (e.Message.UserIsSender)
         {
@@ -280,7 +279,7 @@ public partial class MainViewModel : ObservableObject
                 {
                     _dispatcherQueue.TryEnqueue(() =>
                     {
-                        message.Update(e.Message.Text, e.Message.EditedAtUtc!.Value, _storageService.AppData.Theme);
+                        message.Update(e.Message.Text, e.Message.EditedAtUtc!.Value, _settingsService.Theme);
 
                         recipientContact.MessageText = string.Empty;
                         recipientContact.MessageTextIsReadOnly = false;
@@ -299,7 +298,7 @@ public partial class MainViewModel : ObservableObject
                 {
                     _dispatcherQueue.TryEnqueue(() =>
                     {
-                        message.Update(e.Message.Text, e.Message.EditedAtUtc!.Value, _storageService.AppData.Theme);
+                        message.Update(e.Message.Text, e.Message.EditedAtUtc!.Value, _settingsService.Theme);
                     });
                 }
             }

@@ -32,7 +32,10 @@ public partial class App : Application
         services.AddSingleton<MainWindow>();
         services.AddSingleton<MainViewModel>();
 
-        services.AddSingleton<IStorageService, StorageService>();
+        services.AddTransient<NewContactWindow>();
+        services.AddTransient<NewContactViewModel>();
+
+        services.AddSingleton<ISettingsService, SettingsService>();
         services.AddSingleton<IChatService, ChatService>();
 
         services.AddSingleton(DispatcherQueue.GetForCurrentThread());

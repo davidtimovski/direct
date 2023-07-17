@@ -23,6 +23,11 @@ public class DailyMessageGroup : ObservableCollection<MessageViewModel>
             return "Today";
         }
 
+        if ((localDate.DayNumber - groupDate.DayNumber) == 1)
+        {
+            return "Yesterday";
+        }
+
         if ((localDate.DayNumber - groupDate.DayNumber) < 7)
         {
             return groupDate.ToString("dddd", Globals.Culture);

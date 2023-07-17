@@ -53,17 +53,9 @@
                 </Grid.RowDefinitions>
 
                 <Expander Grid.Row="0" 
-                          HorizontalAlignment="Stretch" 
-                          HorizontalContentAlignment="Stretch">
+                          HorizontalAlignment="Stretch">
                     <Expander.Header>
-                        <StackPanel Orientation="Horizontal">
-                            <FontIcon Glyph="&#xE700;"
-                                      Margin="0 0 20 0" />
-
-                            <TextBlock Text="{x:Bind ViewModel.Nickname, Mode=OneWay}"
-                                   FontFamily="{StaticResource DefaultFontFamily}"
-                                   FontSize="20"/>
-                        </StackPanel>
+                        <FontIcon Glyph="&#xE700;" HorizontalAlignment="Left" />
                     </Expander.Header>
                     
                     <Expander.Content>
@@ -106,6 +98,13 @@
                                         </Button>
                                     </Grid>
                                 </StackPanel>
+                            </Border>
+
+                            <Border BorderThickness="0 0 0 1"
+                                    BorderBrush="#666"
+                                    Padding="0 0 0 20"
+                                    Margin="0 0 0 20">
+                                <Button Click="AddNewContactButton_Click">Add new contact</Button>
                             </Border>
 
                             <Border>

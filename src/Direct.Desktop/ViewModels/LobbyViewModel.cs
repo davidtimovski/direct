@@ -8,18 +8,18 @@ namespace Direct.ViewModels;
 
 public partial class LobbyViewModel : ObservableObject
 {
-    private readonly IStorageService _storageService;
+    private readonly ISettingsService _settingsService;
     private readonly IChatService _chatService;
     private readonly string _passwordHash;
 
-    public LobbyViewModel(IStorageService storageService, IChatService chatService)
+    public LobbyViewModel(ISettingsService settingsService, IChatService chatService)
     {
-        _storageService = storageService;
+        _settingsService = settingsService;
         _chatService = chatService;
 
-        _passwordHash = _storageService.AppData.PasswordHash;
-        Nickname = _storageService.AppData.Nickname;
-        Theme = _storageService.AppData.Theme;
+        _passwordHash = _settingsService.PasswordHash;
+        Nickname = _settingsService.Nickname;
+        Theme = _settingsService.Theme;
     }
 
     [ObservableProperty]
@@ -51,9 +51,9 @@ public partial class LobbyViewModel : ObservableObject
         var passwordHashed = _passwordHash == string.Empty ? CryptographyUtil.Hash(Password) : _passwordHash;
         var nicknameTrimmed = Nickname.Trim();
 
-        _storageService.AppData.PasswordHash = passwordHashed;
-        _storageService.AppData.Nickname = nicknameTrimmed;
-        _storageService.Save();
+        _settingsService.PasswordHash = passwordHashed;
+        _settingsService.Nickname = nicknameTrimmed;
+        _settingsService.Save();
 
         await _chatService.ConnectAsync(passwordHashed, nicknameTrimmed);
     }

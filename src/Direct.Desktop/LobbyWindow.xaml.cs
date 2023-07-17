@@ -11,19 +11,19 @@ namespace Direct;
 
 public sealed partial class LobbyWindow : Window
 {
-    private readonly IStorageService _storageService;
+    private readonly ISettingsService _settingsService;
     private readonly IServiceProvider _serviceProvider;
 
     public LobbyViewModel ViewModel { get; }
 
-    public LobbyWindow(IStorageService storageService, IServiceProvider serviceProvider, LobbyViewModel viewModel)
+    public LobbyWindow(ISettingsService settingsService, IServiceProvider serviceProvider, LobbyViewModel viewModel)
     {
         InitializeComponent();
 
         ExtendsContentIntoTitleBar = true;
         SetTitleBar(AppTitleBar);
 
-        _storageService = storageService;
+        _settingsService = settingsService;
         _serviceProvider = serviceProvider;
         ViewModel = viewModel;
     }
@@ -36,7 +36,7 @@ public sealed partial class LobbyWindow : Window
 
         Close();
 
-        WindowingUtil.Resize(mainWindow, new SizeInt32(_storageService.AppData.WindowWidth, _storageService.AppData.WindowHeight));
+        WindowingUtil.Resize(mainWindow, new SizeInt32(_settingsService.WindowWidth, _settingsService.WindowHeight));
         mainWindow.Activate();
     }
 }

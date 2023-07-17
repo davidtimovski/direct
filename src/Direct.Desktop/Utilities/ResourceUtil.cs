@@ -1,7 +1,7 @@
 ﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
 
-namespace Chat.Utilities;
+namespace Direct.Utilities;
 
 internal static class ResourceUtil
 {

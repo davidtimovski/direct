@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window
+    x:Class="Direct.NewContactWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Grid RequestedTheme="{x:Bind ViewModel.Theme, Mode=OneWay}"
+          Background="{ThemeResource WindowBackground}">
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="28" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Border x:Name="AppTitleBar" Grid.Row="0" Padding="12 0">
+            <TextBlock x:Name="AppTitle" Text="Add new contact" VerticalAlignment="Center" />
+        </Border>
+
+        <Grid Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <Border Width="330">
+                <StackPanel VerticalAlignment="Center">
+                    <TextBox Text="{x:Bind ViewModel.UserId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             FontFamily="{StaticResource DefaultFontFamily}"
+                             PlaceholderText="User ID"
+                             MaxLength="36" />
+
+                    <Button
+                        IsEnabled="{x:Bind ViewModel.AddButtonEnabled, Mode=OneWay}"
+                        Click="{x:Bind ViewModel.AddContact}" 
+                        FontFamily="{StaticResource DefaultFontFamily}"
+                        HorizontalAlignment="Right"
+                        Margin="0 15 0 0">Add contact</Button>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+    </Grid>
+</Window>

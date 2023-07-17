@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "Chat (Package)": {
+    "Direct (Package)": {
       "commandName": "MsixPackage",
       "commandLineArgs": "", /* Command line arguments to pass to the app. */
       "alwaysReinstallApp": false, /* Uninstall and then reinstall the app. All information about the app state is deleted. */
@@ -11,7 +11,7 @@
       "remoteDebugMachine": "", /* The name of the remote machine. */
       "nativeDebugging": false /* Enable debugging for managed and native code together, also known as mixed-mode debugging. */
     },
-    "Chat (Unpackaged)": {
+    "Direct (Unpackaged)": {
       "commandName": "Project"
     }
   }

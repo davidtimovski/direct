@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using Chat.Utilities;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Direct.Shared.Models;
+using Direct.Utilities;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
