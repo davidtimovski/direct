@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using CommunityToolkit.Mvvm.ComponentModel;
-using Direct.Shared.Models;
-using Direct.Utilities;
+using Direct.Desktop.Utilities;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
 
-namespace Direct.ViewModels;
+namespace Direct.Desktop.ViewModels;
 
 public partial class MessageViewModel : ObservableObject
 {
@@ -28,18 +27,22 @@ public partial class MessageViewModel : ObservableObject
     private static readonly SolidColorBrush MessageEditingBackgroundBrush = ResourceUtil.GetBrush("MessageEditingBackgroundBrush");
     private static readonly SolidColorBrush MessageEditingForegroundBrush = new(Colors.White);
 
-    public MessageDto Message { get; }
+    public Guid Id { get; }
+    public DateTime SentAt { get; }
+    public bool UserIsSender { get; }
 
-    public MessageViewModel(MessageDto message, ElementTheme theme)
+    public MessageViewModel(Guid id, string text, DateTime sentAt, DateTime? editedAt, bool userIsSender, ElementTheme theme)
     {
-        Message = message;
+        Id = id;
+        SentAt = sentAt;
+        UserIsSender = userIsSender;
 
-        Text = message.Text;
-        SentAtFormatted = FormatDate(message.SentAtUtc);
-        Edited = message.EditedAtUtc.HasValue;
-        EditedAt = message.EditedAtUtc.HasValue ? FormatEditedAt(message.EditedAtUtc.Value) : string.Empty;
+        Text = text;
+        SentAtFormatted = FormatDate(sentAt);
+        Edited = editedAt.HasValue;
+        EditedAt = editedAt.HasValue ? FormatEditedAt(editedAt.Value) : string.Empty;
 
-        if (message.UserIsSender)
+        if (userIsSender)
         {
             Alignment = HorizontalAlignment.Right;
             Background = UserMessageBackgroundBrush;
@@ -78,7 +81,7 @@ public partial class MessageViewModel : ObservableObject
 
     public void SetTheme(ElementTheme theme)
     {
-        if (Message.UserIsSender)
+        if (UserIsSender)
         {
             Background = UserMessageBackgroundBrush;
             Foreground = UserMessageForegroundBrush;
@@ -90,10 +93,10 @@ public partial class MessageViewModel : ObservableObject
         }
     }
 
-    public void Update(string text, DateTime editedAtUtc, ElementTheme theme)
+    public void Update(string text, DateTime editedAt, ElementTheme theme)
     {
         Text = text;
-        EditedAt = FormatEditedAt(editedAtUtc);
+        EditedAt = FormatEditedAt(editedAt);
         Edited = true;
         SetTheme(theme);
     }
@@ -104,13 +107,13 @@ public partial class MessageViewModel : ObservableObject
         Foreground = MessageEditingForegroundBrush;
     }
 
-    private static string FormatEditedAt(DateTime editedAtUtc)
+    private static string FormatEditedAt(DateTime editedAt)
     {
-        return $"Edited at {FormatDate(editedAtUtc)}";
+        return $"Edited at {FormatDate(editedAt)}";
     }
 
-    private static string FormatDate(DateTime dateUtc)
+    private static string FormatDate(DateTime date)
     {
-        return dateUtc.ToLocalTime().ToString(TimeFormat);
+        return date.ToString(TimeFormat);
     }
 }

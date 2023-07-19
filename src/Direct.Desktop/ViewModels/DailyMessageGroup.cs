@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
-namespace Direct.ViewModels;
+namespace Direct.Desktop.ViewModels;
 
 public class DailyMessageGroup : ObservableCollection<MessageViewModel>
 {

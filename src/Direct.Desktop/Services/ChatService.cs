@@ -6,7 +6,7 @@ using Direct.Shared.Models;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Direct.Services;
+namespace Direct.Desktop.Services;
 
 public interface IChatService
 {
@@ -16,10 +16,10 @@ public interface IChatService
     event EventHandler<MessageSentEventArgs>? MessageSent;
     event EventHandler<MessageUpdatedEventArgs>? MessageUpdated;
 
-    Task ConnectAsync(string passwordHash, string nickname);
+    Task ConnectAsync(Guid id, string nickname);
     Task DisconnectAsync();
     Task SendMessageAsync(Guid toUserId, string message);
-    Task UpdateMessageAsync(Guid id, string message);
+    Task UpdateMessageAsync(Guid id, Guid recipientId, string message);
 }
 
 public class ChatService : IChatService
@@ -35,10 +35,9 @@ public class ChatService : IChatService
            .WithAutomaticReconnect()
            .Build();
 
-        _connection.On<Guid, List<ContactDto>>(ClientEvent.Joined, (userId, contacts) =>
+        _connection.On<List<ContactDto>>(ClientEvent.Joined, (contacts) =>
         {
-            _userId = userId;
-            Joined?.Invoke(this, new JoinedEventArgs(userId, contacts));
+            Joined?.Invoke(this, new JoinedEventArgs(contacts));
         });
 
         _connection.On<ContactDto>(ClientEvent.ContactJoined, (contact) =>
@@ -51,15 +50,13 @@ public class ChatService : IChatService
             ContactLeft?.Invoke(this, new ContactLeftEventArgs(userId));
         });
 
-        _connection.On<MessageDto>(ClientEvent.MessageSent, (message) =>
+        _connection.On<NewMessageDto>(ClientEvent.MessageSent, (message) =>
         {
-            message.UserIsSender = message.SenderId == _userId!.Value;
             MessageSent?.Invoke(this, new MessageSentEventArgs(message));
         });
 
-        _connection.On<MessageDto>(ClientEvent.MessageUpdated, (message) =>
+        _connection.On<MessageUpdateDto>(ClientEvent.MessageUpdated, (message) =>
         {
-            message.UserIsSender = message.SenderId == _userId!.Value;
             MessageUpdated?.Invoke(this, new MessageUpdatedEventArgs(message));
         });
     }
@@ -70,10 +67,12 @@ public class ChatService : IChatService
     public event EventHandler<MessageSentEventArgs>? MessageSent;
     public event EventHandler<MessageUpdatedEventArgs>? MessageUpdated;
 
-    public async Task ConnectAsync(string passwordHash, string nickname)
+    public async Task ConnectAsync(Guid id, string nickname)
     {
+        _userId = id;
+
         await _connection.StartAsync();
-        await _connection.InvokeAsync(ServerEvent.Join, passwordHash, nickname);
+        await _connection.InvokeAsync(ServerEvent.Join, _userId.Value, nickname, new Guid[] { Guid.Parse("018955e6-3bbd-4af9-ab08-1bf6a2d98fe9"), Guid.Parse("018955e6-3bbe-469d-bb1a-e0f74724d46d") });
     }
 
     public async Task DisconnectAsync()
@@ -87,21 +86,19 @@ public class ChatService : IChatService
         await _connection.InvokeAsync(ServerEvent.SendMessage, recipientId, message);
     }
 
-    public async Task UpdateMessageAsync(Guid id, string message)
+    public async Task UpdateMessageAsync(Guid id, Guid recipientId, string message)
     {
-        await _connection.InvokeAsync(ServerEvent.UpdateMessage, id, message);
+        await _connection.InvokeAsync(ServerEvent.UpdateMessage, id, recipientId, message);
     }
 }
 
 public class JoinedEventArgs : EventArgs
 {
-    public JoinedEventArgs(Guid userId, List<ContactDto> contacts)
+    public JoinedEventArgs(List<ContactDto> contacts)
     {
-        UserId = userId;
         Contacts = contacts;
     }
 
-    public Guid UserId { get; init; }
     public List<ContactDto> Contacts { get; init; }
 }
 
@@ -125,32 +122,22 @@ public class ContactLeftEventArgs : EventArgs
     public Guid UserId { get; init; }
 }
 
-public class MessageReceivedEventArgs : EventArgs
-{
-    public MessageReceivedEventArgs(MessageDto message)
-    {
-        Message = message;
-    }
-
-    public MessageDto Message { get; init; }
-}
-
 public class MessageSentEventArgs : EventArgs
 {
-    public MessageSentEventArgs(MessageDto message)
+    public MessageSentEventArgs(NewMessageDto message)
     {
         Message = message;
     }
 
-    public MessageDto Message { get; init; }
+    public NewMessageDto Message { get; init; }
 }
 
 public class MessageUpdatedEventArgs : EventArgs
 {
-    public MessageUpdatedEventArgs(MessageDto message)
+    public MessageUpdatedEventArgs(MessageUpdateDto message)
     {
         Message = message;
     }
 
-    public MessageDto Message { get; init; }
+    public MessageUpdateDto Message { get; init; }
 }

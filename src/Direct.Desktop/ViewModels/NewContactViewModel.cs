@@ -1,9 +1,9 @@
 ﻿using System;
 using CommunityToolkit.Mvvm.ComponentModel;
-using Direct.Services;
+using Direct.Desktop.Services;
 using Microsoft.UI.Xaml;
 
-namespace Direct.ViewModels;
+namespace Direct.Desktop.ViewModels;
 
 public partial class NewContactViewModel : ObservableObject
 {

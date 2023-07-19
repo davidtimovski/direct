@@ -4,14 +4,15 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
-using Direct.Services;
+using Direct.Desktop.Services;
+using Direct.Desktop.Storage;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Input;
 using Windows.ApplicationModel.DataTransfer;
 using VirtualKey = Windows.System.VirtualKey;
 
-namespace Direct.ViewModels;
+namespace Direct.Desktop.ViewModels;
 
 public partial class MainViewModel : ObservableObject
 {
@@ -72,7 +73,7 @@ public partial class MainViewModel : ObservableObject
 
             if (SelectedContact!.EditingMessageId.HasValue)
             {
-                await UpdateMessageAsync(SelectedContact!.EditingMessageId.Value);
+                await UpdateMessageAsync(SelectedContact!.EditingMessageId.Value, SelectedContact!.Contact.Id);
                 return;
             }
 
@@ -135,10 +136,10 @@ public partial class MainViewModel : ObservableObject
 
     private void SelectLastSentMessageForUpdate()
     {
-        var lastSentMessage = SelectedContact!.MessageGroups.SelectMany(x => x).Where(x => x.Message.UserIsSender).OrderByDescending(x => x.Message.SentAtUtc).FirstOrDefault();
+        var lastSentMessage = SelectedContact!.MessageGroups.SelectMany(x => x).Where(x => x.UserIsSender).OrderByDescending(x => x.SentAt).FirstOrDefault();
         if (lastSentMessage is not null)
         {
-            SelectedContact!.EditingMessageId = lastSentMessage.Message.Id;
+            SelectedContact!.EditingMessageId = lastSentMessage.Id;
             SelectedContact!.MessageText = lastSentMessage.Text;
             SelectedContact!.MessageSelectionStart = lastSentMessage.Text.Length;
             lastSentMessage.SetEditing();
@@ -147,7 +148,7 @@ public partial class MainViewModel : ObservableObject
 
     private void DeselectLastSentMessage()
     {
-        var message = SelectedContact!.MessageGroups.SelectMany(x => x).First(x => x.Message.Id == SelectedContact!.EditingMessageId);
+        var message = SelectedContact!.MessageGroups.SelectMany(x => x).First(x => x.Id == SelectedContact!.EditingMessageId);
 
         SelectedContact!.EditingMessageId = null;
         SelectedContact!.MessageText = string.Empty;
@@ -155,7 +156,7 @@ public partial class MainViewModel : ObservableObject
         message?.SetTheme(_settingsService.Theme);
     }
 
-    private async Task UpdateMessageAsync(Guid id)
+    private async Task UpdateMessageAsync(Guid id, Guid recipientId)
     {
         var trimmedMessage = SelectedContact!.MessageText.Trim();
         if (trimmedMessage.Length == 0)
@@ -163,25 +164,43 @@ public partial class MainViewModel : ObservableObject
             return;
         }
 
-        await _chatService.UpdateMessageAsync(id, trimmedMessage);
+        await _chatService.UpdateMessageAsync(id, recipientId, trimmedMessage);
     }
 
     private void Joined(object? _, JoinedEventArgs e)
     {
-        _dispatcherQueue.TryEnqueue(() =>
+        _dispatcherQueue.TryEnqueue(async () =>
         {
             Connected = true;
+            UserId = _settingsService.UserId.ToString();
             Nickname = _settingsService.Nickname;
-            UserId = e.UserId.ToString();
 
             if (e.Contacts.Count == 0)
             {
                 return;
             }
 
+            var contactIds = e.Contacts.Select(x => x.Id).ToList();
+            var messages = await Repository.GetAllMessagesAsync(contactIds);
+
+            var contactViewModels = new List<ContactViewModel>(e.Contacts.Count);
             foreach (var contact in e.Contacts)
             {
-                Contacts.Add(new ContactViewModel(contact, _settingsService.Theme, localDate: DateOnly.FromDateTime(DateTime.Now)));
+                var contactMessages = messages.Where(x => x.SenderId == contact.Id || x.RecipientId == contact.Id);
+                contactViewModels.Add(new ContactViewModel(_settingsService.UserId, contact, contactMessages, _settingsService.Theme, localDate: DateOnly.FromDateTime(DateTime.Now)));
+            }
+
+            var orderedContacts = contactViewModels.OrderByDescending(
+                c => c.MessageGroups
+                    .SelectMany(x => x)
+                    .OrderByDescending(m => m.SentAt)
+                    .Select(m => m.SentAt)
+                    .FirstOrDefault()
+            );
+
+            foreach (var contactViewModel in orderedContacts)
+            {
+                Contacts.Add(contactViewModel);
             }
 
             SelectedContact = Contacts[0];
@@ -190,9 +209,10 @@ public partial class MainViewModel : ObservableObject
 
     private void ContactJoined(object? _, ContactJoinedEventArgs e)
     {
-        _dispatcherQueue.TryEnqueue(() =>
+        _dispatcherQueue.TryEnqueue(async () =>
         {
-            Contacts.Add(new ContactViewModel(e.Contact, _settingsService.Theme, localDate: DateOnly.FromDateTime(DateTime.Now)));
+            var contactMessages = await Repository.GetAllMessagesAsync(new List<Guid> { e.Contact.Id });
+            Contacts.Add(new ContactViewModel(_settingsService.UserId, e.Contact, contactMessages, _settingsService.Theme, localDate: DateOnly.FromDateTime(DateTime.Now)));
         });
     }
 
@@ -208,78 +228,107 @@ public partial class MainViewModel : ObservableObject
         });
     }
 
-    private void MessageSent(object? _, MessageSentEventArgs e)
+    private async void MessageSent(object? _, MessageSentEventArgs e)
     {
         var localDate = DateOnly.FromDateTime(DateTime.Now);
-        var message = new MessageViewModel(e.Message, _settingsService.Theme);
+        var userIsSender = e.Message.SenderId == _settingsService.UserId;
 
-        if (e.Message.UserIsSender)
+        await Repository.CreateMessageAsync(new Message
         {
-            var recipientContact = Contacts.FirstOrDefault(x => x.Contact.Id == e.Message.RecipientId);
-            if (recipientContact is not null)
-            {
-                _dispatcherQueue.TryEnqueue(() =>
-                {
-                    var latestGroup = recipientContact.MessageGroups[^1];
-                    var messageSentDate = DateOnly.FromDateTime(message.Message.SentAtUtc.ToLocalTime());
+            Id = e.Message.Id,
+            SenderId = e.Message.SenderId,
+            RecipientId = e.Message.RecipientId,
+            Text = e.Message.Text,
+            SentAt = e.Message.SentAtUtc.ToLocalTime()
+        });
 
-                    if (latestGroup!.Date == messageSentDate)
+        _dispatcherQueue.TryEnqueue(() =>
+        {
+            var message = new MessageViewModel(
+                e.Message.Id,
+                e.Message.Text,
+                e.Message.SentAtUtc.ToLocalTime(),
+                null,
+                userIsSender,
+                _settingsService.Theme);
+
+            if (userIsSender)
+            {
+                var recipientContact = Contacts.FirstOrDefault(x => x.Contact.Id == e.Message.RecipientId);
+                if (recipientContact is not null)
+                {
+                    var messageSentDate = DateOnly.FromDateTime(message.SentAt);
+
+                    if (recipientContact.MessageGroups.Count > 0)
                     {
-                        latestGroup.Add(message);
+                        var latestGroup = recipientContact.MessageGroups[^1];
+                        if (latestGroup!.Date == messageSentDate)
+                        {
+                            latestGroup.Add(message);
+                        }
+                        else
+                        {
+                            recipientContact.MessageGroups.Add(new DailyMessageGroup(new List<MessageViewModel> { message }, messageSentDate, localDate));
+                        }
                     }
                     else
                     {
-                        var todaysGroup = new DailyMessageGroup(new List<MessageViewModel> { message }, messageSentDate, localDate);
-                        recipientContact.MessageGroups.Add(todaysGroup);
+                        recipientContact.MessageGroups.Add(new DailyMessageGroup(new List<MessageViewModel> { message }, messageSentDate, localDate));
                     }
 
                     recipientContact.MessageText = string.Empty;
                     recipientContact.MessageTextIsReadOnly = false;
-                });
+                }
             }
-        }
-        else
-        {
-            var senderContact = Contacts.FirstOrDefault(x => x.Contact.Id == e.Message.SenderId);
-            if (senderContact is not null)
+            else
             {
-                _dispatcherQueue.TryEnqueue(() =>
+                var senderContact = Contacts.FirstOrDefault(x => x.Contact.Id == e.Message.SenderId);
+                if (senderContact is not null)
                 {
-                    var latestGroup = senderContact.MessageGroups[^1];
-                    var messageSentDate = DateOnly.FromDateTime(message.Message.SentAtUtc.ToLocalTime());
+                    var messageSentDate = DateOnly.FromDateTime(message.SentAt);
 
-                    if (latestGroup!.Date == messageSentDate)
+                    if (senderContact.MessageGroups.Count > 0)
                     {
-                        latestGroup.Add(message);
+                        var latestGroup = senderContact.MessageGroups[^1];
+                        if (latestGroup!.Date == messageSentDate)
+                        {
+                            latestGroup.Add(message);
+                        }
+                        else
+                        {
+                            var todaysGroup = new DailyMessageGroup(new List<MessageViewModel> { message }, messageSentDate, localDate);
+                            senderContact.MessageGroups.Add(todaysGroup);
+                        }
                     }
                     else
                     {
-                        var todaysGroup = new DailyMessageGroup(new List<MessageViewModel> { message }, messageSentDate, localDate);
-                        senderContact.MessageGroups.Add(todaysGroup);
+                        senderContact.MessageGroups.Add(new DailyMessageGroup(new List<MessageViewModel> { message }, messageSentDate, localDate));
                     }
 
                     if (senderContact != SelectedContact)
                     {
                         senderContact.HasUnreadMessages = true;
                     }
-                });
+                }
             }
-        }
+        });
     }
 
-    private void MessageUpdated(object? _, MessageUpdatedEventArgs e)
+    private async void MessageUpdated(object? _, MessageUpdatedEventArgs e)
     {
-        if (e.Message.UserIsSender)
+        await Repository.UpdateMessageAsync(e.Message.Id, e.Message.Text, e.Message.EditedAtUtc.ToLocalTime());
+
+        if (e.Message.SenderId == _settingsService.UserId)
         {
             var recipientContact = Contacts.FirstOrDefault(x => x.Contact.Id == e.Message.RecipientId);
             if (recipientContact is not null)
             {
-                var message = recipientContact.MessageGroups.SelectMany(x => x).FirstOrDefault(x => x.Message.Id == e.Message.Id);
+                var message = recipientContact.MessageGroups.SelectMany(x => x).FirstOrDefault(x => x.Id == e.Message.Id);
                 if (message is not null)
                 {
                     _dispatcherQueue.TryEnqueue(() =>
                     {
-                        message.Update(e.Message.Text, e.Message.EditedAtUtc!.Value, _settingsService.Theme);
+                        message.Update(e.Message.Text, e.Message.EditedAtUtc.ToLocalTime(), _settingsService.Theme);
 
                         recipientContact.MessageText = string.Empty;
                         recipientContact.MessageTextIsReadOnly = false;
@@ -293,12 +342,12 @@ public partial class MainViewModel : ObservableObject
             var senderContact = Contacts.FirstOrDefault(x => x.Contact.Id == e.Message.SenderId);
             if (senderContact is not null)
             {
-                var message = senderContact.MessageGroups.SelectMany(x => x).FirstOrDefault(x => x.Message.Id == e.Message.Id);
+                var message = senderContact.MessageGroups.SelectMany(x => x).FirstOrDefault(x => x.Id == e.Message.Id);
                 if (message is not null)
                 {
                     _dispatcherQueue.TryEnqueue(() =>
                     {
-                        message.Update(e.Message.Text, e.Message.EditedAtUtc!.Value, _settingsService.Theme);
+                        message.Update(e.Message.Text, e.Message.EditedAtUtc.ToLocalTime(), _settingsService.Theme);
                     });
                 }
             }

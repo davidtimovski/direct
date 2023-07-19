@@ -1,6 +1,6 @@
 ﻿using System.Globalization;
 
-namespace Direct;
+namespace Direct.Desktop;
 
 public static class Globals
 {

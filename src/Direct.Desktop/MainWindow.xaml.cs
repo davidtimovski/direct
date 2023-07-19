@@ -1,12 +1,12 @@
 using System;
-using Direct.Services;
-using Direct.Utilities;
-using Direct.ViewModels;
+using Direct.Desktop.Services;
+using Direct.Desktop.Utilities;
+using Direct.Desktop.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Windows.Graphics;
 
-namespace Direct;
+namespace Direct.Desktop;
 
 public sealed partial class MainWindow : Window
 {

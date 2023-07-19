@@ -1,7 +1,7 @@
-using Direct.ViewModels;
+using Direct.Desktop.ViewModels;
 using Microsoft.UI.Xaml;
 
-namespace Direct;
+namespace Direct.Desktop;
 
 public sealed partial class NewContactWindow : Window
 {

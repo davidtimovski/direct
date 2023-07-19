@@ -1,4 +1,5 @@
 ﻿using Direct.Shared;
+using Direct.Shared.Models;
 using Direct.Web.Services;
 using Microsoft.AspNetCore.SignalR;
 
@@ -13,41 +14,37 @@ public class ChatHub : Hub
        _chatService = chatService;
     }
 
-    public async Task Join(string passwordHash, string nickname)
+    public async Task Join(Guid id, string nickname, Guid[] userIds)
     {
-        var valid = Validation.PasswordHashIsValid(passwordHash);
-        if (!valid)
-        {
-            throw new InvalidOperationException("Password hash is not valid");
-        }
-
         var nicknameError = Validation.ValidateNickname(nickname);
         if (nicknameError != null)
         {
             throw new InvalidOperationException(nicknameError);
         }
 
-        var contact = await _chatService.AddContactAsync(passwordHash, nickname, Context.ConnectionId);
+        _chatService.AddContact(id, nickname, Context.ConnectionId);
+        var contacts = _chatService.GetContacts(userIds);
 
-        var contacts = await _chatService.GetContactsAsync(passwordHash);
-
-        await Clients.Caller.SendAsync(ClientEvent.Joined, contact.Id, contacts);
-
-        await Clients.Others.SendAsync(ClientEvent.ContactJoined, contact);
+        await Clients.Caller.SendAsync(ClientEvent.Joined, contacts);
+        await Clients.Others.SendAsync(ClientEvent.ContactJoined, new ContactDto
+        {
+            Id = id,
+            Nickname = nickname
+        });
     }
 
     public async Task SendMessage(Guid recipientId, string text)
     {
-        var result = await _chatService.SendMessageAsync(Context.ConnectionId, recipientId, text);
+        var result = _chatService.SendMessage(Context.ConnectionId, recipientId, text);
         foreach (var connectionId in result.ConnectionIds)
         {
             await Clients.Client(connectionId).SendAsync(ClientEvent.MessageSent, result.Message);
         }
     }
 
-    public async Task UpdateMessage(Guid id, string text)
+    public async Task UpdateMessage(Guid id, Guid recipientId, string text)
     {
-        var result = await _chatService.UpdateMessageAsync(Context.ConnectionId, id, text);
+        var result = _chatService.UpdateMessage(Context.ConnectionId, id, recipientId, text);
         foreach (var connectionId in result.ConnectionIds)
         {
             await Clients.Client(connectionId).SendAsync(ClientEvent.MessageUpdated, result.Message);

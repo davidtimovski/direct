@@ -1,7 +1,7 @@
 ﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
 
-namespace Direct.Utilities;
+namespace Direct.Desktop.Utilities;
 
 internal static class ResourceUtil
 {

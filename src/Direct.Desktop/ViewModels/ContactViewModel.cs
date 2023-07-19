@@ -1,11 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Direct.Desktop.Storage;
 using Direct.Shared.Models;
 using Microsoft.UI.Xaml;
 
-namespace Direct.ViewModels;
+namespace Direct.Desktop.ViewModels;
 
 public partial class ContactViewModel : ObservableObject
 {
@@ -13,15 +15,14 @@ public partial class ContactViewModel : ObservableObject
 
     public Guid? EditingMessageId { get; set; }
 
-    public ContactViewModel(ContactDto contact, ElementTheme theme, DateOnly localDate)
+    public ContactViewModel(Guid userId, ContactDto contact, IEnumerable<Message> messages, ElementTheme theme, DateOnly localDate)
     {
         Contact = contact;
 
         Nickname = contact.Nickname;
-        ImageUri = contact.ImageUri;
 
-        var query = from messageVm in contact.Messages.Select(x => new MessageViewModel(x, theme))
-                    group messageVm by DateOnly.FromDateTime(messageVm.Message.SentAtUtc.ToLocalTime()) into g
+        var query = from messageVm in messages.Select(x => new MessageViewModel(x.Id, x.Text, x.SentAt, x.EditedAt, x.SenderId == userId, theme))
+                    group messageVm by DateOnly.FromDateTime(messageVm.SentAt) into g
                     orderby g.Key
                     select new DailyMessageGroup(g.ToList(), g.Key, localDate);
 
@@ -29,7 +30,6 @@ public partial class ContactViewModel : ObservableObject
     }
 
     public string Nickname { get; set; }
-    public string ImageUri { get; set; }
 
     public ObservableCollection<DailyMessageGroup> MessageGroups;
 

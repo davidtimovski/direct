@@ -5,7 +5,7 @@ using Microsoft.UI.Xaml;
 using Windows.Graphics;
 using WinRT.Interop;
 
-namespace Direct.Utilities;
+namespace Direct.Desktop.Utilities;
 
 internal static class WindowingUtil
 {

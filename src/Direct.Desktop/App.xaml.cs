@@ -1,25 +1,25 @@
-﻿using Direct.Services;
-using Direct.Utilities;
-using Direct.ViewModels;
+﻿using Direct.Desktop.Services;
+using Direct.Desktop.Storage;
+using Direct.Desktop.Utilities;
+using Direct.Desktop.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Windows.Graphics;
+using Windows.Storage;
 
-namespace Direct;
+namespace Direct.Desktop;
 
 public partial class App : Application
 {
     private readonly ServiceProvider _serviceProvider;
 
-    /// <summary>
-    /// Initializes the singleton application object.  This is the first line of authored code
-    /// executed, and as such is the logical equivalent of main() or WinMain().
-    /// </summary>
     public App()
     {
         InitializeComponent();
+
         ServiceCollection services = new();
+        InitializeDatabase();
         ConfigureServices(services);
         _serviceProvider = services.BuildServiceProvider();
     }
@@ -39,6 +39,18 @@ public partial class App : Application
         services.AddSingleton<IChatService, ChatService>();
 
         services.AddSingleton(DispatcherQueue.GetForCurrentThread());
+    }
+
+    private static void InitializeDatabase()
+    {
+        const string settingName = "DatabaseInitialized";
+        ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
+
+        if (localSettings.Values[settingName] is null)
+        {
+            Repository.InitializeDatabaseAsync();
+            localSettings.Values[settingName] = true;
+        }
     }
 
     /// <summary>
