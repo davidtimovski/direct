@@ -34,7 +34,7 @@ public class SettingsService : ISettingsService
 
         WindowWidth = windowWidthValue is null ? DefaultWindowWidth : (int)windowWidthValue;
         WindowHeight = windowHeightValue is null ? DefaultWindowHeight : (int)windowHeightValue;
-        Theme = themeValue is null ? ElementTheme.Default : (ElementTheme)themeValue;
+        _theme = themeValue is null ? ElementTheme.Default : (ElementTheme)themeValue;
         UserId = userIdValue is null ? Guid.NewGuid() : new Guid((string)userIdValue);
         Nickname = nicknameValue is null ? string.Empty : (string)nicknameValue;
     }

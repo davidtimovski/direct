@@ -4,22 +4,20 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Direct.Desktop.Storage;
-using Direct.Shared.Models;
 using Microsoft.UI.Xaml;
 
 namespace Direct.Desktop.ViewModels;
 
 public partial class ContactViewModel : ObservableObject
 {
-    public ContactDto Contact { get; }
+    public Guid UserId { get; }
 
     public Guid? EditingMessageId { get; set; }
 
-    public ContactViewModel(Guid userId, ContactDto contact, IEnumerable<Message> messages, ElementTheme theme, DateOnly localDate)
+    public ContactViewModel(Guid userId, Guid contactUserId, string nickname, IEnumerable<Message> messages, bool connected, ElementTheme theme, DateOnly localDate)
     {
-        Contact = contact;
-
-        Nickname = contact.Nickname;
+        UserId = contactUserId;
+        Nickname = nickname;
 
         var query = from messageVm in messages.Select(x => new MessageViewModel(x.Id, x.Text, x.SentAt, x.EditedAt, x.SenderId == userId, theme))
                     group messageVm by DateOnly.FromDateTime(messageVm.SentAt) into g
@@ -27,11 +25,17 @@ public partial class ContactViewModel : ObservableObject
                     select new DailyMessageGroup(g.ToList(), g.Key, localDate);
 
         MessageGroups = new ObservableCollection<DailyMessageGroup>(query);
+
+        Connected = connected;
     }
 
-    public string Nickname { get; set; }
+    [ObservableProperty]
+    private string nickname;
 
     public ObservableCollection<DailyMessageGroup> MessageGroups;
+
+    [ObservableProperty]
+    private bool connected;
 
     [ObservableProperty]
     private bool hasUnreadMessages;

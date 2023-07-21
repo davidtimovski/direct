@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Direct.Desktop.Services;
+using Direct.Desktop.Storage;
 using Microsoft.UI.Xaml;
 
 namespace Direct.Desktop.ViewModels;
@@ -15,7 +16,6 @@ public partial class LobbyViewModel : ObservableObject
         _settingsService = settingsService;
         _chatService = chatService;
 
-        Nickname = _settingsService.Nickname;
         Theme = _settingsService.Theme;
     }
 
@@ -39,12 +39,9 @@ public partial class LobbyViewModel : ObservableObject
     {
         Connecting = true;
 
-        var nicknameTrimmed = Nickname.Trim();
+        var contactIds = await Repository.GetAllContactIdsAsync();
 
-        _settingsService.Nickname = nicknameTrimmed;
-        _settingsService.Save();
-
-        await _chatService.ConnectAsync(_settingsService.UserId, nicknameTrimmed);
+        await _chatService.ConnectAsync(_settingsService.UserId, contactIds);
 
         Connecting = false;
     }

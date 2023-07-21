@@ -37,6 +37,7 @@ public partial class App : Application
 
         services.AddSingleton<ISettingsService, SettingsService>();
         services.AddSingleton<IChatService, ChatService>();
+        services.AddSingleton<IEventService, EventService>();
 
         services.AddSingleton(DispatcherQueue.GetForCurrentThread());
     }

@@ -18,21 +18,27 @@ public partial class MainViewModel : ObservableObject
 {
     private readonly ISettingsService _settingsService;
     private readonly IChatService _chatService;
+    private readonly IEventService _eventService;
     private readonly DispatcherQueue _dispatcherQueue;
 
-    public MainViewModel(ISettingsService settingsService, IChatService chatService, DispatcherQueue dispatcherQueue)
+    public MainViewModel(ISettingsService settingsService, IChatService chatService, IEventService eventService, DispatcherQueue dispatcherQueue)
     {
         _settingsService = settingsService;
 
         _chatService = chatService;
-        _chatService.Joined += Joined;
-        _chatService.ContactJoined += ContactJoined;
-        _chatService.ContactLeft += ContactLeft;
+        _chatService.Connected += Joined;
+        _chatService.ContactConnected += ContactConnected;
+        _chatService.ContactDisconnected += ContactDisconnected;
+        _chatService.AddedContactIsConnected += AddedContactIsConnected;
         _chatService.MessageSent += MessageSent;
         _chatService.MessageUpdated += MessageUpdated;
 
+        _eventService = eventService;
+        _eventService.ContactAdded += ContactAdded;
+
         _dispatcherQueue = dispatcherQueue;
 
+        userId = _settingsService.UserId.ToString();
         Theme = _settingsService.Theme;
         SelectedTheme = Theme.ToString();
     }
@@ -73,7 +79,7 @@ public partial class MainViewModel : ObservableObject
 
             if (SelectedContact!.EditingMessageId.HasValue)
             {
-                await UpdateMessageAsync(SelectedContact!.EditingMessageId.Value, SelectedContact!.Contact.Id);
+                await UpdateMessageAsync(SelectedContact!.EditingMessageId.Value, SelectedContact!.UserId);
                 return;
             }
 
@@ -131,7 +137,7 @@ public partial class MainViewModel : ObservableObject
             return;
         }
 
-        await _chatService.SendMessageAsync(SelectedContact.Contact.Id, trimmedMessage);
+        await _chatService.SendMessageAsync(SelectedContact.UserId, trimmedMessage);
     }
 
     private void SelectLastSentMessageForUpdate()
@@ -167,27 +173,27 @@ public partial class MainViewModel : ObservableObject
         await _chatService.UpdateMessageAsync(id, recipientId, trimmedMessage);
     }
 
-    private void Joined(object? _, JoinedEventArgs e)
+    private void Joined(object? _, ConnectedEventArgs e)
     {
         _dispatcherQueue.TryEnqueue(async () =>
         {
             Connected = true;
-            UserId = _settingsService.UserId.ToString();
             Nickname = _settingsService.Nickname;
 
-            if (e.Contacts.Count == 0)
+            var contacts = await Repository.GetAllContactsAsync();
+            if (contacts.Count == 0)
             {
                 return;
             }
 
-            var contactIds = e.Contacts.Select(x => x.Id).ToList();
-            var messages = await Repository.GetAllMessagesAsync(contactIds);
+            var messages = await Repository.GetAllMessagesAsync();
 
-            var contactViewModels = new List<ContactViewModel>(e.Contacts.Count);
-            foreach (var contact in e.Contacts)
+            var contactViewModels = new List<ContactViewModel>(contacts.Count);
+            foreach (var contact in contacts)
             {
                 var contactMessages = messages.Where(x => x.SenderId == contact.Id || x.RecipientId == contact.Id);
-                contactViewModels.Add(new ContactViewModel(_settingsService.UserId, contact, contactMessages, _settingsService.Theme, localDate: DateOnly.FromDateTime(DateTime.Now)));
+                var connected = e.ConnectedUserIds.Contains(contact.Id);
+                contactViewModels.Add(new ContactViewModel(_settingsService.UserId, contact.Id, contact.Nickname, contactMessages, connected, _settingsService.Theme, localDate: DateOnly.FromDateTime(DateTime.Now)));
             }
 
             var orderedContacts = contactViewModels.OrderByDescending(
@@ -202,28 +208,46 @@ public partial class MainViewModel : ObservableObject
             {
                 Contacts.Add(contactViewModel);
             }
-
-            SelectedContact = Contacts[0];
         });
     }
 
-    private void ContactJoined(object? _, ContactJoinedEventArgs e)
-    {
-        _dispatcherQueue.TryEnqueue(async () =>
-        {
-            var contactMessages = await Repository.GetAllMessagesAsync(new List<Guid> { e.Contact.Id });
-            Contacts.Add(new ContactViewModel(_settingsService.UserId, e.Contact, contactMessages, _settingsService.Theme, localDate: DateOnly.FromDateTime(DateTime.Now)));
-        });
-    }
-
-    private void ContactLeft(object? _, ContactLeftEventArgs e)
+    private void ContactConnected(object? _, ContactConnectedEventArgs e)
     {
         _dispatcherQueue.TryEnqueue(() =>
         {
-            var contact = Contacts.FirstOrDefault(x => x.Contact.Id == e.UserId);
+            var contact = Contacts.FirstOrDefault(x => x.UserId == e.UserId);
             if (contact is not null)
             {
-                Contacts.Remove(contact);
+                contact.Connected = true;
+            }
+        });
+    }
+
+    private void AddedContactIsConnected(object? _, AddedContactIsConnectedEventArgs e)
+    {
+        if (!e.IsConnected)
+        {
+            return;
+        }
+
+        _dispatcherQueue.TryEnqueue(() =>
+        {
+            var contact = Contacts.FirstOrDefault(x => x.UserId == e.UserId);
+            if (contact is not null)
+            {
+                contact.Connected = true;
+            }
+        });
+    }
+
+    private void ContactDisconnected(object? _, ContactDisconnectedEventArgs e)
+    {
+        _dispatcherQueue.TryEnqueue(() =>
+        {
+            var contact = Contacts.FirstOrDefault(x => x.UserId == e.UserId);
+            if (contact is not null)
+            {
+                contact.Connected = false;
             }
         });
     }
@@ -254,7 +278,7 @@ public partial class MainViewModel : ObservableObject
 
             if (userIsSender)
             {
-                var recipientContact = Contacts.FirstOrDefault(x => x.Contact.Id == e.Message.RecipientId);
+                var recipientContact = Contacts.FirstOrDefault(x => x.UserId == e.Message.RecipientId);
                 if (recipientContact is not null)
                 {
                     var messageSentDate = DateOnly.FromDateTime(message.SentAt);
@@ -282,7 +306,7 @@ public partial class MainViewModel : ObservableObject
             }
             else
             {
-                var senderContact = Contacts.FirstOrDefault(x => x.Contact.Id == e.Message.SenderId);
+                var senderContact = Contacts.FirstOrDefault(x => x.UserId == e.Message.SenderId);
                 if (senderContact is not null)
                 {
                     var messageSentDate = DateOnly.FromDateTime(message.SentAt);
@@ -320,7 +344,7 @@ public partial class MainViewModel : ObservableObject
 
         if (e.Message.SenderId == _settingsService.UserId)
         {
-            var recipientContact = Contacts.FirstOrDefault(x => x.Contact.Id == e.Message.RecipientId);
+            var recipientContact = Contacts.FirstOrDefault(x => x.UserId == e.Message.RecipientId);
             if (recipientContact is not null)
             {
                 var message = recipientContact.MessageGroups.SelectMany(x => x).FirstOrDefault(x => x.Id == e.Message.Id);
@@ -339,7 +363,7 @@ public partial class MainViewModel : ObservableObject
         }
         else
         {
-            var senderContact = Contacts.FirstOrDefault(x => x.Contact.Id == e.Message.SenderId);
+            var senderContact = Contacts.FirstOrDefault(x => x.UserId == e.Message.SenderId);
             if (senderContact is not null)
             {
                 var message = senderContact.MessageGroups.SelectMany(x => x).FirstOrDefault(x => x.Id == e.Message.Id);
@@ -352,5 +376,11 @@ public partial class MainViewModel : ObservableObject
                 }
             }
         }
+    }
+
+    private async void ContactAdded(object? sender, ContactAddedEventArgs e)
+    {
+        var contactMessages = await Repository.GetMessagesAsync(e.UserId);
+        Contacts.Add(new ContactViewModel(_settingsService.UserId, e.UserId, e.Nickname, contactMessages, false, _settingsService.Theme, localDate: DateOnly.FromDateTime(DateTime.Now)));
     }
 }

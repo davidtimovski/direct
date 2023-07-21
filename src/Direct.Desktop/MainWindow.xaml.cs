@@ -55,7 +55,7 @@ public sealed partial class MainWindow : Window
 
         newContactWindow = _serviceProvider.GetRequiredService<NewContactWindow>();
         newContactWindow.Closed += NewContactWindow_Closed;
-        WindowingUtil.Resize(newContactWindow, new SizeInt32(400, 200));
+        WindowingUtil.Resize(newContactWindow, new SizeInt32(400, 300));
         newContactWindow.Activate();
     }
 

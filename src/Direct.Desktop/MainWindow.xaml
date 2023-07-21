@@ -153,7 +153,8 @@
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*" />
-                                            <ColumnDefinition />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
 
                                         <TextBlock Grid.Column="0"
@@ -167,6 +168,15 @@
                                                  Width="10"
                                                  Height="10"
                                                  Fill="{StaticResource HighlightBrush}"
+                                                 Margin="7 0"
+                                                 VerticalAlignment="Center" />
+
+                                        <Ellipse Grid.Column="2"
+                                                 Visibility="{x:Bind Connected, Mode=OneWay}"
+                                                 Width="10"
+                                                 Height="10"
+                                                 Fill="{StaticResource ConnectedContactBrush}"
+                                                 Margin="7 0"
                                                  VerticalAlignment="Center" />
                                     </Grid>
                                 </Border>

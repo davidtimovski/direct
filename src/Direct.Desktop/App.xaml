@@ -13,6 +13,7 @@
             <FontFamily x:Key="DefaultFontFamily">/Assets/Fonts/Nunito-Regular.ttf#Nunito</FontFamily>
             <FontFamily x:Key="DefaultFontFamilyLight">/Assets/Fonts/Nunito-Light.ttf#Nunito</FontFamily>
 
+            <SolidColorBrush x:Key="ConnectedContactBrush" Color="#33cc55" />
             <SolidColorBrush x:Key="HighlightBrush" Color="#c97608" />
             
             <!-- Messages -->

@@ -2,14 +2,14 @@
 
 public class ConnectedUser
 {
-    public ConnectedUser(Guid id, string nickname, string connectionId)
+    public ConnectedUser(Guid id, HashSet<Guid> contactIds, string connectionId)
     {
         Id = id;
-        Nickname = nickname;
+        ContactIds = contactIds;
         ConnectionIds = new HashSet<string> { connectionId };
     }
 
     public Guid Id { get; set; }
-    public string Nickname { get; set; } = null!;
+    public HashSet<Guid> ContactIds { get; set; }
     public HashSet<string> ConnectionIds { get; set; }
 }

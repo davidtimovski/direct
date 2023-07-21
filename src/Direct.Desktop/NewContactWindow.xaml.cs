@@ -16,4 +16,10 @@ public sealed partial class NewContactWindow : Window
 
         ViewModel = viewModel;
     }
+
+    private async void AddContact_Click(object sender, RoutedEventArgs e)
+    {
+        await ViewModel.AddContactAsync();
+        Close();
+    }
 }

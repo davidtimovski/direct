@@ -10,16 +10,18 @@ namespace Direct.Desktop.Services;
 
 public interface IChatService
 {
-    event EventHandler<JoinedEventArgs>? Joined;
-    event EventHandler<ContactJoinedEventArgs>? ContactJoined;
-    event EventHandler<ContactLeftEventArgs>? ContactLeft;
+    event EventHandler<ConnectedEventArgs>? Connected;
+    event EventHandler<ContactConnectedEventArgs>? ContactConnected;
+    event EventHandler<ContactDisconnectedEventArgs>? ContactDisconnected;
+    event EventHandler<AddedContactIsConnectedEventArgs>? AddedContactIsConnected;
     event EventHandler<MessageSentEventArgs>? MessageSent;
     event EventHandler<MessageUpdatedEventArgs>? MessageUpdated;
 
-    Task ConnectAsync(Guid id, string nickname);
+    Task ConnectAsync(Guid userId, List<Guid> contactIds);
     Task DisconnectAsync();
     Task SendMessageAsync(Guid toUserId, string message);
     Task UpdateMessageAsync(Guid id, Guid recipientId, string message);
+    Task RetrieveContactAsync(Guid userId);
 }
 
 public class ChatService : IChatService
@@ -35,19 +37,24 @@ public class ChatService : IChatService
            .WithAutomaticReconnect()
            .Build();
 
-        _connection.On<List<ContactDto>>(ClientEvent.Joined, (contacts) =>
+        _connection.On<List<Guid>>(ClientEvent.Connected, (connectedUserIds) =>
         {
-            Joined?.Invoke(this, new JoinedEventArgs(contacts));
+            Connected?.Invoke(this, new ConnectedEventArgs(connectedUserIds));
         });
 
-        _connection.On<ContactDto>(ClientEvent.ContactJoined, (contact) =>
+        _connection.On<Guid>(ClientEvent.ContactConnected, (userId) =>
         {
-            ContactJoined?.Invoke(this, new ContactJoinedEventArgs(contact));
+            ContactConnected?.Invoke(this, new ContactConnectedEventArgs(userId));
         });
 
-        _connection.On<Guid>(ClientEvent.ContactLeft, (userId) =>
+        _connection.On<Guid>(ClientEvent.ContactDisconnected, (userId) =>
         {
-            ContactLeft?.Invoke(this, new ContactLeftEventArgs(userId));
+            ContactDisconnected?.Invoke(this, new ContactDisconnectedEventArgs(userId));
+        });
+
+        _connection.On<Guid, bool>(ClientEvent.AddedContactIsConnected, (userId, isConnected) =>
+        {
+            AddedContactIsConnected?.Invoke(this, new AddedContactIsConnectedEventArgs(userId, isConnected));
         });
 
         _connection.On<NewMessageDto>(ClientEvent.MessageSent, (message) =>
@@ -61,18 +68,19 @@ public class ChatService : IChatService
         });
     }
 
-    public event EventHandler<JoinedEventArgs>? Joined;
-    public event EventHandler<ContactJoinedEventArgs>? ContactJoined;
-    public event EventHandler<ContactLeftEventArgs>? ContactLeft;
+    public event EventHandler<ConnectedEventArgs>? Connected;
+    public event EventHandler<ContactConnectedEventArgs>? ContactConnected;
+    public event EventHandler<ContactDisconnectedEventArgs>? ContactDisconnected;
+    public event EventHandler<AddedContactIsConnectedEventArgs>? AddedContactIsConnected;
     public event EventHandler<MessageSentEventArgs>? MessageSent;
     public event EventHandler<MessageUpdatedEventArgs>? MessageUpdated;
 
-    public async Task ConnectAsync(Guid id, string nickname)
+    public async Task ConnectAsync(Guid userId, List<Guid> contactIds)
     {
-        _userId = id;
+        _userId = userId;
 
         await _connection.StartAsync();
-        await _connection.InvokeAsync(ServerEvent.Join, _userId.Value, nickname, new Guid[] { Guid.Parse("018955e6-3bbd-4af9-ab08-1bf6a2d98fe9"), Guid.Parse("018955e6-3bbe-469d-bb1a-e0f74724d46d") });
+        await _connection.InvokeAsync(ServerEvent.Connect, _userId.Value, contactIds);
     }
 
     public async Task DisconnectAsync()
@@ -90,31 +98,48 @@ public class ChatService : IChatService
     {
         await _connection.InvokeAsync(ServerEvent.UpdateMessage, id, recipientId, message);
     }
+
+    public async Task RetrieveContactAsync(Guid userId)
+    {
+        await _connection.InvokeAsync(ServerEvent.ContactIsConnected, userId);
+    }
 }
 
-public class JoinedEventArgs : EventArgs
+public class ConnectedEventArgs : EventArgs
 {
-    public JoinedEventArgs(List<ContactDto> contacts)
+    public ConnectedEventArgs(List<Guid> connectedUserIds)
     {
-        Contacts = contacts;
+        ConnectedUserIds = connectedUserIds;
     }
 
-    public List<ContactDto> Contacts { get; init; }
+    public List<Guid> ConnectedUserIds { get; init; }
 }
 
-public class ContactJoinedEventArgs : EventArgs
+public class ContactConnectedEventArgs : EventArgs
 {
-    public ContactJoinedEventArgs(ContactDto contact)
+    public ContactConnectedEventArgs(Guid userId)
     {
-        Contact = contact;
+        UserId = userId;
     }
 
-    public ContactDto Contact { get; init; }
+    public Guid UserId { get; init; }
 }
 
-public class ContactLeftEventArgs : EventArgs
+public class AddedContactIsConnectedEventArgs : EventArgs
 {
-    public ContactLeftEventArgs(Guid userId)
+    public AddedContactIsConnectedEventArgs(Guid userId, bool isConnected)
+    {
+        UserId = userId;
+        IsConnected = isConnected;
+    }
+
+    public Guid UserId { get; init; }
+    public bool IsConnected { get; init; }
+}
+
+public class ContactDisconnectedEventArgs : EventArgs
+{
+    public ContactDisconnectedEventArgs(Guid userId)
     {
         UserId = userId;
     }

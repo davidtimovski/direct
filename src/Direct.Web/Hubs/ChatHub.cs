@@ -1,5 +1,4 @@
 ﻿using Direct.Shared;
-using Direct.Shared.Models;
 using Direct.Web.Services;
 using Microsoft.AspNetCore.SignalR;
 
@@ -14,54 +13,45 @@ public class ChatHub : Hub
        _chatService = chatService;
     }
 
-    public async Task Join(Guid id, string nickname, Guid[] userIds)
+    public async Task Connect(Guid userId, HashSet<Guid> contactIds)
     {
-        var nicknameError = Validation.ValidateNickname(nickname);
-        if (nicknameError != null)
-        {
-            throw new InvalidOperationException(nicknameError);
-        }
+        var contactConnectionIds = _chatService.AddConnection(userId, contactIds, Context.ConnectionId);
 
-        _chatService.AddContact(id, nickname, Context.ConnectionId);
-        var contacts = _chatService.GetContacts(userIds);
+        var connected = _chatService.GetConnectedContacts(contactIds);
 
-        await Clients.Caller.SendAsync(ClientEvent.Joined, contacts);
-        await Clients.Others.SendAsync(ClientEvent.ContactJoined, new ContactDto
-        {
-            Id = id,
-            Nickname = nickname
-        });
+        await Clients.Caller.SendAsync(ClientEvent.Connected, connected);
+        await Clients.Clients(contactConnectionIds).SendAsync(ClientEvent.ContactConnected, userId);
     }
 
-    public async Task SendMessage(Guid recipientId, string text)
+    public async Task ContactIsConnected(Guid userId)
     {
-        var result = _chatService.SendMessage(Context.ConnectionId, recipientId, text);
-        foreach (var connectionId in result.ConnectionIds)
-        {
-            await Clients.Client(connectionId).SendAsync(ClientEvent.MessageSent, result.Message);
-        }
+        var isConnected = _chatService.ContactIsConnected(userId);
+        await Clients.Caller.SendAsync(ClientEvent.AddedContactIsConnected, userId, isConnected);
+    }
+
+    public async Task SendMessage(Guid recipientId, string message)
+    {
+        var result = _chatService.SendMessage(Context.ConnectionId, recipientId, message);
+        await Clients.Clients(result.ConnectionIds).SendAsync(ClientEvent.MessageSent, result.Message);
     }
 
     public async Task UpdateMessage(Guid id, Guid recipientId, string text)
     {
         var result = _chatService.UpdateMessage(Context.ConnectionId, id, recipientId, text);
-        foreach (var connectionId in result.ConnectionIds)
-        {
-            await Clients.Client(connectionId).SendAsync(ClientEvent.MessageUpdated, result.Message);
-        }
+        await Clients.Clients(result.ConnectionIds).SendAsync(ClientEvent.MessageUpdated, result.Message);
     }
 
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
         Guid? userId = _chatService.GetUserId(Context.ConnectionId);
 
-        _chatService.RemoveUser(Context.ConnectionId);
+        var contactConnectionIds = _chatService.RemoveConnection(Context.ConnectionId);
 
         if (userId == null)
         {
             return;
         }
 
-        await Clients.All.SendAsync(ClientEvent.ContactLeft, userId);
+        await Clients.Clients(contactConnectionIds).SendAsync(ClientEvent.ContactDisconnected, userId);
     }
 }

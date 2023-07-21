@@ -27,10 +27,16 @@
                              FontFamily="{StaticResource DefaultFontFamily}"
                              PlaceholderText="User ID"
                              MaxLength="36" />
+                    
+                    <TextBox Text="{x:Bind ViewModel.Nickname, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             FontFamily="{StaticResource DefaultFontFamily}"
+                             PlaceholderText="Nickname"
+                             MaxLength="25"
+                             Margin="0 15 0 0" />
 
                     <Button
                         IsEnabled="{x:Bind ViewModel.AddButtonEnabled, Mode=OneWay}"
-                        Click="{x:Bind ViewModel.AddContact}" 
+                        Click="AddContact_Click"
                         FontFamily="{StaticResource DefaultFontFamily}"
                         HorizontalAlignment="Right"
                         Margin="0 15 0 0">Add contact</Button>
