@@ -4,24 +4,24 @@ namespace Direct.Desktop.Services;
 
 public interface IEventService
 {
-    event EventHandler<ContactAddedEventArgs>? ContactAdded;
+    event EventHandler<ContactAddedLocallyEventArgs>? ContactAddedLocally;
 
     void RaiseContactAdded(Guid userId, string nickname);
 }
 
 public class EventService : IEventService
 {
-    public event EventHandler<ContactAddedEventArgs>? ContactAdded;
+    public event EventHandler<ContactAddedLocallyEventArgs>? ContactAddedLocally;
 
     public void RaiseContactAdded(Guid userId, string nickname)
     {
-        ContactAdded?.Invoke(this, new ContactAddedEventArgs(userId, nickname));
+        ContactAddedLocally?.Invoke(this, new ContactAddedLocallyEventArgs(userId, nickname));
     }
 }
 
-public class ContactAddedEventArgs : EventArgs
+public class ContactAddedLocallyEventArgs : EventArgs
 {
-    public ContactAddedEventArgs(Guid userId, string nickname)
+    public ContactAddedLocallyEventArgs(Guid userId, string nickname)
     {
         UserId = userId;
         Nickname = nickname;

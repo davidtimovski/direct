@@ -23,22 +23,38 @@ public class ChatHub : Hub
         await Clients.Clients(contactConnectionIds).SendAsync(ClientEvent.ContactConnected, userId);
     }
 
-    public async Task ContactIsConnected(Guid userId)
+    public async Task AddContact(Guid userId)
     {
-        var isConnected = _chatService.ContactIsConnected(userId);
-        await Clients.Caller.SendAsync(ClientEvent.AddedContactIsConnected, userId, isConnected);
+        var isConnected = _chatService.AddContact(Context.ConnectionId, userId);
+        await Clients.Caller.SendAsync(ClientEvent.ContactAdded, userId, isConnected);
     }
 
     public async Task SendMessage(Guid recipientId, string message)
     {
         var result = _chatService.SendMessage(Context.ConnectionId, recipientId, message);
-        await Clients.Clients(result.ConnectionIds).SendAsync(ClientEvent.MessageSent, result.Message);
+
+        if (result.IsSuccessful)
+        {
+            await Clients.Clients(result.ConnectionIds).SendAsync(ClientEvent.MessageSent, result.Message);
+        }
+        else
+        {
+            await Clients.Caller.SendAsync(ClientEvent.MessageSendingFailed, recipientId);
+        }
     }
 
-    public async Task UpdateMessage(Guid id, Guid recipientId, string text)
+    public async Task UpdateMessage(Guid messageId, Guid recipientId, string text)
     {
-        var result = _chatService.UpdateMessage(Context.ConnectionId, id, recipientId, text);
-        await Clients.Clients(result.ConnectionIds).SendAsync(ClientEvent.MessageUpdated, result.Message);
+        var result = _chatService.UpdateMessage(Context.ConnectionId, messageId, recipientId, text);
+
+        if (result.IsSuccessful)
+        {
+            await Clients.Clients(result.ConnectionIds).SendAsync(ClientEvent.MessageUpdated, result.Message);
+        }
+        else
+        {
+            await Clients.Caller.SendAsync(ClientEvent.MessageUpdatingFailed, recipientId);
+        }
     }
 
     public override async Task OnDisconnectedAsync(Exception? exception)

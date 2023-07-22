@@ -13,9 +13,11 @@ public interface IChatService
     event EventHandler<ConnectedEventArgs>? Connected;
     event EventHandler<ContactConnectedEventArgs>? ContactConnected;
     event EventHandler<ContactDisconnectedEventArgs>? ContactDisconnected;
-    event EventHandler<AddedContactIsConnectedEventArgs>? AddedContactIsConnected;
+    event EventHandler<ContactAddedEventArgs>? ContactAdded;
     event EventHandler<MessageSentEventArgs>? MessageSent;
+    event EventHandler<MessageSendingFailedEventArgs>? MessageSendingFailed;
     event EventHandler<MessageUpdatedEventArgs>? MessageUpdated;
+    event EventHandler<MessageUpdatingFailedEventArgs>? MessageUpdatingFailed;
 
     Task ConnectAsync(Guid userId, List<Guid> contactIds);
     Task DisconnectAsync();
@@ -52,9 +54,9 @@ public class ChatService : IChatService
             ContactDisconnected?.Invoke(this, new ContactDisconnectedEventArgs(userId));
         });
 
-        _connection.On<Guid, bool>(ClientEvent.AddedContactIsConnected, (userId, isConnected) =>
+        _connection.On<Guid, bool>(ClientEvent.ContactAdded, (userId, isConnected) =>
         {
-            AddedContactIsConnected?.Invoke(this, new AddedContactIsConnectedEventArgs(userId, isConnected));
+            ContactAdded?.Invoke(this, new ContactAddedEventArgs(userId, isConnected));
         });
 
         _connection.On<NewMessageDto>(ClientEvent.MessageSent, (message) =>
@@ -62,18 +64,30 @@ public class ChatService : IChatService
             MessageSent?.Invoke(this, new MessageSentEventArgs(message));
         });
 
+        _connection.On<Guid>(ClientEvent.MessageSendingFailed, (recipientId) =>
+        {
+            MessageSendingFailed?.Invoke(this, new MessageSendingFailedEventArgs(recipientId));
+        });
+
         _connection.On<MessageUpdateDto>(ClientEvent.MessageUpdated, (message) =>
         {
             MessageUpdated?.Invoke(this, new MessageUpdatedEventArgs(message));
+        });
+
+        _connection.On<Guid, Guid>(ClientEvent.MessageUpdatingFailed, (messageId, recipientId) =>
+        {
+            MessageUpdatingFailed?.Invoke(this, new MessageUpdatingFailedEventArgs(messageId, recipientId));
         });
     }
 
     public event EventHandler<ConnectedEventArgs>? Connected;
     public event EventHandler<ContactConnectedEventArgs>? ContactConnected;
     public event EventHandler<ContactDisconnectedEventArgs>? ContactDisconnected;
-    public event EventHandler<AddedContactIsConnectedEventArgs>? AddedContactIsConnected;
+    public event EventHandler<ContactAddedEventArgs>? ContactAdded;
     public event EventHandler<MessageSentEventArgs>? MessageSent;
+    public event EventHandler<MessageSendingFailedEventArgs>? MessageSendingFailed;
     public event EventHandler<MessageUpdatedEventArgs>? MessageUpdated;
+    public event EventHandler<MessageUpdatingFailedEventArgs>? MessageUpdatingFailed;
 
     public async Task ConnectAsync(Guid userId, List<Guid> contactIds)
     {
@@ -101,7 +115,7 @@ public class ChatService : IChatService
 
     public async Task RetrieveContactAsync(Guid userId)
     {
-        await _connection.InvokeAsync(ServerEvent.ContactIsConnected, userId);
+        await _connection.InvokeAsync(ServerEvent.AddContact, userId);
     }
 }
 
@@ -125,9 +139,9 @@ public class ContactConnectedEventArgs : EventArgs
     public Guid UserId { get; init; }
 }
 
-public class AddedContactIsConnectedEventArgs : EventArgs
+public class ContactAddedEventArgs : EventArgs
 {
-    public AddedContactIsConnectedEventArgs(Guid userId, bool isConnected)
+    public ContactAddedEventArgs(Guid userId, bool isConnected)
     {
         UserId = userId;
         IsConnected = isConnected;
@@ -165,4 +179,26 @@ public class MessageUpdatedEventArgs : EventArgs
     }
 
     public MessageUpdateDto Message { get; init; }
+}
+
+public class MessageSendingFailedEventArgs : EventArgs
+{
+    public MessageSendingFailedEventArgs(Guid recipientId)
+    {
+        RecipientId = recipientId;
+    }
+
+    public Guid RecipientId { get; init; }
+}
+
+public class MessageUpdatingFailedEventArgs : EventArgs
+{
+    public MessageUpdatingFailedEventArgs(Guid messageId, Guid recipientId)
+    {
+        MessageId = messageId;
+        RecipientId = recipientId;
+    }
+
+    public Guid MessageId { get; init; }
+    public Guid RecipientId { get; init; }
 }

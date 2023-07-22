@@ -48,4 +48,10 @@ public partial class ContactViewModel : ObservableObject
 
     [ObservableProperty]
     private int messageSelectionStart;
+
+    [ObservableProperty]
+    private bool errorBarVisible;
+
+    [ObservableProperty]
+    private string? errorBarMessage;
 }
