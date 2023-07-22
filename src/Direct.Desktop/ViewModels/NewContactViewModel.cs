@@ -57,6 +57,6 @@ public partial class NewContactViewModel : ObservableObject
         await Repository.CreateContactAsync(contact);
         _eventService.RaiseContactAdded(contact.Id, contact.Nickname);
 
-        await _chatService.RetrieveContactAsync(contact.Id);
+        await _chatService.AddContactAsync(contact.Id);
     }
 }

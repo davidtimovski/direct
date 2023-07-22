@@ -14,6 +14,7 @@ public interface IChatService
     event EventHandler<ContactConnectedEventArgs>? ContactConnected;
     event EventHandler<ContactDisconnectedEventArgs>? ContactDisconnected;
     event EventHandler<ContactAddedEventArgs>? ContactAdded;
+    event EventHandler<ContactRemovedEventArgs>? ContactRemoved;
     event EventHandler<MessageSentEventArgs>? MessageSent;
     event EventHandler<MessageSendingFailedEventArgs>? MessageSendingFailed;
     event EventHandler<MessageUpdatedEventArgs>? MessageUpdated;
@@ -23,7 +24,8 @@ public interface IChatService
     Task DisconnectAsync();
     Task SendMessageAsync(Guid toUserId, string message);
     Task UpdateMessageAsync(Guid id, Guid recipientId, string message);
-    Task RetrieveContactAsync(Guid userId);
+    Task AddContactAsync(Guid userId);
+    Task RemoveContactAsync(Guid userId);
 }
 
 public class ChatService : IChatService
@@ -59,6 +61,11 @@ public class ChatService : IChatService
             ContactAdded?.Invoke(this, new ContactAddedEventArgs(userId, isConnected));
         });
 
+        _connection.On<Guid>(ClientEvent.ContactRemoved, (userId) =>
+        {
+            ContactRemoved?.Invoke(this, new ContactRemovedEventArgs(userId));
+        });
+
         _connection.On<NewMessageDto>(ClientEvent.MessageSent, (message) =>
         {
             MessageSent?.Invoke(this, new MessageSentEventArgs(message));
@@ -84,6 +91,7 @@ public class ChatService : IChatService
     public event EventHandler<ContactConnectedEventArgs>? ContactConnected;
     public event EventHandler<ContactDisconnectedEventArgs>? ContactDisconnected;
     public event EventHandler<ContactAddedEventArgs>? ContactAdded;
+    public event EventHandler<ContactRemovedEventArgs>? ContactRemoved;
     public event EventHandler<MessageSentEventArgs>? MessageSent;
     public event EventHandler<MessageSendingFailedEventArgs>? MessageSendingFailed;
     public event EventHandler<MessageUpdatedEventArgs>? MessageUpdated;
@@ -113,9 +121,14 @@ public class ChatService : IChatService
         await _connection.InvokeAsync(ServerEvent.UpdateMessage, id, recipientId, message);
     }
 
-    public async Task RetrieveContactAsync(Guid userId)
+    public async Task AddContactAsync(Guid userId)
     {
         await _connection.InvokeAsync(ServerEvent.AddContact, userId);
+    }
+
+    public async Task RemoveContactAsync(Guid userId)
+    {
+        await _connection.InvokeAsync(ServerEvent.RemoveContact, userId);
     }
 }
 
@@ -149,6 +162,16 @@ public class ContactAddedEventArgs : EventArgs
 
     public Guid UserId { get; init; }
     public bool IsConnected { get; init; }
+}
+
+public class ContactRemovedEventArgs : EventArgs
+{
+    public ContactRemovedEventArgs(Guid userId)
+    {
+        UserId = userId;
+    }
+
+    public Guid UserId { get; init; }
 }
 
 public class ContactDisconnectedEventArgs : EventArgs

@@ -10,6 +10,7 @@ public interface IChatService
     List<string> RemoveConnection(string connectionId);
     Guid? GetUserId(string connectionId);
     bool AddContact(string connectionId, Guid contactId);
+    void RemoveContact(string connectionId, Guid contactId);
     List<Guid> GetConnectedContacts(HashSet<Guid> userIds);
     SendMessageResult SendMessage(string senderConnectionId, Guid recipientId, string message);
     UpdateMessageResult UpdateMessage(string senderConnectionId, Guid messageId, Guid recipientId, string text);
@@ -98,6 +99,16 @@ public class ChatService : IChatService
         var contact = _connectedUsers[contactId];
 
         return contact.ContactIds.Contains(user.Id);
+    }
+
+    public void RemoveContact(string connectionId, Guid contactId)
+    {
+        ConnectedUser? user = GetUser(connectionId) ?? throw new InvalidOperationException($"Could not find user for this connectionId: {connectionId}");
+
+        if (user.ContactIds.Contains(contactId))
+        {
+            user.ContactIds.Remove(contactId);
+        }
     }
 
     public List<Guid> GetConnectedContacts(HashSet<Guid> userIds)

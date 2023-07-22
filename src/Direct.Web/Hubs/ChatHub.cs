@@ -23,12 +23,6 @@ public class ChatHub : Hub
         await Clients.Clients(contactConnectionIds).SendAsync(ClientEvent.ContactConnected, userId);
     }
 
-    public async Task AddContact(Guid userId)
-    {
-        var isConnected = _chatService.AddContact(Context.ConnectionId, userId);
-        await Clients.Caller.SendAsync(ClientEvent.ContactAdded, userId, isConnected);
-    }
-
     public async Task SendMessage(Guid recipientId, string message)
     {
         var result = _chatService.SendMessage(Context.ConnectionId, recipientId, message);
@@ -55,6 +49,18 @@ public class ChatHub : Hub
         {
             await Clients.Caller.SendAsync(ClientEvent.MessageUpdatingFailed, recipientId);
         }
+    }
+
+    public async Task AddContact(Guid userId)
+    {
+        var isConnected = _chatService.AddContact(Context.ConnectionId, userId);
+        await Clients.Caller.SendAsync(ClientEvent.ContactAdded, userId, isConnected);
+    }
+
+    public async Task RemoveContact(Guid userId)
+    {
+        _chatService.RemoveContact(Context.ConnectionId, userId);
+        await Clients.Caller.SendAsync(ClientEvent.ContactRemoved, userId);
     }
 
     public override async Task OnDisconnectedAsync(Exception? exception)

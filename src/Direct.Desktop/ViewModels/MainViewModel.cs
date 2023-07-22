@@ -29,7 +29,8 @@ public partial class MainViewModel : ObservableObject
         _chatService.Connected += Joined;
         _chatService.ContactConnected += ContactConnected;
         _chatService.ContactDisconnected += ContactDisconnected;
-        _chatService.ContactAdded += AddedContactIsConnected;
+        _chatService.ContactAdded += ContactAdded;
+        _chatService.ContactRemoved += ContactRemoved;
         _chatService.MessageSent += MessageSent;
         _chatService.MessageSendingFailed += MessageSendingFailed;
         _chatService.MessageUpdated += MessageUpdated;
@@ -63,14 +64,17 @@ public partial class MainViewModel : ObservableObject
     public ObservableCollection<ContactViewModel> Contacts = new();
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(MessageBoxIsVisible))]
+    [NotifyPropertyChangedFor(nameof(ContactIsSelected))]
     private ContactViewModel? selectedContact;
 
-    public bool MessageBoxIsVisible => SelectedContact is not null;
+    public bool ContactIsSelected => SelectedContact is not null;
 
     public void SelectedContactChanged()
     {
-        SelectedContact!.HasUnreadMessages = false;
+        if (SelectedContact is not null)
+        {
+            SelectedContact.HasUnreadMessages = false;
+        }
     }
 
     public async Task MessageBoxKeyUpAsync(object _, KeyRoutedEventArgs e)
@@ -131,6 +135,12 @@ public partial class MainViewModel : ObservableObject
         _settingsService.Theme = Theme;
     }
 
+    public async Task DeleteContactAsync()
+    {
+        await Repository.DeleteContactAsync(SelectedContact!.UserId);
+        await _chatService.RemoveContactAsync(SelectedContact!.UserId);
+    }
+
     private async Task SendNewMessageAsync()
     {
         var trimmedMessage = SelectedContact!.MessageText.Trim();
@@ -139,7 +149,7 @@ public partial class MainViewModel : ObservableObject
             return;
         }
 
-        await _chatService.SendMessageAsync(SelectedContact.UserId, trimmedMessage);
+        await _chatService.SendMessageAsync(SelectedContact!.UserId, trimmedMessage);
     }
 
     private void SelectLastSentMessageForUpdate()
@@ -229,7 +239,7 @@ public partial class MainViewModel : ObservableObject
         });
     }
 
-    private void AddedContactIsConnected(object? _, ContactAddedEventArgs e)
+    private void ContactAdded(object? _, ContactAddedEventArgs e)
     {
         if (!e.IsConnected)
         {
@@ -245,6 +255,21 @@ public partial class MainViewModel : ObservableObject
         _dispatcherQueue.TryEnqueue(() =>
         {
             contact.Connected = true;
+        });
+    }
+
+    private void ContactRemoved(object? _, ContactRemovedEventArgs e)
+    {
+        var contact = Contacts.FirstOrDefault(x => x.UserId == e.UserId);
+        if (contact is null)
+        {
+            return;
+        }
+
+        _dispatcherQueue.TryEnqueue(() =>
+        {
+            contact.MessageGroups.Clear();
+            Contacts.Remove(contact);
         });
     }
 
@@ -448,7 +473,7 @@ public partial class MainViewModel : ObservableObject
         Contacts.Add(new ContactViewModel(_settingsService.UserId, e.UserId, e.Nickname, contactMessages, false, _settingsService.Theme, localDate: DateOnly.FromDateTime(DateTime.Now)));
     }
 
-    private void ShowErrorBar(ContactViewModel contact, string message)
+    private static void ShowErrorBar(ContactViewModel contact, string message)
     {
         contact.ErrorBarMessage = message;
         contact.ErrorBarVisible = true;
