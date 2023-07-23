@@ -9,8 +9,7 @@ public interface ISettingsService
     int WindowWidth { get; set; }
     int WindowHeight { get; set; }
     ElementTheme Theme { get; set; }
-    Guid UserId { get; set; }
-    string Nickname { get; set; }
+    Guid? UserId { get; set; }
 
     event EventHandler<ThemeChangedEventArgs>? ThemeChanged;
 
@@ -30,13 +29,11 @@ public class SettingsService : ISettingsService
         object? windowHeightValue = localSettings.Values[nameof(WindowHeight)];
         object? themeValue = localSettings.Values[nameof(Theme)];
         object? userIdValue = localSettings.Values[nameof(UserId)];
-        object? nicknameValue = localSettings.Values[nameof(Nickname)];
 
         WindowWidth = windowWidthValue is null ? DefaultWindowWidth : (int)windowWidthValue;
         WindowHeight = windowHeightValue is null ? DefaultWindowHeight : (int)windowHeightValue;
         _theme = themeValue is null ? ElementTheme.Default : (ElementTheme)themeValue;
-        UserId = userIdValue is null ? Guid.NewGuid() : new Guid((string)userIdValue);
-        Nickname = nicknameValue is null ? string.Empty : (string)nicknameValue;
+        UserId = userIdValue is null ? null : new Guid((string)userIdValue);
     }
 
     public int WindowWidth { get; set; }
@@ -57,8 +54,7 @@ public class SettingsService : ISettingsService
         }
     }
 
-    public Guid UserId { get; set; }
-    public string Nickname { get; set; } = null!;
+    public Guid? UserId { get; set; }
 
     public event EventHandler<ThemeChangedEventArgs>? ThemeChanged;
 
@@ -70,7 +66,6 @@ public class SettingsService : ISettingsService
         localSettings.Values[nameof(WindowHeight)] = WindowHeight;
         localSettings.Values[nameof(Theme)] = (int)Theme;
         localSettings.Values[nameof(UserId)] = UserId.ToString();
-        localSettings.Values[nameof(Nickname)] = Nickname;
     }
 }
 

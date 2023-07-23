@@ -15,6 +15,7 @@ public sealed partial class MainWindow : Window
     private readonly IServiceProvider _serviceProvider;
 
     private NewContactWindow? newContactWindow;
+    private EditContactWindow? editContactWindow;
 
     public MainViewModel ViewModel { get; }
 
@@ -34,7 +35,7 @@ public sealed partial class MainWindow : Window
         Closed += MainWindow_Closed;
     }
 
-    private async void MainWindow_Closed(object sender, WindowEventArgs args)
+    private async void MainWindow_Closed(object _, WindowEventArgs args)
     {
         var windowSize = WindowingUtil.GetSize(this);
 
@@ -45,7 +46,7 @@ public sealed partial class MainWindow : Window
         await _chatService.DisconnectAsync();
     }
 
-    private void AddNewContactButton_Click(object sender, RoutedEventArgs e)
+    private void AddNewContactButton_Click(object _, RoutedEventArgs e)
     {
         if (newContactWindow is not null)
         {
@@ -59,8 +60,32 @@ public sealed partial class MainWindow : Window
         newContactWindow.Activate();
     }
 
-    private void NewContactWindow_Closed(object sender, WindowEventArgs args)
+    private void NewContactWindow_Closed(object _, WindowEventArgs args)
     {
         newContactWindow = null;
+    }
+
+    private void EditContact_Click(object _, RoutedEventArgs e)
+    {
+        if (editContactWindow is not null)
+        {
+            editContactWindow.Activate();
+            return;
+        }
+
+        editContactWindow = new EditContactWindow(new EditContactViewModel(
+                _serviceProvider.GetRequiredService<ISettingsService>(),
+                _serviceProvider.GetRequiredService<IEventService>(),
+                ViewModel.SelectedContact!.UserId.ToString(),
+                ViewModel.SelectedContact!.Nickname
+            ));
+        editContactWindow.Closed += EditContactWindow_Closed;
+        WindowingUtil.Resize(editContactWindow, new SizeInt32(400, 300));
+        editContactWindow.Activate();
+    }
+
+    private void EditContactWindow_Closed(object sender, WindowEventArgs args)
+    {
+        editContactWindow = null;
     }
 }

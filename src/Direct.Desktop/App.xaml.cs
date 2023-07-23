@@ -26,8 +26,8 @@ public partial class App : Application
 
     private void ConfigureServices(ServiceCollection services)
     {
-        services.AddSingleton<LobbyWindow>();
-        services.AddSingleton<LobbyViewModel>();
+        services.AddSingleton<SetupWindow>();
+        services.AddSingleton<SetupViewModel>();
 
         services.AddSingleton<MainWindow>();
         services.AddSingleton<MainViewModel>();
@@ -54,14 +54,27 @@ public partial class App : Application
         }
     }
 
-    /// <summary>
-    /// Invoked when the application is launched.
-    /// </summary>
-    /// <param name="args">Details about the launch request and process.</param>
-    protected override void OnLaunched(LaunchActivatedEventArgs args)
+    protected async override void OnLaunched(LaunchActivatedEventArgs args)
     {
-        var lobbyWindow = _serviceProvider.GetService<LobbyWindow>()!;
-        WindowingUtil.Resize(lobbyWindow, new SizeInt32(400, 300));
-        lobbyWindow?.Activate();
+        var settingsService = _serviceProvider.GetRequiredService<ISettingsService>();
+        if (settingsService.UserId.HasValue)
+        {
+            // Immediately connect
+            var chatService = _serviceProvider.GetRequiredService<IChatService>();
+            var mainWindow = _serviceProvider.GetRequiredService<MainWindow>();
+
+            var contactIds = await Repository.GetAllContactIdsAsync();
+            await chatService.ConnectAsync(settingsService.UserId!.Value, contactIds);
+
+            WindowingUtil.Resize(mainWindow, new SizeInt32(settingsService.WindowWidth, settingsService.WindowHeight));
+            mainWindow.Activate();
+        }
+        else
+        {
+            // Show setup window
+            var setupWindow = _serviceProvider.GetRequiredService<SetupWindow>();
+            WindowingUtil.Resize(setupWindow, new SizeInt32(500, 400));
+            setupWindow?.Activate();
+        }      
     }
 }

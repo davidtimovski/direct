@@ -83,6 +83,21 @@ internal static class Repository
         await cmd.ExecuteNonQueryAsync();
     }
 
+    internal async static Task UpdateContactAsync(Guid id, string nickname)
+    {
+        using var db = OpenConnection();
+
+        var cmd = new SqliteCommand
+        {
+            Connection = db,
+            CommandText = "UPDATE contacts SET nickname = @nickname WHERE id = @id"
+        };
+        cmd.Parameters.AddWithValue("@id", id.ToString());
+        cmd.Parameters.AddWithValue("@nickname", nickname);
+
+        await cmd.ExecuteNonQueryAsync();
+    }
+
     internal async static Task DeleteContactAsync(Guid id)
     {
         using var db = OpenConnection();

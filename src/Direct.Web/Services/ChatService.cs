@@ -11,7 +11,7 @@ public interface IChatService
     Guid? GetUserId(string connectionId);
     bool AddContact(string connectionId, Guid contactId);
     void RemoveContact(string connectionId, Guid contactId);
-    List<Guid> GetConnectedContacts(HashSet<Guid> userIds);
+    List<Guid> GetConnectedContacts(Guid userId, HashSet<Guid> userIds);
     SendMessageResult SendMessage(string senderConnectionId, Guid recipientId, string message);
     UpdateMessageResult UpdateMessage(string senderConnectionId, Guid messageId, Guid recipientId, string text);
 }
@@ -25,7 +25,7 @@ public class ChatService : IChatService
         _connectedUsers.TryAdd(Guid.Parse("018955e6-3bbd-4af9-ab08-1bf6a2d98fe9"), new ConnectedUser
         (
             Guid.Parse("018955e6-3bbd-4af9-ab08-1bf6a2d98fe9"),
-            new HashSet<Guid> { new Guid("a4fb87bb-93ae-43f2-baac-2ef0282f72eb") },
+            new HashSet<Guid> { new Guid("d62a01b1-a857-4f46-9127-5c23be179fbe") },
             "something else"
         ));
 
@@ -111,10 +111,10 @@ public class ChatService : IChatService
         }
     }
 
-    public List<Guid> GetConnectedContacts(HashSet<Guid> userIds)
+    public List<Guid> GetConnectedContacts(Guid userId, HashSet<Guid> userIds)
     {
         return _connectedUsers.Values
-            .Where(x => userIds.Contains(x.Id))
+            .Where(x => userIds.Contains(x.Id) && x.ContactIds.Contains(userId))
             .Select(x => x.Id).ToList();
     }
 

@@ -24,19 +24,21 @@
             <Border Width="330">
                 <StackPanel VerticalAlignment="Center">
                     <TextBox Text="{x:Bind ViewModel.UserId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             IsEnabled="{x:Bind ViewModel.TextBoxesEnabled}"
                              FontFamily="{StaticResource DefaultFontFamily}"
                              PlaceholderText="User ID"
                              MaxLength="36" />
                     
                     <TextBox Text="{x:Bind ViewModel.Nickname, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             IsEnabled="{x:Bind ViewModel.TextBoxesEnabled}"
                              FontFamily="{StaticResource DefaultFontFamily}"
                              PlaceholderText="Nickname"
                              MaxLength="25"
                              Margin="0 15 0 0" />
 
                     <Button
-                        IsEnabled="{x:Bind ViewModel.AddButtonEnabled, Mode=OneWay}"
                         Click="AddContact_Click"
+                        IsEnabled="{x:Bind ViewModel.AddButtonEnabled, Mode=OneWay}"
                         FontFamily="{StaticResource DefaultFontFamily}"
                         HorizontalAlignment="Right"
                         Margin="0 15 0 0">Add contact</Button>

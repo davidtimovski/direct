@@ -1,25 +1,31 @@
-﻿using System.Text.RegularExpressions;
+﻿using System;
+using System.Text.RegularExpressions;
 
-namespace Direct.Shared;
+namespace Direct.Desktop.Utilities;
 
-public static partial class Validation
+public static partial class ValidationUtil
 {
     private const int NicknameMinLength = 2;
     private const int NicknameMaxLength = 25;
 
-    public static string? ValidateNickname(string nickname)
+    public static bool UserIdIsValid(string userId)
+    {
+        return userId.Trim().Length == 36 && Guid.TryParse(userId, out Guid _);
+    }
+
+    public static bool NicknameIsValid(string nickname)
     {
         if (!IsAlphanumeric(nickname))
         {
-            return "Nicknames can contain only letters, numbers, and spaces.";
+            return false;
         }
 
         if (nickname.Trim().Length < NicknameMinLength || nickname.Trim().Length > NicknameMaxLength)
         {
-            return $"Nicknames can be from {NicknameMinLength} to {NicknameMaxLength} characters long.";
+            return false;
         }
 
-        return null;
+        return true;
     }
 
     private static bool IsAlphanumeric(string text)

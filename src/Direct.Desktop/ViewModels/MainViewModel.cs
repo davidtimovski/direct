@@ -38,10 +38,11 @@ public partial class MainViewModel : ObservableObject
 
         _eventService = eventService;
         _eventService.ContactAddedLocally += ContactAddedLocally;
+        _eventService.ContactEditedLocally += ContactEditedLocally;
 
         _dispatcherQueue = dispatcherQueue;
 
-        userId = _settingsService.UserId.ToString();
+        userId = _settingsService.UserId!.Value.ToString();
         Theme = _settingsService.Theme;
         SelectedTheme = Theme.ToString();
     }
@@ -51,9 +52,6 @@ public partial class MainViewModel : ObservableObject
 
     [ObservableProperty]
     private string userId = string.Empty;
-
-    [ObservableProperty]
-    private string nickname = string.Empty;
 
     [ObservableProperty]
     private ElementTheme theme;
@@ -81,7 +79,7 @@ public partial class MainViewModel : ObservableObject
     {
         if (e.Key == VirtualKey.Enter)
         {
-            SelectedContact!.MessageTextIsReadOnly = true;
+            SelectedContact!.SendingMessage = true;
 
             if (SelectedContact!.EditingMessageId.HasValue)
             {
@@ -192,7 +190,6 @@ public partial class MainViewModel : ObservableObject
         _dispatcherQueue.TryEnqueue(async () =>
         {
             Connected = true;
-            Nickname = _settingsService.Nickname;
 
             var contacts = await Repository.GetAllContactsAsync();
             if (contacts.Count == 0)
@@ -207,7 +204,7 @@ public partial class MainViewModel : ObservableObject
             {
                 var contactMessages = messages.Where(x => x.SenderId == contact.Id || x.RecipientId == contact.Id);
                 var connected = e.ConnectedUserIds.Contains(contact.Id);
-                contactViewModels.Add(new ContactViewModel(_settingsService.UserId, contact.Id, contact.Nickname, contactMessages, connected, _settingsService.Theme, localDate: DateOnly.FromDateTime(DateTime.Now)));
+                contactViewModels.Add(new ContactViewModel(_settingsService.UserId!.Value, contact.Id, contact.Nickname, contactMessages, connected, _settingsService.Theme, localDate: DateOnly.FromDateTime(DateTime.Now)));
             }
 
             var orderedContacts = contactViewModels.OrderByDescending(
@@ -339,7 +336,7 @@ public partial class MainViewModel : ObservableObject
                 }
 
                 recipientContact.MessageText = string.Empty;
-                recipientContact.MessageTextIsReadOnly = false;
+                recipientContact.SendingMessage = false;
             }
             else
             {
@@ -379,7 +376,7 @@ public partial class MainViewModel : ObservableObject
 
     private void MessageSendingFailed(object? _, MessageSendingFailedEventArgs e)
     {
-        var contact = Contacts.First(x => x.UserId == e.RecipientId);
+        var contact = Contacts.FirstOrDefault(x => x.UserId == e.RecipientId);
         if (contact is null)
         {
             return;
@@ -388,7 +385,7 @@ public partial class MainViewModel : ObservableObject
         _dispatcherQueue.TryEnqueue(() =>
         {
             contact.MessageText = string.Empty;
-            contact.MessageTextIsReadOnly = false;
+            contact.SendingMessage = false;
 
             ShowErrorBar(contact, "Message sending failed. Please try again in a short moment.");
         });
@@ -417,7 +414,7 @@ public partial class MainViewModel : ObservableObject
                 message.Update(e.Message.Text, e.Message.EditedAtUtc.ToLocalTime(), _settingsService.Theme);
 
                 recipientContact.MessageText = string.Empty;
-                recipientContact.MessageTextIsReadOnly = false;
+                recipientContact.SendingMessage = false;
                 recipientContact.EditingMessageId = null;
             });
         }
@@ -444,7 +441,7 @@ public partial class MainViewModel : ObservableObject
 
     private void MessageUpdatingFailed(object? _, MessageUpdatingFailedEventArgs e)
     {
-        var contact = Contacts.First(x => x.UserId == e.RecipientId);
+        var contact = Contacts.FirstOrDefault(x => x.UserId == e.RecipientId);
         if (contact is null)
         {
             return;
@@ -460,7 +457,7 @@ public partial class MainViewModel : ObservableObject
         {
             message.SetTheme(_settingsService.Theme);
             contact.MessageText = string.Empty;
-            contact.MessageTextIsReadOnly = false;
+            contact.SendingMessage = false;
             contact.EditingMessageId = null;
 
             ShowErrorBar(contact, "Message editing failed. Please try again in a short moment.");
@@ -470,7 +467,18 @@ public partial class MainViewModel : ObservableObject
     private async void ContactAddedLocally(object? sender, ContactAddedLocallyEventArgs e)
     {
         var contactMessages = await Repository.GetMessagesAsync(e.UserId);
-        Contacts.Add(new ContactViewModel(_settingsService.UserId, e.UserId, e.Nickname, contactMessages, false, _settingsService.Theme, localDate: DateOnly.FromDateTime(DateTime.Now)));
+        Contacts.Add(new ContactViewModel(_settingsService.UserId!.Value, e.UserId, e.Nickname, contactMessages, false, _settingsService.Theme, localDate: DateOnly.FromDateTime(DateTime.Now)));
+    }
+
+    private void ContactEditedLocally(object? sender, ContactEditedLocallyEventArgs e)
+    {
+        var contact = Contacts.FirstOrDefault(x => x.UserId == e.UserId);
+        if (contact is null)
+        {
+            return;
+        }
+
+        contact.Nickname = e.Nickname;
     }
 
     private static void ShowErrorBar(ContactViewModel contact, string message)

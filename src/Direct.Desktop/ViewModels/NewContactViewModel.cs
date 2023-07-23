@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Direct.Desktop.Services;
 using Direct.Desktop.Storage;
+using Direct.Desktop.Utilities;
 using Microsoft.UI.Xaml;
 
 namespace Direct.Desktop.ViewModels;
@@ -41,12 +42,15 @@ public partial class NewContactViewModel : ObservableObject
     private string nickname = string.Empty;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(TextBoxesEnabled))]
     [NotifyPropertyChangedFor(nameof(AddButtonEnabled))]
     private bool adding;
 
-    public bool AddButtonEnabled => UserId.Length == 36
-        && Guid.TryParse(UserId, out Guid _)
-        && Nickname.Trim().Length > 0
+    public bool TextBoxesEnabled => !Adding;
+
+    public bool AddButtonEnabled =>
+        ValidationUtil.UserIdIsValid(UserId)
+        && ValidationUtil.NicknameIsValid(Nickname)
         && !Adding;
 
     public async Task AddContactAsync()

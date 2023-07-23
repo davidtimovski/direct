@@ -17,7 +17,7 @@ public class ChatHub : Hub
     {
         var contactConnectionIds = _chatService.AddConnection(userId, contactIds, Context.ConnectionId);
 
-        var connected = _chatService.GetConnectedContacts(contactIds);
+        var connected = _chatService.GetConnectedContacts(userId, contactIds);
 
         await Clients.Caller.SendAsync(ClientEvent.Connected, connected);
         await Clients.Clients(contactConnectionIds).SendAsync(ClientEvent.ContactConnected, userId);

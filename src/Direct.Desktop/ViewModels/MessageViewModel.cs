@@ -10,7 +10,7 @@ namespace Direct.Desktop.ViewModels;
 
 public partial class MessageViewModel : ObservableObject
 {
-    private const string TimeFormat = "HH:mm:ss";
+    private const string TimeFormat = "HH:mm";
 
     private static readonly SolidColorBrush UserMessageBackgroundBrush = ResourceUtil.GetBrush("HighlightBrush");
     private static readonly SolidColorBrush UserMessageForegroundBrush = new(Colors.White);

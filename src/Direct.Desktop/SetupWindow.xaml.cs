@@ -9,14 +9,14 @@ using Windows.Graphics;
 
 namespace Direct.Desktop;
 
-public sealed partial class LobbyWindow : Window
+public sealed partial class SetupWindow : Window
 {
     private readonly ISettingsService _settingsService;
     private readonly IServiceProvider _serviceProvider;
 
-    public LobbyViewModel ViewModel { get; }
+    public SetupViewModel ViewModel { get; }
 
-    public LobbyWindow(ISettingsService settingsService, IServiceProvider serviceProvider, LobbyViewModel viewModel)
+    public SetupWindow(ISettingsService settingsService, IServiceProvider serviceProvider, SetupViewModel viewModel)
     {
         InitializeComponent();
 
@@ -30,6 +30,9 @@ public sealed partial class LobbyWindow : Window
 
     public async Task ConnectAsync()
     {
+        _settingsService.UserId = new Guid(ViewModel.UserId);
+        _settingsService.Save();
+
         var mainWindow = _serviceProvider.GetRequiredService<MainWindow>();
 
         await ViewModel.ConnectAsync();

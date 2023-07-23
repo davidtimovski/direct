@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window
+    x:Class="Direct.Desktop.SetupWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Grid RequestedTheme="{x:Bind ViewModel.Theme, Mode=OneWay}"
+          Background="{ThemeResource WindowBackground}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="28" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Border x:Name="AppTitleBar" Grid.Row="0" Padding="12 0">
+            <TextBlock x:Name="AppTitle" Text="Setup" VerticalAlignment="Center" />
+        </Border>
+
+        <StackPanel Grid.Row="1" VerticalAlignment="Center">
+            <TextBlock Text="Welcome"
+                               FontFamily="{StaticResource DefaultFontFamilyLight}"
+                               FontSize="24"
+                               HorizontalAlignment="Center"
+                               Foreground="#888" />
+
+            <TextBlock FontFamily="{StaticResource DefaultFontFamilyLight}"
+                               FontSize="16"
+                               HorizontalTextAlignment="Center"
+                               Foreground="#888"
+                               Margin="0 30 0 15">
+                        <Run>In order to start you first need a User ID.</Run>
+                        <LineBreak/>
+                        <LineBreak/>
+                        <Run>If you already have an existing one, paste it here.</Run>
+                        <LineBreak/>
+                        <Run>Otherwise, generate a new one.</Run>
+            </TextBlock>
+
+            <Border Width="320" Margin="0 15 0 0">
+                <StackPanel>
+                    <TextBox Text="{x:Bind ViewModel.UserId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             IsEnabled="{x:Bind ViewModel.UserIdTextBoxEnabled, Mode=OneWay}"
+                             FontFamily="{StaticResource DefaultFontFamily}"
+                             TextAlignment="Center"
+                             PlaceholderText="User ID"  
+                             MaxLength="36" />
+
+                    <Grid Margin="0 15 0 0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+
+                        <Button Grid.Column="0"
+                                Click="{x:Bind ViewModel.GenerateUserID}" 
+                                IsEnabled="{x:Bind ViewModel.GenerateButtonEnabled, Mode=OneWay}"
+                                FontFamily="{StaticResource DefaultFontFamily}">Generate User ID</Button>
+
+                        <Button Grid.Column="1"
+                                Click="{x:Bind ConnectAsync}" 
+                                IsEnabled="{x:Bind ViewModel.LetsGoButtonEnabled, Mode=OneWay}"
+                                FontFamily="{StaticResource DefaultFontFamily}"
+                                HorizontalAlignment="Right">Let's go</Button>
+                    </Grid>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </Grid>
+</Window>
