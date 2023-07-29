@@ -2,7 +2,7 @@
 
 public static class ClientEvent
 {
-    public const string Connected = "Connected";
+    public const string ConnectedContactsRetrieved = "ConnectedContactsRetrieved";
 
     public const string ContactConnected = "ContactConnected";
     public const string ContactDisconnected = "ContactDisconnected";

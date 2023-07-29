@@ -76,7 +76,7 @@ public sealed partial class MainWindow : Window
         editContactWindow = new EditContactWindow(new EditContactViewModel(
                 _serviceProvider.GetRequiredService<ISettingsService>(),
                 _serviceProvider.GetRequiredService<IEventService>(),
-                ViewModel.SelectedContact!.UserId.ToString(),
+                ViewModel.SelectedContact!.UserId.ToString("N"),
                 ViewModel.SelectedContact!.Nickname
             ));
         editContactWindow.Closed += EditContactWindow_Closed;

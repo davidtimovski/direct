@@ -26,7 +26,9 @@ public partial class MainViewModel : ObservableObject
         _settingsService = settingsService;
 
         _chatService = chatService;
-        _chatService.Connected += Joined;
+        _chatService.ConnectedContactsRetrieved += ConnectedContactsRetrieved;
+        _chatService.Reconnecting += Reconnecting;
+
         _chatService.ContactConnected += ContactConnected;
         _chatService.ContactDisconnected += ContactDisconnected;
         _chatService.ContactAdded += ContactAdded;
@@ -45,6 +47,8 @@ public partial class MainViewModel : ObservableObject
         userId = _settingsService.UserId!.Value.ToString();
         Theme = _settingsService.Theme;
         SelectedTheme = Theme.ToString();
+
+        ConnectionStatus = new(_chatService, dispatcherQueue);
     }
 
     [ObservableProperty]
@@ -66,6 +70,8 @@ public partial class MainViewModel : ObservableObject
     private ContactViewModel? selectedContact;
 
     public bool ContactIsSelected => SelectedContact is not null;
+
+    public ConnectionStatusViewModel ConnectionStatus { get; }
 
     public void SelectedContactChanged()
     {
@@ -185,39 +191,67 @@ public partial class MainViewModel : ObservableObject
         await _chatService.UpdateMessageAsync(id, recipientId, trimmedMessage);
     }
 
-    private void Joined(object? _, ConnectedEventArgs e)
+    private void ConnectedContactsRetrieved(object? _, ConnectedContactsRetrievedEventArgs e)
     {
         _dispatcherQueue.TryEnqueue(async () =>
         {
             Connected = true;
 
-            var contacts = await Repository.GetAllContactsAsync();
-            if (contacts.Count == 0)
+            if (Contacts.Count == 0)
             {
-                return;
+                // On first connection
+
+                var contacts = await Repository.GetAllContactsAsync();
+                if (contacts.Count == 0)
+                {
+                    return;
+                }
+
+                var messages = await Repository.GetAllMessagesAsync();
+
+                var contactViewModels = new List<ContactViewModel>(contacts.Count);
+                foreach (var contact in contacts)
+                {
+                    var contactMessages = messages.Where(x => x.SenderId == contact.Id || x.RecipientId == contact.Id);
+                    var connected = e.ConnectedUserIds.Contains(contact.Id);
+                    contactViewModels.Add(new ContactViewModel(_settingsService.UserId!.Value, contact.Id, contact.Nickname, contactMessages, connected, _settingsService.Theme, localDate: DateOnly.FromDateTime(DateTime.Now)));
+                }
+
+                var orderedContacts = contactViewModels.OrderByDescending(
+                    c => c.MessageGroups
+                        .SelectMany(x => x)
+                        .OrderByDescending(m => m.SentAt)
+                        .Select(m => m.SentAt)
+                        .FirstOrDefault()
+                );
+
+                foreach (var contactViewModel in orderedContacts)
+                {
+                    Contacts.Add(contactViewModel);
+                }
             }
-
-            var messages = await Repository.GetAllMessagesAsync();
-
-            var contactViewModels = new List<ContactViewModel>(contacts.Count);
-            foreach (var contact in contacts)
+            else
             {
-                var contactMessages = messages.Where(x => x.SenderId == contact.Id || x.RecipientId == contact.Id);
-                var connected = e.ConnectedUserIds.Contains(contact.Id);
-                contactViewModels.Add(new ContactViewModel(_settingsService.UserId!.Value, contact.Id, contact.Nickname, contactMessages, connected, _settingsService.Theme, localDate: DateOnly.FromDateTime(DateTime.Now)));
+                // When user loses connection and then reconnects
+
+                var connectedContacts = Contacts.Where(x => e.ConnectedUserIds.Contains(x.UserId)).ToList();
+                foreach (var contact in connectedContacts)
+                {
+                    contact.Connected = true;
+                }
             }
+        });
+    }
 
-            var orderedContacts = contactViewModels.OrderByDescending(
-                c => c.MessageGroups
-                    .SelectMany(x => x)
-                    .OrderByDescending(m => m.SentAt)
-                    .Select(m => m.SentAt)
-                    .FirstOrDefault()
-            );
+    private void Reconnecting(object? sender, EventArgs e)
+    {
+        _dispatcherQueue.TryEnqueue(() =>
+        {
+            Connected = false;
 
-            foreach (var contactViewModel in orderedContacts)
+            foreach (var contact in Contacts)
             {
-                Contacts.Add(contactViewModel);
+                contact.Connected = false;
             }
         });
     }

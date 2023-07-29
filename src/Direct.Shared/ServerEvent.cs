@@ -2,7 +2,7 @@
 
 public static class ServerEvent
 {
-    public const string Connect = "Connect";
+    public const string UserJoin = "UserJoin";
 
     public const string AddContact = "AddContact";
     public const string RemoveContact = "RemoveContact";

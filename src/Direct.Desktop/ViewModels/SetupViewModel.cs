@@ -41,7 +41,7 @@ public partial class SetupViewModel : ObservableObject
 
     public void GenerateUserID()
     {
-        UserId = Guid.NewGuid().ToString();
+        UserId = Guid.NewGuid().ToString("N");
     }
 
     public async Task ConnectAsync()

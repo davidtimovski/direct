@@ -50,6 +50,7 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
+                    <RowDefinition Height="40" />
                 </Grid.RowDefinitions>
 
                 <Expander Grid.Row="0" 
@@ -190,6 +191,15 @@
                         SelectionChanged="{x:Bind ViewModel.SelectedContactChanged}"
                         ItemTemplate="{StaticResource ContactListViewTemplate}" />
 
+                </Border>
+
+                <Border Grid.Row="2" Padding="15 0">
+                    <Ellipse Grid.Column="0"
+                             Fill="{x:Bind ViewModel.ConnectionStatus.Fill, Mode=OneWay}"
+                             ToolTipService.ToolTip="{x:Bind ViewModel.ConnectionStatus.Tooltip, Mode=OneWay}"
+                             Width="10"
+                             Height="10"
+                             HorizontalAlignment="Left" />
                 </Border>
             </Grid>
 

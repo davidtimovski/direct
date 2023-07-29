@@ -10,7 +10,9 @@ namespace Direct.Desktop.Services;
 
 public interface IChatService
 {
-    event EventHandler<ConnectedEventArgs>? Connected;
+    event EventHandler<ConnectedContactsRetrievedEventArgs>? ConnectedContactsRetrieved;
+    event EventHandler? Reconnecting;
+    event EventHandler? Reconnected;
     event EventHandler<ContactConnectedEventArgs>? ContactConnected;
     event EventHandler<ContactDisconnectedEventArgs>? ContactDisconnected;
     event EventHandler<ContactAddedEventArgs>? ContactAdded;
@@ -31,6 +33,7 @@ public interface IChatService
 public class ChatService : IChatService
 {
     private readonly HubConnection _connection;
+    private readonly HashSet<Guid> _contactIds = new();
     private Guid? _userId;
 
     public ChatService()
@@ -41,10 +44,22 @@ public class ChatService : IChatService
            .WithAutomaticReconnect()
            .Build();
 
-        _connection.On<List<Guid>>(ClientEvent.Connected, (connectedUserIds) =>
+        _connection.On<List<Guid>>(ClientEvent.ConnectedContactsRetrieved, (connectedUserIds) =>
         {
-            Connected?.Invoke(this, new ConnectedEventArgs(connectedUserIds));
+            ConnectedContactsRetrieved?.Invoke(this, new ConnectedContactsRetrievedEventArgs(connectedUserIds));
         });
+
+        _connection.Reconnecting += (Exception? arg) =>
+        {
+            Reconnecting?.Invoke(this, new EventArgs());
+            return Task.CompletedTask;
+        };
+
+        _connection.Reconnected += async (string? arg) =>
+        {
+            Reconnected?.Invoke(this, new EventArgs());
+            await _connection.InvokeAsync(ServerEvent.UserJoin, _userId!.Value, _contactIds);
+        };
 
         _connection.On<Guid>(ClientEvent.ContactConnected, (userId) =>
         {
@@ -87,7 +102,9 @@ public class ChatService : IChatService
         });
     }
 
-    public event EventHandler<ConnectedEventArgs>? Connected;
+    public event EventHandler<ConnectedContactsRetrievedEventArgs>? ConnectedContactsRetrieved;
+    public event EventHandler? Reconnecting;
+    public event EventHandler? Reconnected;
     public event EventHandler<ContactConnectedEventArgs>? ContactConnected;
     public event EventHandler<ContactDisconnectedEventArgs>? ContactDisconnected;
     public event EventHandler<ContactAddedEventArgs>? ContactAdded;
@@ -99,10 +116,19 @@ public class ChatService : IChatService
 
     public async Task ConnectAsync(Guid userId, List<Guid> contactIds)
     {
+        foreach (var contactId in contactIds)
+        {
+            if (_contactIds.Contains(contactId))
+            {
+                continue;
+            }
+
+            _contactIds.Add(contactId);
+        }
         _userId = userId;
 
         await _connection.StartAsync();
-        await _connection.InvokeAsync(ServerEvent.Connect, _userId.Value, contactIds);
+        await _connection.InvokeAsync(ServerEvent.UserJoin, _userId.Value, contactIds);
     }
 
     public async Task DisconnectAsync()
@@ -132,9 +158,9 @@ public class ChatService : IChatService
     }
 }
 
-public class ConnectedEventArgs : EventArgs
+public class ConnectedContactsRetrievedEventArgs : EventArgs
 {
-    public ConnectedEventArgs(List<Guid> connectedUserIds)
+    public ConnectedContactsRetrievedEventArgs(List<Guid> connectedUserIds)
     {
         ConnectedUserIds = connectedUserIds;
     }

@@ -5,12 +5,13 @@ namespace Direct.Desktop.Utilities;
 
 public static partial class ValidationUtil
 {
+    private const int FormattedGuidLength = 32;
     private const int NicknameMinLength = 2;
     private const int NicknameMaxLength = 25;
 
     public static bool UserIdIsValid(string userId)
     {
-        return userId.Trim().Length == 36 && Guid.TryParse(userId, out Guid _);
+        return userId.Trim().Length == FormattedGuidLength && Guid.TryParse(userId, out Guid _);
     }
 
     public static bool NicknameIsValid(string nickname)

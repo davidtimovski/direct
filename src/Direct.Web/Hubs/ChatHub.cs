@@ -13,13 +13,13 @@ public class ChatHub : Hub
        _chatService = chatService;
     }
 
-    public async Task Connect(Guid userId, HashSet<Guid> contactIds)
+    public async Task UserJoin(Guid userId, HashSet<Guid> contactIds)
     {
         var contactConnectionIds = _chatService.AddConnection(userId, contactIds, Context.ConnectionId);
 
         var connected = _chatService.GetConnectedContacts(userId, contactIds);
 
-        await Clients.Caller.SendAsync(ClientEvent.Connected, connected);
+        await Clients.Caller.SendAsync(ClientEvent.ConnectedContactsRetrieved, connected);
         await Clients.Clients(contactConnectionIds).SendAsync(ClientEvent.ContactConnected, userId);
     }
 

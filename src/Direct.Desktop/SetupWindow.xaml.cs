@@ -30,7 +30,7 @@ public sealed partial class SetupWindow : Window
 
     public async Task ConnectAsync()
     {
-        _settingsService.UserId = new Guid(ViewModel.UserId);
+        _settingsService.UserId = Guid.ParseExact(ViewModel.UserId, "N");
         _settingsService.Save();
 
         var mainWindow = _serviceProvider.GetRequiredService<MainWindow>();

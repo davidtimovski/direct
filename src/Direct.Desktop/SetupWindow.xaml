@@ -42,7 +42,7 @@
                              FontFamily="{StaticResource DefaultFontFamily}"
                              TextAlignment="Center"
                              PlaceholderText="User ID"  
-                             MaxLength="36" />
+                             MaxLength="32" />
 
                     <Grid Margin="0 15 0 0">
                         <Grid.ColumnDefinitions>

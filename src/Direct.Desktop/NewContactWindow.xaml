@@ -27,7 +27,7 @@
                              IsEnabled="{x:Bind ViewModel.TextBoxesEnabled}"
                              FontFamily="{StaticResource DefaultFontFamily}"
                              PlaceholderText="User ID"
-                             MaxLength="36" />
+                             MaxLength="32" />
                     
                     <TextBox Text="{x:Bind ViewModel.Nickname, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                              IsEnabled="{x:Bind ViewModel.TextBoxesEnabled}"
