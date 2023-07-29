@@ -52,9 +52,6 @@ public partial class MainViewModel : ObservableObject
     }
 
     [ObservableProperty]
-    private bool connected;
-
-    [ObservableProperty]
     private string userId = string.Empty;
 
     [ObservableProperty]
@@ -72,6 +69,38 @@ public partial class MainViewModel : ObservableObject
     public bool ContactIsSelected => SelectedContact is not null;
 
     public ConnectionStatusViewModel ConnectionStatus { get; }
+
+    public async Task<bool> InitializeAsync()
+    {
+        var contacts = await Repository.GetAllContactsAsync();
+        if (contacts.Count > 0)
+        {
+            var messages = await Repository.GetAllMessagesAsync();
+
+            var contactViewModels = new List<ContactViewModel>(contacts.Count);
+            foreach (var contact in contacts)
+            {
+                var contactMessages = messages.Where(x => x.SenderId == contact.Id || x.RecipientId == contact.Id);
+                contactViewModels.Add(new ContactViewModel(_settingsService.UserId!.Value, contact.Id, contact.Nickname, contactMessages, _settingsService.Theme, localDate: DateOnly.FromDateTime(DateTime.Now)));
+            }
+
+            var orderedContacts = contactViewModels.OrderByDescending(
+                c => c.MessageGroups
+                    .SelectMany(x => x)
+                    .OrderByDescending(m => m.SentAt)
+                    .Select(m => m.SentAt)
+                    .FirstOrDefault()
+            );
+
+            foreach (var contactViewModel in orderedContacts)
+            {
+                Contacts.Add(contactViewModel);
+            }
+        }
+
+        var contactIds = contacts.Select(x => x.Id).ToHashSet();
+        return await _chatService.ConnectAsync(_settingsService.UserId!.Value, contactIds);
+    }
 
     public void SelectedContactChanged()
     {
@@ -191,54 +220,14 @@ public partial class MainViewModel : ObservableObject
         await _chatService.UpdateMessageAsync(id, recipientId, trimmedMessage);
     }
 
-    private void ConnectedContactsRetrieved(object? _, ConnectedContactsRetrievedEventArgs e)
+    private void ConnectedContactsRetrieved(object? eee, ConnectedContactsRetrievedEventArgs e)
     {
-        _dispatcherQueue.TryEnqueue(async () =>
+        _dispatcherQueue.TryEnqueue(() =>
         {
-            Connected = true;
-
-            if (Contacts.Count == 0)
+            var connectedContacts = Contacts.Where(x => e.ConnectedUserIds.Contains(x.UserId)).ToList();
+            foreach (var contact in connectedContacts)
             {
-                // On first connection
-
-                var contacts = await Repository.GetAllContactsAsync();
-                if (contacts.Count == 0)
-                {
-                    return;
-                }
-
-                var messages = await Repository.GetAllMessagesAsync();
-
-                var contactViewModels = new List<ContactViewModel>(contacts.Count);
-                foreach (var contact in contacts)
-                {
-                    var contactMessages = messages.Where(x => x.SenderId == contact.Id || x.RecipientId == contact.Id);
-                    var connected = e.ConnectedUserIds.Contains(contact.Id);
-                    contactViewModels.Add(new ContactViewModel(_settingsService.UserId!.Value, contact.Id, contact.Nickname, contactMessages, connected, _settingsService.Theme, localDate: DateOnly.FromDateTime(DateTime.Now)));
-                }
-
-                var orderedContacts = contactViewModels.OrderByDescending(
-                    c => c.MessageGroups
-                        .SelectMany(x => x)
-                        .OrderByDescending(m => m.SentAt)
-                        .Select(m => m.SentAt)
-                        .FirstOrDefault()
-                );
-
-                foreach (var contactViewModel in orderedContacts)
-                {
-                    Contacts.Add(contactViewModel);
-                }
-            }
-            else
-            {
-                // When user loses connection and then reconnects
-
-                var connectedContacts = Contacts.Where(x => e.ConnectedUserIds.Contains(x.UserId)).ToList();
-                foreach (var contact in connectedContacts)
-                {
-                    contact.Connected = true;
-                }
+                contact.Connected = true;
             }
         });
     }
@@ -247,8 +236,6 @@ public partial class MainViewModel : ObservableObject
     {
         _dispatcherQueue.TryEnqueue(() =>
         {
-            Connected = false;
-
             foreach (var contact in Contacts)
             {
                 contact.Connected = false;
@@ -501,7 +488,7 @@ public partial class MainViewModel : ObservableObject
     private async void ContactAddedLocally(object? sender, ContactAddedLocallyEventArgs e)
     {
         var contactMessages = await Repository.GetMessagesAsync(e.UserId);
-        Contacts.Add(new ContactViewModel(_settingsService.UserId!.Value, e.UserId, e.Nickname, contactMessages, false, _settingsService.Theme, localDate: DateOnly.FromDateTime(DateTime.Now)));
+        Contacts.Add(new ContactViewModel(_settingsService.UserId!.Value, e.UserId, e.Nickname, contactMessages, _settingsService.Theme, localDate: DateOnly.FromDateTime(DateTime.Now)));
     }
 
     private void ContactEditedLocally(object? sender, ContactEditedLocallyEventArgs e)

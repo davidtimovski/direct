@@ -19,27 +19,6 @@ internal static class Repository
         _connectionString = $"Data Source={dbFilePath}";
     }
 
-    internal async static Task<List<Guid>> GetAllContactIdsAsync()
-    {
-        using var db = OpenConnection();
-
-        var cmd = new SqliteCommand
-        {
-            Connection = db,
-            CommandText = "SELECT id FROM contacts"
-        };
-
-        var result = new List<Guid>();
-
-        SqliteDataReader query = await cmd.ExecuteReaderAsync();
-        while (query.Read())
-        {
-            result.Add(new Guid(query.GetString(0)));
-        }
-
-        return result;
-    }
-
     internal async static Task<List<Contact>> GetAllContactsAsync()
     {
         using var db = OpenConnection();

@@ -1,5 +1,4 @@
 using System;
-using System.Threading.Tasks;
 using Direct.Desktop.Services;
 using Direct.Desktop.Utilities;
 using Direct.Desktop.ViewModels;
@@ -28,17 +27,14 @@ public sealed partial class SetupWindow : Window
         ViewModel = viewModel;
     }
 
-    public async Task ConnectAsync()
+    public void Start()
     {
         _settingsService.UserId = Guid.ParseExact(ViewModel.UserId, "N");
         _settingsService.Save();
 
-        var mainWindow = _serviceProvider.GetRequiredService<MainWindow>();
-
-        await ViewModel.ConnectAsync();
-
         Close();
 
+        var mainWindow = _serviceProvider.GetRequiredService<MainWindow>();
         WindowingUtil.Resize(mainWindow, new SizeInt32(_settingsService.WindowWidth, _settingsService.WindowHeight));
         mainWindow.Activate();
     }

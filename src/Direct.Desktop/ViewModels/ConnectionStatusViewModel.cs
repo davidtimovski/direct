@@ -9,20 +9,15 @@ namespace Direct.Desktop.ViewModels;
 
 public partial class ConnectionStatusViewModel : ObservableObject
 {
+    private const string ConnectedTooltip = "Connected";
+    private const string ConnectingTooltip = "Connecting..";
+
     private static readonly Brush ConnectedBrush = ResourceUtil.GetBrush("ConnectedContactBrush");
-    private static readonly Brush DisconnectedBrush = ResourceUtil.GetBrush("ConnectionStatusDisconnectedBrush");
+    private static readonly Brush ConnectingBrush = ResourceUtil.GetBrush("HighlightBrush");
 
     public ConnectionStatusViewModel(IChatService chatService, DispatcherQueue dispatcherQueue)
     {
-        chatService.Reconnecting += (object? sender, EventArgs _) =>
-        {
-            dispatcherQueue.TryEnqueue(() =>
-            {
-                SetReconnecting();
-            });
-        };
-
-        chatService.Reconnected += (object? sender, EventArgs _) =>
+        chatService.ConnectedContactsRetrieved += (object? _, ConnectedContactsRetrievedEventArgs _) =>
         {
             dispatcherQueue.TryEnqueue(() =>
             {
@@ -30,9 +25,28 @@ public partial class ConnectionStatusViewModel : ObservableObject
             });
         };
 
-        Fill = ConnectedBrush;
-        Tooltip = "Connected";
+        chatService.Reconnecting += (object? _, EventArgs _) =>
+        {
+            dispatcherQueue.TryEnqueue(() =>
+            {
+                SetConnecting();
+            });
+        };
+
+        chatService.Reconnected += (object? _, EventArgs _) =>
+        {
+            dispatcherQueue.TryEnqueue(() =>
+            {
+                SetConnected();
+            });
+        };
+
+        Fill = ConnectingBrush;
+        Tooltip = ConnectingTooltip;
     }
+
+    [ObservableProperty]
+    private bool connected;
 
     [ObservableProperty]
     private Brush fill;
@@ -42,19 +56,15 @@ public partial class ConnectionStatusViewModel : ObservableObject
 
     private void SetConnected()
     {
+        Connected = true;
         Fill = ConnectedBrush;
-        Tooltip = "Connected";
+        Tooltip = ConnectedTooltip;
     }
 
-    private void SetDisconnected()
+    private void SetConnecting()
     {
-        Fill = DisconnectedBrush;
-        Tooltip = "Disconnected";
-    }
-
-    private void SetReconnecting()
-    {
-        Fill = DisconnectedBrush;
-        Tooltip = "Reconnecting";
+        Connected = false;
+        Fill = ConnectingBrush;
+        Tooltip = ConnectingTooltip;
     }
 }

@@ -5,6 +5,7 @@ using Direct.Shared;
 using Direct.Shared.Models;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Dispatching;
 
 namespace Direct.Desktop.Services;
 
@@ -22,8 +23,9 @@ public interface IChatService
     event EventHandler<MessageUpdatedEventArgs>? MessageUpdated;
     event EventHandler<MessageUpdatingFailedEventArgs>? MessageUpdatingFailed;
 
-    Task ConnectAsync(Guid userId, List<Guid> contactIds);
+    Task<bool> ConnectAsync(Guid userId, HashSet<Guid> contactIds);
     Task DisconnectAsync();
+    void StartConnectionRetry();
     Task SendMessageAsync(Guid toUserId, string message);
     Task UpdateMessageAsync(Guid id, Guid recipientId, string message);
     Task AddContactAsync(Guid userId);
@@ -34,6 +36,11 @@ public class ChatService : IChatService
 {
     private readonly HubConnection _connection;
     private readonly HashSet<Guid> _contactIds = new();
+
+    private DispatcherQueue? _queue;
+    private DispatcherQueueController? _queueController;
+    private DispatcherQueueTimer? _repeatingTimer;
+
     private Guid? _userId;
 
     public ChatService()
@@ -114,7 +121,7 @@ public class ChatService : IChatService
     public event EventHandler<MessageUpdatedEventArgs>? MessageUpdated;
     public event EventHandler<MessageUpdatingFailedEventArgs>? MessageUpdatingFailed;
 
-    public async Task ConnectAsync(Guid userId, List<Guid> contactIds)
+    public async Task<bool> ConnectAsync(Guid userId, HashSet<Guid> contactIds)
     {
         foreach (var contactId in contactIds)
         {
@@ -127,14 +134,51 @@ public class ChatService : IChatService
         }
         _userId = userId;
 
-        await _connection.StartAsync();
-        await _connection.InvokeAsync(ServerEvent.UserJoin, _userId.Value, contactIds);
+        try
+        {
+            await _connection.StartAsync();
+            await _connection.InvokeAsync(ServerEvent.UserJoin, _userId.Value, contactIds);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     public async Task DisconnectAsync()
     {
         await _connection.StopAsync();
         await _connection.DisposeAsync();
+    }
+
+    public void StartConnectionRetry()
+    {
+        _queueController = DispatcherQueueController.CreateOnDedicatedThread();
+        _queue = _queueController.DispatcherQueue;
+
+        _repeatingTimer = _queue.CreateTimer();
+        _repeatingTimer.Interval = TimeSpan.FromMinutes(1);
+
+        _repeatingTimer.Tick += async (s, e) =>
+        {
+            try
+            {
+                await _connection.StartAsync();
+                await _connection.InvokeAsync(ServerEvent.UserJoin, _userId!.Value, _contactIds);
+
+                _repeatingTimer!.Stop();
+                _queueController = null;
+                _queue = null;
+                _repeatingTimer = null;
+            }
+            catch
+            {
+                // Connection failure, continue to retry
+            }
+        };
+
+        _repeatingTimer.Start();
     }
 
     public async Task SendMessageAsync(Guid recipientId, string message)

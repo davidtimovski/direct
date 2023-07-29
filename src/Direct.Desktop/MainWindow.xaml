@@ -27,7 +27,7 @@
                 </ResourceDictionary.ThemeDictionaries>
             </ResourceDictionary>
         </Grid.Resources>
-
+        
         <Grid.RowDefinitions>
             <RowDefinition Height="28" />
             <RowDefinition Height="*" />
@@ -86,7 +86,7 @@
                                                  VerticalAlignment="Center" />
 
                                         <Button Grid.Column="1"
-                                                IsEnabled="{x:Bind ViewModel.Connected}"
+                                                IsEnabled="{x:Bind ViewModel.ConnectionStatus.Connected, Mode=OneWay}"
                                                 Click="{x:Bind ViewModel.CopyUserID}"
                                                 ToolTipService.ToolTip="Copy"
                                                 VerticalAlignment="Stretch"

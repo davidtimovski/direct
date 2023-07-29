@@ -56,7 +56,7 @@
                                 FontFamily="{StaticResource DefaultFontFamily}">Generate User ID</Button>
 
                         <Button Grid.Column="1"
-                                Click="{x:Bind ConnectAsync}" 
+                                Click="{x:Bind Start}" 
                                 IsEnabled="{x:Bind ViewModel.LetsGoButtonEnabled, Mode=OneWay}"
                                 FontFamily="{StaticResource DefaultFontFamily}"
                                 HorizontalAlignment="Right">Let's go</Button>

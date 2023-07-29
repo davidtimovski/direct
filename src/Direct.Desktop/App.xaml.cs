@@ -54,18 +54,13 @@ public partial class App : Application
         }
     }
 
-    protected async override void OnLaunched(LaunchActivatedEventArgs args)
+    protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
         var settingsService = _serviceProvider.GetRequiredService<ISettingsService>();
         if (settingsService.UserId.HasValue)
         {
-            // Immediately connect
-            var chatService = _serviceProvider.GetRequiredService<IChatService>();
+            // Show main window
             var mainWindow = _serviceProvider.GetRequiredService<MainWindow>();
-
-            var contactIds = await Repository.GetAllContactIdsAsync();
-            await chatService.ConnectAsync(settingsService.UserId!.Value, contactIds);
-
             WindowingUtil.Resize(mainWindow, new SizeInt32(settingsService.WindowWidth, settingsService.WindowHeight));
             mainWindow.Activate();
         }

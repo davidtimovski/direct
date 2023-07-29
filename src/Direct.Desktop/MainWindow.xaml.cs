@@ -1,9 +1,12 @@
 using System;
+using CommunityToolkit.Mvvm.Input;
 using Direct.Desktop.Services;
 using Direct.Desktop.Utilities;
 using Direct.Desktop.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using Windows.Graphics;
 
 namespace Direct.Desktop;
@@ -14,6 +17,7 @@ public sealed partial class MainWindow : Window
     private readonly IChatService _chatService;
     private readonly IServiceProvider _serviceProvider;
 
+    private bool activated;
     private NewContactWindow? newContactWindow;
     private EditContactWindow? editContactWindow;
 
@@ -23,6 +27,9 @@ public sealed partial class MainWindow : Window
     {
         InitializeComponent();
 
+        Activated += WindowActivated;
+        Closed += WindowClosed;
+
         ExtendsContentIntoTitleBar = true;
         SetTitleBar(AppTitleBar);
 
@@ -31,11 +38,46 @@ public sealed partial class MainWindow : Window
         _serviceProvider = serviceProvider;
 
         ViewModel = viewModel;
-
-        Closed += MainWindow_Closed;
     }
 
-    private async void MainWindow_Closed(object _, WindowEventArgs args)
+    // Hack, find a method that can execute asynchronously on first window creation
+    private async void WindowActivated(object _, WindowActivatedEventArgs args)
+    {
+        if (activated)
+        {
+            return;
+        }
+
+        activated = true;
+
+        var successful = await ViewModel.InitializeAsync();
+        if (successful)
+        {
+            return;
+        }
+
+        var closeCommand = new StandardUICommand();
+        closeCommand.ExecuteRequested += (XamlUICommand sender, ExecuteRequestedEventArgs args) =>
+        {
+            sender.DispatcherQueue.TryEnqueue(Close);
+        };
+
+        var dialog = new ContentDialog
+        {
+            XamlRoot = Content.XamlRoot,
+            Style = Application.Current.Resources["DefaultContentDialogStyle"] as Style,
+            RequestedTheme = _settingsService.Theme,
+            Title = "Could not connect",
+            Content = "Do you want me to keep retrying every minute?",
+            PrimaryButtonText = "Yes, please",
+            CloseButtonText = "No, exit",
+            PrimaryButtonCommand = new RelayCommand(_chatService.StartConnectionRetry),
+            CloseButtonCommand = closeCommand
+        };
+        await dialog.ShowAsync();
+    }
+
+    private async void WindowClosed(object _, WindowEventArgs args)
     {
         var windowSize = WindowingUtil.GetSize(this);
 

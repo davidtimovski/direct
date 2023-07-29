@@ -14,7 +14,7 @@ public partial class ContactViewModel : ObservableObject
 
     public Guid? EditingMessageId { get; set; }
 
-    public ContactViewModel(Guid userId, Guid contactUserId, string nickname, IEnumerable<Message> messages, bool connected, ElementTheme theme, DateOnly localDate)
+    public ContactViewModel(Guid userId, Guid contactUserId, string nickname, IEnumerable<Message> messages, ElementTheme theme, DateOnly localDate)
     {
         UserId = contactUserId;
         Nickname = nickname;
@@ -25,8 +25,6 @@ public partial class ContactViewModel : ObservableObject
                     select new DailyMessageGroup(g.ToList(), g.Key, localDate);
 
         MessageGroups = new ObservableCollection<DailyMessageGroup>(query);
-
-        Connected = connected;
     }
 
     [ObservableProperty]
