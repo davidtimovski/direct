@@ -12,8 +12,8 @@ public partial class ConnectionStatusViewModel : ObservableObject
     private const string ConnectedTooltip = "Connected";
     private const string ConnectingTooltip = "Connecting..";
 
-    private static readonly Brush ConnectedBrush = ResourceUtil.GetBrush("ConnectedContactBrush");
-    private static readonly Brush ConnectingBrush = ResourceUtil.GetBrush("HighlightBrush");
+    private static readonly Brush ConnectedBrush = ResourceUtil.GetBrush("CyanBrush");
+    private static readonly Brush ConnectingBrush = ResourceUtil.GetBrush("OrangeBrush");
 
     public ConnectionStatusViewModel(IChatService chatService, DispatcherQueue dispatcherQueue)
     {

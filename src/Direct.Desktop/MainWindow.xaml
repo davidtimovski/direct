@@ -168,7 +168,7 @@
                                                  Visibility="{x:Bind HasUnreadMessages, Mode=OneWay}"
                                                  Width="10"
                                                  Height="10"
-                                                 Fill="{StaticResource HighlightBrush}"
+                                                 Fill="{StaticResource CyanBrush}"
                                                  Margin="7 0"
                                                  VerticalAlignment="Center" />
 
@@ -176,7 +176,7 @@
                                                  Visibility="{x:Bind Connected, Mode=OneWay}"
                                                  Width="10"
                                                  Height="10"
-                                                 Fill="{StaticResource ConnectedContactBrush}"
+                                                 Fill="{StaticResource CyanBrush}"
                                                  Margin="7 0"
                                                  VerticalAlignment="Center" />
                                     </Grid>
@@ -295,7 +295,7 @@
                                     FlowDirection="RightToLeft"
                                     AutomationProperties.Name="Setting">
                         <DropDownButton.Content>
-                            <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE713;"/>
+                            <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE713;" />
                         </DropDownButton.Content>
                         <DropDownButton.Flyout>
                             <MenuFlyout Placement="Bottom">

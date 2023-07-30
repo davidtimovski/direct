@@ -37,10 +37,6 @@ public class ChatService : IChatService
     private readonly HubConnection _connection;
     private readonly HashSet<Guid> _contactIds = new();
 
-    private DispatcherQueue? _queue;
-    private DispatcherQueueController? _queueController;
-    private DispatcherQueueTimer? _repeatingTimer;
-
     private Guid? _userId;
 
     public ChatService()
@@ -154,31 +150,26 @@ public class ChatService : IChatService
 
     public void StartConnectionRetry()
     {
-        _queueController = DispatcherQueueController.CreateOnDedicatedThread();
-        _queue = _queueController.DispatcherQueue;
+        var queueController = DispatcherQueueController.CreateOnDedicatedThread();
+        var queue = queueController.DispatcherQueue;
 
-        _repeatingTimer = _queue.CreateTimer();
-        _repeatingTimer.Interval = TimeSpan.FromMinutes(1);
-
-        _repeatingTimer.Tick += async (s, e) =>
+        var repeatingTimer = queue.CreateTimer();
+        repeatingTimer.Interval = TimeSpan.FromMinutes(1);
+        repeatingTimer.Tick += async (timer, _) =>
         {
             try
             {
                 await _connection.StartAsync();
                 await _connection.InvokeAsync(ServerEvent.UserJoin, _userId!.Value, _contactIds);
 
-                _repeatingTimer!.Stop();
-                _queueController = null;
-                _queue = null;
-                _repeatingTimer = null;
+                timer.Stop();
             }
             catch
             {
                 // Connection failure, continue to retry
             }
         };
-
-        _repeatingTimer.Start();
+        repeatingTimer.Start();
     }
 
     public async Task SendMessageAsync(Guid recipientId, string message)

@@ -12,7 +12,7 @@ public partial class MessageViewModel : ObservableObject
 {
     private const string TimeFormat = "HH:mm";
 
-    private static readonly SolidColorBrush UserMessageBackgroundBrush = ResourceUtil.GetBrush("HighlightBrush");
+    private static readonly SolidColorBrush UserMessageBackgroundBrush = ResourceUtil.GetBrush("CyanBrush");
     private static readonly SolidColorBrush UserMessageForegroundBrush = new(Colors.White);
     private static readonly Dictionary<ElementTheme, SolidColorBrush> SenderMessageBackgroundBrushes = new()
     {

@@ -44,7 +44,7 @@ public partial class MainViewModel : ObservableObject
 
         _dispatcherQueue = dispatcherQueue;
 
-        userId = _settingsService.UserId!.Value.ToString();
+        userId = _settingsService.UserId!.Value.ToString("N");
         Theme = _settingsService.Theme;
         SelectedTheme = Theme.ToString();
 

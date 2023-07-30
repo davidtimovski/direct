@@ -15,9 +15,9 @@
   <mp:PhoneIdentity PhoneProductId="94714064-74ca-41aa-b085-82c994be68cf" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
-    <DisplayName>Chat</DisplayName>
-    <PublisherDisplayName>david</PublisherDisplayName>
-    <Logo>Assets\user.png</Logo>
+    <DisplayName>Direct</DisplayName>
+    <PublisherDisplayName>David Timovski</PublisherDisplayName>
+    <Logo>Assets\Images\logo.png</Logo>
   </Properties>
 
   <Dependencies>
@@ -35,18 +35,16 @@
       EntryPoint="$targetentrypoint$">
       <uap:VisualElements
         DisplayName="Direct"
-        BackgroundColor="transparent"
-        Square150x150Logo="Assets\user.png"
-        Square44x44Logo="Assets\user.png" Description="Direct">
-        <uap:DefaultTile Wide310x150Logo="Assets\user.png" >
+        BackgroundColor="transparent" Description="Direct messaging" Square150x150Logo="Assets\Images\logo.png" Square44x44Logo="Assets\Images\logo.png">
+        <uap:DefaultTile Square71x71Logo="Assets\Images\SmallTile.png" Square310x310Logo="Assets\Images\LargeTile.png" Wide310x150Logo="Assets\Images\logo.png">
           <uap:ShowNameOnTiles>
             <uap:ShowOn Tile="wide310x150Logo"/>
             <uap:ShowOn Tile="square150x150Logo"/>
           </uap:ShowNameOnTiles>
         </uap:DefaultTile >
-        <uap:SplashScreen Image="Assets\splash.jpg" />
         <uap:InitialRotationPreference>
           <uap:Rotation Preference="landscape"/></uap:InitialRotationPreference>
+        <uap:SplashScreen Image="Assets\Images\logo.png"/>
       </uap:VisualElements>
     </Application>
   </Applications>

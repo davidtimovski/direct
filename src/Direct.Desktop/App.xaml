@@ -13,15 +13,15 @@
             <FontFamily x:Key="DefaultFontFamily">/Assets/Fonts/Nunito-Regular.ttf#Nunito</FontFamily>
             <FontFamily x:Key="DefaultFontFamilyLight">/Assets/Fonts/Nunito-Light.ttf#Nunito</FontFamily>
 
-            <SolidColorBrush x:Key="ConnectedContactBrush" Color="#33cc55" />
-            <SolidColorBrush x:Key="HighlightBrush" Color="#c97608" />
-            
+            <SolidColorBrush x:Key="CyanBrush" Color="#009977" />
+            <SolidColorBrush x:Key="OrangeBrush" Color="#b97608" />
+
             <!-- Messages -->
             <SolidColorBrush x:Key="SenderMessageBackgroundBrushLight" Color="#e6e6e6" />
             <SolidColorBrush x:Key="SenderMessageForegroundBrushLight" Color="Black" />
             <SolidColorBrush x:Key="SenderMessageBackgroundBrushDark" Color="#323232" />
             <SolidColorBrush x:Key="SenderMessageForegroundBrushDark" Color="White" />
-            <SolidColorBrush x:Key="MessageEditingBackgroundBrush" Color="#964119" />
+            <SolidColorBrush x:Key="MessageEditingBackgroundBrush" Color="#b97608" />
 
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceDictionary x:Key="Light">
