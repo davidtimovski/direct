@@ -12,6 +12,7 @@ public partial class EditContactViewModel : ObservableObject
 {
     private readonly ISettingsService _settingsService;
     private readonly IEventService _eventService;
+    private readonly string _originalNickname;
 
     public EditContactViewModel(ISettingsService settingsService, IEventService eventService, string userId, string nickname)
     {
@@ -19,6 +20,8 @@ public partial class EditContactViewModel : ObservableObject
         _settingsService.ThemeChanged += ThemeChanged;
 
         _eventService = eventService;
+
+        _originalNickname = nickname;
 
         Theme = _settingsService.Theme;
         UserId = userId;
@@ -48,6 +51,7 @@ public partial class EditContactViewModel : ObservableObject
 
     public bool SaveButtonEnabled =>
         ValidationUtil.NicknameIsValid(Nickname)
+        && !string.Equals(_originalNickname, Nickname.Trim(), StringComparison.InvariantCulture)
         && !Saving;
 
     public async Task SaveContactAsync()

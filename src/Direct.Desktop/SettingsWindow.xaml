@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window
+    x:Class="Direct.Desktop.SettingsWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Direct.Desktop.UserControls">
+
+    <Grid RequestedTheme="{x:Bind ViewModel.Theme, Mode=OneWay}"
+          Background="{ThemeResource WindowBackground}">
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="28" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <local:TitleBar x:Name="AppTitleBar" Grid.Row="0" Title="Settings" />
+
+        <Grid Grid.Row="1" Padding="20">
+            <Grid.RowDefinitions>
+                <RowDefinition />
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.Row="2">
+                <TextBlock FontFamily="{StaticResource DefaultFontFamilyLight}"
+                           Foreground="{StaticResource OrangeBrush}"
+                           FontSize="18">Theme</TextBlock>
+                
+                <Grid Margin="0 15 0 0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0"
+                               Text="Selected theme"
+                               FontFamily="{StaticResource DefaultFontFamily}"
+                               VerticalAlignment="Center" />
+
+                    <ComboBox Grid.Column="1"
+                              SelectionChanged="{x:Bind ViewModel.ThemeChanged}"
+                              SelectedItem="{x:Bind ViewModel.SelectedTheme, Mode=TwoWay}"
+                              FontFamily="{StaticResource DefaultFontFamily}"
+                              HorizontalAlignment="Right"
+                              VerticalAlignment="Center">
+                        <x:String>Dark</x:String>
+                        <x:String>Light</x:String>
+                    </ComboBox>
+                </Grid>
+            </StackPanel>
+        </Grid>
+
+    </Grid>
+</Window>

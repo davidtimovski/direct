@@ -18,6 +18,7 @@ public sealed partial class MainWindow : Window
     private readonly IServiceProvider _serviceProvider;
 
     private bool activated;
+    private SettingsWindow? settingsWindow;
     private NewContactWindow? newContactWindow;
     private EditContactWindow? editContactWindow;
 
@@ -88,6 +89,23 @@ public sealed partial class MainWindow : Window
         await _chatService.DisconnectAsync();
     }
 
+    private void SettingsButton_Click(object _, RoutedEventArgs e)
+    {
+        if (settingsWindow is not null)
+        {
+            settingsWindow.Activate();
+            return;
+        }
+
+        settingsWindow = _serviceProvider.GetRequiredService<SettingsWindow>();
+        settingsWindow.Closed += (object _, WindowEventArgs args) =>
+        {
+            settingsWindow = null;
+        };
+        WindowingUtil.Resize(settingsWindow, new SizeInt32(400, 150));
+        settingsWindow.Activate();
+    }
+
     private void AddNewContactButton_Click(object _, RoutedEventArgs e)
     {
         if (newContactWindow is not null)
@@ -97,14 +115,12 @@ public sealed partial class MainWindow : Window
         }
 
         newContactWindow = _serviceProvider.GetRequiredService<NewContactWindow>();
-        newContactWindow.Closed += NewContactWindow_Closed;
-        WindowingUtil.Resize(newContactWindow, new SizeInt32(400, 300));
+        newContactWindow.Closed += (object _, WindowEventArgs args) =>
+        {
+            newContactWindow = null;
+        };
+        WindowingUtil.Resize(newContactWindow, new SizeInt32(370, 280));
         newContactWindow.Activate();
-    }
-
-    private void NewContactWindow_Closed(object _, WindowEventArgs args)
-    {
-        newContactWindow = null;
     }
 
     private void EditContact_Click(object _, RoutedEventArgs e)
@@ -121,13 +137,11 @@ public sealed partial class MainWindow : Window
                 ViewModel.SelectedContact!.UserId.ToString("N"),
                 ViewModel.SelectedContact!.Nickname
             ));
-        editContactWindow.Closed += EditContactWindow_Closed;
-        WindowingUtil.Resize(editContactWindow, new SizeInt32(400, 300));
+        editContactWindow.Closed += (object sender, WindowEventArgs args) =>
+        {
+            editContactWindow = null;
+        };
+        WindowingUtil.Resize(editContactWindow, new SizeInt32(370, 280));
         editContactWindow.Activate();
-    }
-
-    private void EditContactWindow_Closed(object sender, WindowEventArgs args)
-    {
-        editContactWindow = null;
     }
 }

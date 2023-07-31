@@ -1,25 +1,11 @@
 ﻿using System;
 using CommunityToolkit.Mvvm.ComponentModel;
-using Direct.Desktop.Services;
 using Direct.Desktop.Utilities;
-using Microsoft.UI.Xaml;
 
 namespace Direct.Desktop.ViewModels;
 
 public partial class SetupViewModel : ObservableObject
 {
-    private readonly ISettingsService _settingsService;
-
-    public SetupViewModel(ISettingsService settingsService)
-    {
-        _settingsService = settingsService;
-
-        Theme = _settingsService.Theme;
-    }
-
-    [ObservableProperty]
-    private ElementTheme theme;
-
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(UserIdTextBoxEnabled))]
     [NotifyPropertyChangedFor(nameof(LetsGoButtonEnabled))]

@@ -17,7 +17,7 @@ public sealed partial class EditContactWindow : Window
         ViewModel = viewModel;
     }
 
-    private async void SaveContact_Click(object sender, RoutedEventArgs e)
+    private async void SaveContact_Click(object _, RoutedEventArgs e)
     {
         await ViewModel.SaveContactAsync();
         Close();

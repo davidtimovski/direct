@@ -13,66 +13,68 @@
 		<Nullable>enable</Nullable>
 	</PropertyGroup>
 	<ItemGroup>
-	  <Content Remove="Assets\Images\logo.altform-lightunplated_targetsize-16.png" />
-	  <Content Remove="Assets\Images\logo.altform-lightunplated_targetsize-24.png" />
-	  <Content Remove="Assets\Images\logo.altform-lightunplated_targetsize-256.png" />
-	  <Content Remove="Assets\Images\logo.altform-lightunplated_targetsize-32.png" />
-	  <Content Remove="Assets\Images\logo.altform-lightunplated_targetsize-48.png" />
-	  <Content Remove="Assets\Images\logo.altform-unplated_targetsize-16.png" />
-	  <Content Remove="Assets\Images\logo.altform-unplated_targetsize-24.png" />
-	  <Content Remove="Assets\Images\logo.altform-unplated_targetsize-256.png" />
-	  <Content Remove="Assets\Images\logo.altform-unplated_targetsize-32.png" />
-	  <Content Remove="Assets\Images\logo.altform-unplated_targetsize-48.png" />
-	  <Content Remove="Assets\Images\logo.targetsize-16.png" />
-	  <Content Remove="Assets\Images\logo.targetsize-24.png" />
-	  <Content Remove="Assets\Images\logo.targetsize-256.png" />
-	  <Content Remove="Assets\Images\logo.targetsize-32.png" />
-	  <Content Remove="Assets\Images\logo.targetsize-48.png" />
-	  <Content Remove="Assets\LargeTile.scale-100.png" />
-	  <Content Remove="Assets\LargeTile.scale-125.png" />
-	  <Content Remove="Assets\LargeTile.scale-150.png" />
-	  <Content Remove="Assets\LargeTile.scale-200.png" />
-	  <Content Remove="Assets\LargeTile.scale-400.png" />
-	  <Content Remove="Assets\logo.altform-lightunplated_targetsize-16.png" />
-	  <Content Remove="Assets\logo.altform-lightunplated_targetsize-24.png" />
-	  <Content Remove="Assets\logo.altform-lightunplated_targetsize-256.png" />
-	  <Content Remove="Assets\logo.altform-lightunplated_targetsize-32.png" />
-	  <Content Remove="Assets\logo.altform-lightunplated_targetsize-48.png" />
-	  <Content Remove="Assets\logo.altform-unplated_targetsize-16.png" />
-	  <Content Remove="Assets\logo.altform-unplated_targetsize-24.png" />
-	  <Content Remove="Assets\logo.altform-unplated_targetsize-256.png" />
-	  <Content Remove="Assets\logo.altform-unplated_targetsize-32.png" />
-	  <Content Remove="Assets\logo.altform-unplated_targetsize-48.png" />
-	  <Content Remove="Assets\logo.targetsize-16.png" />
-	  <Content Remove="Assets\logo.targetsize-24.png" />
-	  <Content Remove="Assets\logo.targetsize-256.png" />
-	  <Content Remove="Assets\logo.targetsize-32.png" />
-	  <Content Remove="Assets\logo.targetsize-48.png" />
-	  <Content Remove="Assets\splash.scale-100.png" />
-	  <Content Remove="Assets\splash.scale-125.png" />
-	  <Content Remove="Assets\splash.scale-150.png" />
-	  <Content Remove="Assets\splash.scale-200.png" />
-	  <Content Remove="Assets\splash.scale-400.png" />
-	  <Content Remove="Assets\user.altform-lightunplated_targetsize-16.png" />
-	  <Content Remove="Assets\user.altform-lightunplated_targetsize-24.png" />
-	  <Content Remove="Assets\user.altform-lightunplated_targetsize-256.png" />
-	  <Content Remove="Assets\user.altform-lightunplated_targetsize-32.png" />
-	  <Content Remove="Assets\user.altform-lightunplated_targetsize-48.png" />
-	  <Content Remove="Assets\user.altform-unplated_targetsize-16.png" />
-	  <Content Remove="Assets\user.altform-unplated_targetsize-24.png" />
-	  <Content Remove="Assets\user.altform-unplated_targetsize-256.png" />
-	  <Content Remove="Assets\user.altform-unplated_targetsize-32.png" />
-	  <Content Remove="Assets\user.altform-unplated_targetsize-48.png" />
-	  <Content Remove="Assets\user.targetsize-16.png" />
-	  <Content Remove="Assets\user.targetsize-24.png" />
-	  <Content Remove="Assets\user.targetsize-256.png" />
-	  <Content Remove="Assets\user.targetsize-32.png" />
-	  <Content Remove="Assets\user.targetsize-48.png" />
+		<Content Remove="Assets\Images\logo.altform-lightunplated_targetsize-16.png" />
+		<Content Remove="Assets\Images\logo.altform-lightunplated_targetsize-24.png" />
+		<Content Remove="Assets\Images\logo.altform-lightunplated_targetsize-256.png" />
+		<Content Remove="Assets\Images\logo.altform-lightunplated_targetsize-32.png" />
+		<Content Remove="Assets\Images\logo.altform-lightunplated_targetsize-48.png" />
+		<Content Remove="Assets\Images\logo.altform-unplated_targetsize-16.png" />
+		<Content Remove="Assets\Images\logo.altform-unplated_targetsize-24.png" />
+		<Content Remove="Assets\Images\logo.altform-unplated_targetsize-256.png" />
+		<Content Remove="Assets\Images\logo.altform-unplated_targetsize-32.png" />
+		<Content Remove="Assets\Images\logo.altform-unplated_targetsize-48.png" />
+		<Content Remove="Assets\Images\logo.targetsize-16.png" />
+		<Content Remove="Assets\Images\logo.targetsize-24.png" />
+		<Content Remove="Assets\Images\logo.targetsize-256.png" />
+		<Content Remove="Assets\Images\logo.targetsize-32.png" />
+		<Content Remove="Assets\Images\logo.targetsize-48.png" />
+		<Content Remove="Assets\LargeTile.scale-100.png" />
+		<Content Remove="Assets\LargeTile.scale-125.png" />
+		<Content Remove="Assets\LargeTile.scale-150.png" />
+		<Content Remove="Assets\LargeTile.scale-200.png" />
+		<Content Remove="Assets\LargeTile.scale-400.png" />
+		<Content Remove="Assets\logo.altform-lightunplated_targetsize-16.png" />
+		<Content Remove="Assets\logo.altform-lightunplated_targetsize-24.png" />
+		<Content Remove="Assets\logo.altform-lightunplated_targetsize-256.png" />
+		<Content Remove="Assets\logo.altform-lightunplated_targetsize-32.png" />
+		<Content Remove="Assets\logo.altform-lightunplated_targetsize-48.png" />
+		<Content Remove="Assets\logo.altform-unplated_targetsize-16.png" />
+		<Content Remove="Assets\logo.altform-unplated_targetsize-24.png" />
+		<Content Remove="Assets\logo.altform-unplated_targetsize-256.png" />
+		<Content Remove="Assets\logo.altform-unplated_targetsize-32.png" />
+		<Content Remove="Assets\logo.altform-unplated_targetsize-48.png" />
+		<Content Remove="Assets\logo.targetsize-16.png" />
+		<Content Remove="Assets\logo.targetsize-24.png" />
+		<Content Remove="Assets\logo.targetsize-256.png" />
+		<Content Remove="Assets\logo.targetsize-32.png" />
+		<Content Remove="Assets\logo.targetsize-48.png" />
+		<Content Remove="Assets\splash.scale-100.png" />
+		<Content Remove="Assets\splash.scale-125.png" />
+		<Content Remove="Assets\splash.scale-150.png" />
+		<Content Remove="Assets\splash.scale-200.png" />
+		<Content Remove="Assets\splash.scale-400.png" />
+		<Content Remove="Assets\user.altform-lightunplated_targetsize-16.png" />
+		<Content Remove="Assets\user.altform-lightunplated_targetsize-24.png" />
+		<Content Remove="Assets\user.altform-lightunplated_targetsize-256.png" />
+		<Content Remove="Assets\user.altform-lightunplated_targetsize-32.png" />
+		<Content Remove="Assets\user.altform-lightunplated_targetsize-48.png" />
+		<Content Remove="Assets\user.altform-unplated_targetsize-16.png" />
+		<Content Remove="Assets\user.altform-unplated_targetsize-24.png" />
+		<Content Remove="Assets\user.altform-unplated_targetsize-256.png" />
+		<Content Remove="Assets\user.altform-unplated_targetsize-32.png" />
+		<Content Remove="Assets\user.altform-unplated_targetsize-48.png" />
+		<Content Remove="Assets\user.targetsize-16.png" />
+		<Content Remove="Assets\user.targetsize-24.png" />
+		<Content Remove="Assets\user.targetsize-256.png" />
+		<Content Remove="Assets\user.targetsize-32.png" />
+		<Content Remove="Assets\user.targetsize-48.png" />
 	</ItemGroup>
 	<ItemGroup>
-	  <None Remove="EditContactWindow.xaml" />
-	  <None Remove="NewContactWindow.xaml" />
-	  <None Remove="SetupWindow.xaml" />
+		<None Remove="EditContactWindow.xaml" />
+		<None Remove="NewContactWindow.xaml" />
+		<None Remove="SettingsWindow.xaml" />
+		<None Remove="SetupWindow.xaml" />
+		<None Remove="UserControls\TitleBar.xaml" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -87,34 +89,49 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="Assets\Fonts\" />
-	  <Folder Include="UserControls\" />
+		<Folder Include="Assets\Fonts\" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\Direct.Shared\Direct.Shared.csproj" />
+		<ProjectReference Include="..\Direct.Shared\Direct.Shared.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Content Update="Assets\Fonts\DidactGothic-Regular.ttf">
+		<Content Update="Assets\Fonts\Nunito-Light.ttf">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Update="Assets\Fonts\Nunito-Regular.ttf">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Update="Assets\Images\logo.targetsize-24.png">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Page Update="EditContactWindow.xaml">
+	  </None>
+	  <Page Update="SettingsWindow.xaml">
 	    <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
 	    <SubType>Designer</SubType>
 	  </Page>
-	  <Page Update="NewContactWindow.xaml">
+	  <Page Update="UserControls\TitleBar.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </Page>
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Page Update="SetupWindow.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </Page>
+		<Page Update="EditContactWindow.xaml">
+			<XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+			<SubType>Designer</SubType>
+		</Page>
+		<Page Update="NewContactWindow.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</Page>
+	</ItemGroup>
+
+	<ItemGroup>
+		<Page Update="SetupWindow.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</Page>
 	</ItemGroup>
 
 	<!-- 

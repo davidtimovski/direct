@@ -24,6 +24,7 @@ public partial class MainViewModel : ObservableObject
     public MainViewModel(ISettingsService settingsService, IChatService chatService, IEventService eventService, DispatcherQueue dispatcherQueue)
     {
         _settingsService = settingsService;
+        _settingsService.ThemeChanged += ThemeChanged;
 
         _chatService = chatService;
         _chatService.ConnectedContactsRetrieved += ConnectedContactsRetrieved;
@@ -44,21 +45,17 @@ public partial class MainViewModel : ObservableObject
 
         _dispatcherQueue = dispatcherQueue;
 
-        userId = _settingsService.UserId!.Value.ToString("N");
         Theme = _settingsService.Theme;
-        SelectedTheme = Theme.ToString();
+        UserId = _settingsService.UserId!.Value.ToString("N");
 
         ConnectionStatus = new(_chatService, dispatcherQueue);
     }
 
     [ObservableProperty]
-    private string userId = string.Empty;
-
-    [ObservableProperty]
     private ElementTheme theme;
 
     [ObservableProperty]
-    private string selectedTheme;
+    private string userId = string.Empty;
 
     public ObservableCollection<ContactViewModel> Contacts = new();
 
@@ -148,26 +145,6 @@ public partial class MainViewModel : ObservableObject
         Clipboard.SetContent(package);
     }
 
-    public void ThemeChanged()
-    {
-        Theme = SelectedTheme == ElementTheme.Light.ToString()
-            ? ElementTheme.Light
-            : ElementTheme.Dark;
-
-        foreach (var contact in Contacts)
-        {
-            foreach (var group in contact.MessageGroups)
-            {
-                foreach (var message in group)
-                {
-                    message.SetTheme(Theme);
-                }
-            }
-        }
-
-        _settingsService.Theme = Theme;
-    }
-
     public async Task DeleteContactAsync()
     {
         await Repository.DeleteContactAsync(SelectedContact!.UserId);
@@ -218,6 +195,22 @@ public partial class MainViewModel : ObservableObject
         }
 
         await _chatService.UpdateMessageAsync(id, recipientId, trimmedMessage);
+    }
+
+    private void ThemeChanged(object? _, ThemeChangedEventArgs e)
+    {
+        foreach (var contact in Contacts)
+        {
+            foreach (var group in contact.MessageGroups)
+            {
+                foreach (var message in group)
+                {
+                    message.SetTheme(Theme);
+                }
+            }
+        }
+
+        Theme = e.Theme;
     }
 
     private void ConnectedContactsRetrieved(object? eee, ConnectedContactsRetrievedEventArgs e)

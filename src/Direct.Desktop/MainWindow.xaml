@@ -3,7 +3,8 @@
     x:Class="Direct.Desktop.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:Direct.Desktop.ViewModels">
+    xmlns:local="using:Direct.Desktop.UserControls"
+    xmlns:vm="using:Direct.Desktop.ViewModels">
 
     <Grid RequestedTheme="{x:Bind ViewModel.Theme, Mode=OneWay}"
           Background="{ThemeResource WindowBackground}">
@@ -33,9 +34,7 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <Border x:Name="AppTitleBar" Grid.Row="0" Padding="12 0">
-            <TextBlock x:Name="AppTitle" Text="Direct" VerticalAlignment="Center" />
-        </Border>
+        <local:TitleBar x:Name="AppTitleBar" Grid.Row="0" Title="Direct" />
 
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
@@ -53,22 +52,22 @@
                     <RowDefinition Height="40" />
                 </Grid.RowDefinitions>
 
-                <Expander Grid.Row="0" 
-                          HorizontalAlignment="Stretch">
-                    <Expander.Header>
-                        <FontIcon Glyph="&#xE700;" HorizontalAlignment="Left" />
-                    </Expander.Header>
-                    
-                    <Expander.Content>
-                        <StackPanel>
-                            <Border BorderThickness="0 0 0 1"
-                                    BorderBrush="#666"
-                                    Padding="0 0 0 25"
-                                    Margin="0 0 0 20">
-
+                <CommandBar Grid.Row="0"
+                            HorizontalAlignment="Left"
+                            DefaultLabelPosition="Right">
+                    <AppBarButton Icon="Contact2"
+                                  LabelPosition="Collapsed"
+                                  ToolTipService.ToolTip="User ID">
+                        <AppBarButton.Flyout>
+                            <Flyout>
                                 <StackPanel>
-                                    <TextBlock Text="User ID. Share with others you wish to talk to."
-                                               Margin="0 0 0 10" />
+                                    <TextBlock FontFamily="{StaticResource DefaultFontFamilyLight}"
+                                               Foreground="{StaticResource OrangeBrush}"
+                                               FontSize="18"
+                                               Margin="0 0 0 10">Your user ID</TextBlock>
+
+                                    <TextBlock FontFamily="{StaticResource DefaultFontFamily}"
+                                               Margin="0 0 0 6">Share it only with people that you know</TextBlock>
 
                                     <Grid>
                                         <Grid.ColumnDefinitions>
@@ -86,58 +85,36 @@
                                                  VerticalAlignment="Center" />
 
                                         <Button Grid.Column="1"
-                                                IsEnabled="{x:Bind ViewModel.ConnectionStatus.Connected, Mode=OneWay}"
                                                 Click="{x:Bind ViewModel.CopyUserID}"
                                                 ToolTipService.ToolTip="Copy"
                                                 VerticalAlignment="Stretch"
                                                 Margin="10 0 0 0">
                                             <FontIcon
-                                                Foreground="{ThemeResource MessageSentAtForeground}"
                                                 Glyph="&#xE8C8;"
                                                 FontFamily="Segoe MDL2 Assets"
                                                 FontSize="12" />
                                         </Button>
                                     </Grid>
                                 </StackPanel>
-                            </Border>
+                            </Flyout>
+                        </AppBarButton.Flyout>
+                    </AppBarButton>
 
-                            <Border BorderThickness="0 0 0 1"
-                                    BorderBrush="#666"
-                                    Padding="0 0 0 20"
-                                    Margin="0 0 0 20">
-                                <Button Click="AddNewContactButton_Click">Add new contact</Button>
-                            </Border>
+                    <AppBarButton Click="SettingsButton_Click"
+                                  Icon="Setting"
+                                  LabelPosition="Collapsed"
+                                  ToolTipService.ToolTip="Settings" />
 
-                            <Border>
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto" />
-                                        <ColumnDefinition Width="*" />
-                                    </Grid.ColumnDefinitions>
-
-                                    <TextBlock Grid.Column="0"
-                                               Text="Theme"
-                                               FontFamily="{StaticResource DefaultFontFamily}"
-                                               VerticalAlignment="Center" />
-
-                                    <ComboBox Grid.Column="1"
-                                              SelectionChanged="{x:Bind ViewModel.ThemeChanged}"
-                                              SelectedItem="{x:Bind ViewModel.SelectedTheme, Mode=TwoWay}"
-                                              FontFamily="{StaticResource DefaultFontFamily}"
-                                              HorizontalAlignment="Right">
-                                        <x:String>Dark</x:String>
-                                        <x:String>Light</x:String>
-                                    </ComboBox>
-                                </Grid>
-                            </Border>
-                        </StackPanel>
-                    </Expander.Content>
-                </Expander>
+                    <AppBarButton Click="AddNewContactButton_Click"
+                                  Icon="AddFriend"
+                                  LabelPosition="Collapsed"
+                                  ToolTipService.ToolTip="Add contact" />
+                </CommandBar>
 
                 <Border Grid.Row="1" Padding="5 10">
 
                     <Border.Resources>
-                        <DataTemplate x:Key="ContactListViewTemplate" x:DataType="local:ContactViewModel">
+                        <DataTemplate x:Key="ContactListViewTemplate" x:DataType="vm:ContactViewModel">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
@@ -168,7 +145,7 @@
                                                  Visibility="{x:Bind HasUnreadMessages, Mode=OneWay}"
                                                  Width="10"
                                                  Height="10"
-                                                 Fill="{StaticResource CyanBrush}"
+                                                 Fill="{StaticResource OrangeBrush}"
                                                  Margin="7 0"
                                                  VerticalAlignment="Center" />
 
@@ -212,7 +189,7 @@
                     </Grid.RowDefinitions>
 
                     <Grid.Resources>
-                        <DataTemplate x:Key="MessageListTemplate" x:DataType="local:MessageViewModel">
+                        <DataTemplate x:Key="MessageListTemplate" x:DataType="vm:MessageViewModel">
                             <Border Padding="0 6">
                                 <StackPanel HorizontalAlignment="{x:Bind Alignment}">
                                     <Border HorizontalAlignment="{x:Bind Alignment}">
@@ -274,7 +251,7 @@
                         <ListView.GroupStyle>
                             <GroupStyle>
                                 <GroupStyle.HeaderTemplate>
-                                    <DataTemplate x:DataType="local:DailyMessageGroup">
+                                    <DataTemplate x:DataType="vm:DailyMessageGroup">
                                         <TextBlock Text="{x:Bind DateLabel}"
                                                    AutomationProperties.AccessibilityView="Raw"
                                                    Foreground="{ThemeResource MessageSentAtForeground}"

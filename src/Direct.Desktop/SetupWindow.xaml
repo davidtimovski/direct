@@ -2,31 +2,29 @@
 <Window
     x:Class="Direct.Desktop.SetupWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Direct.Desktop.UserControls">
 
-    <Grid RequestedTheme="{x:Bind ViewModel.Theme, Mode=OneWay}"
-          Background="{ThemeResource WindowBackground}">
+    <Grid Background="{ThemeResource WindowBackground}">
         <Grid.RowDefinitions>
             <RowDefinition Height="28" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <Border x:Name="AppTitleBar" Grid.Row="0" Padding="12 0">
-            <TextBlock x:Name="AppTitle" Text="Setup" VerticalAlignment="Center" />
-        </Border>
+        <local:TitleBar x:Name="AppTitleBar" Grid.Row="0" Title="Setup" />
 
         <StackPanel Grid.Row="1" VerticalAlignment="Center">
             <TextBlock Text="Welcome"
-                               FontFamily="{StaticResource DefaultFontFamilyLight}"
-                               FontSize="24"
-                               HorizontalAlignment="Center"
-                               Foreground="#888" />
+                       FontFamily="{StaticResource DefaultFontFamilyLight}"
+                       FontSize="24"
+                       HorizontalAlignment="Center"
+                       Foreground="#888" />
 
             <TextBlock FontFamily="{StaticResource DefaultFontFamilyLight}"
-                               FontSize="16"
-                               HorizontalTextAlignment="Center"
-                               Foreground="#888"
-                               Margin="0 30 0 15">
+                       FontSize="16"
+                       HorizontalTextAlignment="Center"
+                       Foreground="#888"
+                       Margin="0 30 0 15">
                         <Run>In order to start you first need a User ID.</Run>
                         <LineBreak/>
                         <LineBreak/>

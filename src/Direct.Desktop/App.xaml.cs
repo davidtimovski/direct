@@ -32,6 +32,9 @@ public partial class App : Application
         services.AddSingleton<MainWindow>();
         services.AddSingleton<MainViewModel>();
 
+        services.AddTransient<SettingsWindow>();
+        services.AddTransient<SettingsViewModel>();
+
         services.AddTransient<NewContactWindow>();
         services.AddTransient<NewContactViewModel>();
 
