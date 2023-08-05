@@ -1,0 +1,26 @@
+﻿@page "/privacy-policy"
+@model Direct.Web.Pages.PrivacyPolicyModel
+@{
+    Layout = "_Layout";
+    ViewBag.Title = "Privacy policy";
+}
+
+<section style="padding-top: 10rem; text-align: center;">
+    <img src="~/images/logo.svg" style="width: 8rem; margin-bottom: 4rem;" />
+
+    <h1 style="margin-bottom: 10rem;"><strong>Direct</strong></h1>
+    
+    <h2>@ViewBag.Title</h2>
+
+    <div style="margin-top: 7rem;">
+        <p>We don't store your data.</p>
+
+        <p>Contacts that you add are stored on your computer.</p>
+
+        <p>Messages that you send and receive through the app are stored on your computer and the computers of your contacts.</p>
+
+        <p>The server only acts as a means of data transfer. The only data it holds is your user ID (which is not identifiable information), and it only holds it when you have the app open and connected.</p>
+
+        <p>If you uninstall the application, the data will be gone.</p>
+    </div>
+</section>

@@ -45,6 +45,7 @@
         <uap:InitialRotationPreference>
           <uap:Rotation Preference="landscape"/></uap:InitialRotationPreference>
         <uap:SplashScreen Image="Assets\Images\logo.png"/>
+        <uap:LockScreen BadgeLogo="Assets\Images\logo.png" Notification="badge"/>
       </uap:VisualElements>
     </Application>
   </Applications>
