@@ -67,6 +67,7 @@
                                                Margin="0 0 0 10">Your user ID</TextBlock>
 
                                     <TextBlock FontFamily="{StaticResource DefaultFontFamily}"
+                                               Foreground="{ThemeResource WindowForeground}"
                                                Margin="0 0 0 6">Share it only with people that you know</TextBlock>
 
                                     <Grid>
@@ -254,8 +255,8 @@
                                     <DataTemplate x:DataType="vm:DailyMessageGroup">
                                         <TextBlock Text="{x:Bind DateLabel}"
                                                    AutomationProperties.AccessibilityView="Raw"
-                                                   Foreground="{ThemeResource MessageSentAtForeground}"
                                                    FontFamily="{StaticResource DefaultFontFamilyLight}"
+                                                   Foreground="{ThemeResource MessageSentAtForeground}"
                                                    FontSize="14"
                                                    HorizontalAlignment="Stretch" />
                                     </DataTemplate>

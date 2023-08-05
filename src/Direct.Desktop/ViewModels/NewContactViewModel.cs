@@ -57,7 +57,12 @@ public partial class NewContactViewModel : ObservableObject
     {
         Adding = true;
 
-        var contact = new Contact { Id = Guid.ParseExact(UserId, "N"), Nickname = Nickname.Trim(), AddedOn = DateTime.Now };
+        var contact = new Contact
+        {
+            Id = Guid.ParseExact(UserId, "N"),
+            Nickname = Nickname.Trim(),
+            AddedOn = DateTime.Now
+        };
         await Repository.CreateContactAsync(contact);
         _eventService.RaiseContactAdded(contact.Id, contact.Nickname);
 

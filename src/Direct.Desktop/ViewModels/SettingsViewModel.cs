@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Direct.Desktop.Services;
 using Microsoft.UI.Xaml;
 
@@ -24,10 +25,9 @@ public partial class SettingsViewModel : ObservableObject
 
     public void ThemeChanged()
     {
-        Theme = SelectedTheme == ElementTheme.Light.ToString()
-            ? ElementTheme.Light
-            : ElementTheme.Dark;
+        _ = Enum.TryParse(SelectedTheme, out ElementTheme theme);
 
-        _settingsService.Theme = Theme;
+        Theme = theme;
+        _settingsService.Theme = theme;
     }
 }

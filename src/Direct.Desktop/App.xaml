@@ -40,11 +40,13 @@
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceDictionary x:Key="Light">
                     <SolidColorBrush x:Key="WindowBackground" Color="#fafafa" />
+                    <SolidColorBrush x:Key="WindowForeground" Color="#444" />
                     <SolidColorBrush x:Key="MessageSentAtForeground" Color="#666" />
                 </ResourceDictionary>
 
                 <ResourceDictionary x:Key="Dark">
                     <SolidColorBrush x:Key="WindowBackground" Color="#171717" />
+                    <SolidColorBrush x:Key="WindowForeground" Color="#ccc" />
                     <SolidColorBrush x:Key="MessageSentAtForeground" Color="#aaa" />
                 </ResourceDictionary>
             </ResourceDictionary.ThemeDictionaries>

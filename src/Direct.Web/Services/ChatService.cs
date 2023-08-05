@@ -20,19 +20,22 @@ public class ChatService : IChatService
 {
     private readonly ConcurrentDictionary<Guid, ConnectedUser> _connectedUsers = new();
 
-    public ChatService()
+    public ChatService(IConfiguration configuration)
     {
+        // Test data
+        var testUserId = new Guid(configuration["TestUserId"]!.ToString());
+
         _connectedUsers.TryAdd(Guid.Parse("018955e6-3bbd-4af9-ab08-1bf6a2d98fe9"), new ConnectedUser
         (
             Guid.Parse("018955e6-3bbd-4af9-ab08-1bf6a2d98fe9"),
-            new HashSet<Guid> { new Guid("d62a01b1-a857-4f46-9127-5c23be179fbe") },
+            new HashSet<Guid> { testUserId },
             "something else"
         ));
 
         _connectedUsers.TryAdd(Guid.Parse("018955e6-3bbe-469d-bb1a-e0f74724d46d"), new ConnectedUser
         (
             Guid.Parse("018955e6-3bbe-469d-bb1a-e0f74724d46d"),
-            new HashSet<Guid> { new Guid("a4fb87bb-93ae-43f2-baac-2ef0282f72eb") },
+            new HashSet<Guid> { testUserId },
             "something"
         ));
     }
@@ -89,7 +92,7 @@ public class ChatService : IChatService
     /// </summary>
     public bool AddContact(string connectionId, Guid contactId)
     {
-        ConnectedUser? user = GetUser(connectionId) ?? throw new InvalidOperationException($"Could not find user for this connectionId: {connectionId}");
+        ConnectedUser? user = GetUser(connectionId) ?? throw new InvalidOperationException($"Could not find a user for this connectionId: {connectionId}");
 
         if (!user.ContactIds.Contains(contactId))
         {
@@ -103,7 +106,7 @@ public class ChatService : IChatService
 
     public void RemoveContact(string connectionId, Guid contactId)
     {
-        ConnectedUser? user = GetUser(connectionId) ?? throw new InvalidOperationException($"Could not find user for this connectionId: {connectionId}");
+        ConnectedUser? user = GetUser(connectionId) ?? throw new InvalidOperationException($"Could not find a user for this connectionId: {connectionId}");
 
         if (user.ContactIds.Contains(contactId))
         {
@@ -111,6 +114,9 @@ public class ChatService : IChatService
         }
     }
 
+    /// <summary>
+    /// Gets the contacts which also have the user as a contact.
+    /// </summary>
     public List<Guid> GetConnectedContacts(Guid userId, HashSet<Guid> userIds)
     {
         return _connectedUsers.Values
@@ -120,7 +126,7 @@ public class ChatService : IChatService
 
     public SendMessageResult SendMessage(string senderConnectionId, Guid recipientId, string message)
     {
-        Guid? senderId = GetUserId(senderConnectionId) ?? throw new InvalidOperationException($"Could not find userId for this connectionId: {senderConnectionId}");
+        Guid? senderId = GetUserId(senderConnectionId) ?? throw new InvalidOperationException($"Could not find a userId for this connectionId: {senderConnectionId}");
 
         if (!CanSendMessageTo(senderId.Value, recipientId))
         {
@@ -147,7 +153,7 @@ public class ChatService : IChatService
 
     public UpdateMessageResult UpdateMessage(string senderConnectionId, Guid messageId, Guid recipientId, string text)
     {
-        Guid? senderId = GetUserId(senderConnectionId) ?? throw new InvalidOperationException($"Could not find userId for this connectionId: {senderConnectionId}");
+        Guid? senderId = GetUserId(senderConnectionId) ?? throw new InvalidOperationException($"Could not find a userId for this connectionId: {senderConnectionId}");
 
         if (!CanSendMessageTo(senderId.Value, recipientId))
         {

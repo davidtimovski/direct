@@ -32,10 +32,10 @@ public sealed partial class SetupWindow : Window
         _settingsService.UserId = Guid.ParseExact(ViewModel.UserId, "N");
         _settingsService.Save();
 
-        Close();
-
         var mainWindow = _serviceProvider.GetRequiredService<MainWindow>();
         WindowingUtil.Resize(mainWindow, new SizeInt32(_settingsService.WindowWidth, _settingsService.WindowHeight));
         mainWindow.Activate();
+
+        Close();
     }
 }

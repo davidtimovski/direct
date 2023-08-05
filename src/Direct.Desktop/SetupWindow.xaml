@@ -16,14 +16,14 @@
         <StackPanel Grid.Row="1" VerticalAlignment="Center">
             <TextBlock Text="Welcome"
                        FontFamily="{StaticResource DefaultFontFamilyLight}"
+                       Foreground="{ThemeResource WindowForeground}"
                        FontSize="24"
-                       HorizontalAlignment="Center"
-                       Foreground="#888" />
+                       HorizontalAlignment="Center" />
 
             <TextBlock FontFamily="{StaticResource DefaultFontFamilyLight}"
+                       Foreground="{ThemeResource WindowForeground}"
                        FontSize="16"
                        HorizontalTextAlignment="Center"
-                       Foreground="#888"
                        Margin="0 30 0 15">
                         <Run>In order to start you first need a User ID.</Run>
                         <LineBreak/>

@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
 using Direct.Desktop.Services;
 using Direct.Desktop.Utilities;
@@ -17,7 +18,6 @@ public sealed partial class MainWindow : Window
     private readonly IChatService _chatService;
     private readonly IServiceProvider _serviceProvider;
 
-    private bool activated;
     private SettingsWindow? settingsWindow;
     private NewContactWindow? newContactWindow;
     private EditContactWindow? editContactWindow;
@@ -28,7 +28,6 @@ public sealed partial class MainWindow : Window
     {
         InitializeComponent();
 
-        Activated += WindowActivated;
         Closed += WindowClosed;
 
         ExtendsContentIntoTitleBar = true;
@@ -39,18 +38,12 @@ public sealed partial class MainWindow : Window
         _serviceProvider = serviceProvider;
 
         ViewModel = viewModel;
+
+        _ = InitializeAsync();
     }
 
-    // Hack, find a method that can execute asynchronously on first window creation
-    private async void WindowActivated(object _, WindowActivatedEventArgs args)
+    private async Task InitializeAsync()
     {
-        if (activated)
-        {
-            return;
-        }
-
-        activated = true;
-
         var successful = await ViewModel.InitializeAsync();
         if (successful)
         {

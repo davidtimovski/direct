@@ -22,7 +22,7 @@
 
             <StackPanel Grid.Row="2">
                 <TextBlock FontFamily="{StaticResource DefaultFontFamilyLight}"
-                           Foreground="{StaticResource OrangeBrush}"
+                           Foreground="{ThemeResource WindowForeground}"
                            FontSize="18">Theme</TextBlock>
                 
                 <Grid Margin="0 15 0 0">
@@ -32,9 +32,8 @@
                     </Grid.ColumnDefinitions>
 
                     <TextBlock Grid.Column="0"
-                               Text="Selected theme"
                                FontFamily="{StaticResource DefaultFontFamily}"
-                               VerticalAlignment="Center" />
+                               VerticalAlignment="Center">Selected theme</TextBlock>
 
                     <ComboBox Grid.Column="1"
                               SelectionChanged="{x:Bind ViewModel.ThemeChanged}"
@@ -42,8 +41,9 @@
                               FontFamily="{StaticResource DefaultFontFamily}"
                               HorizontalAlignment="Right"
                               VerticalAlignment="Center">
-                        <x:String>Dark</x:String>
+                        <x:String>Default</x:String>
                         <x:String>Light</x:String>
+                        <x:String>Dark</x:String>
                     </ComboBox>
                 </Grid>
             </StackPanel>

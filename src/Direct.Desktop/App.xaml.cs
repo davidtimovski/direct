@@ -19,7 +19,7 @@ public partial class App : Application
         InitializeComponent();
 
         ServiceCollection services = new();
-        InitializeDatabase();
+
         ConfigureServices(services);
         _serviceProvider = services.BuildServiceProvider();
     }
@@ -45,20 +45,17 @@ public partial class App : Application
         services.AddSingleton(DispatcherQueue.GetForCurrentThread());
     }
 
-    private static void InitializeDatabase()
+    protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
         const string settingName = "DatabaseInitialized";
         ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
 
         if (localSettings.Values[settingName] is null)
         {
-            Repository.InitializeDatabaseAsync();
+            Repository.InitializeDatabaseAsync().Wait();
             localSettings.Values[settingName] = true;
         }
-    }
 
-    protected override void OnLaunched(LaunchActivatedEventArgs args)
-    {
         var settingsService = _serviceProvider.GetRequiredService<ISettingsService>();
         if (settingsService.UserId.HasValue)
         {

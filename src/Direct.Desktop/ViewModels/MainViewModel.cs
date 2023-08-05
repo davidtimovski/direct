@@ -107,7 +107,7 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
-    public async Task MessageBoxKeyUpAsync(object _, KeyRoutedEventArgs e)
+    public async void MessageBoxKeyUpAsync(object _, KeyRoutedEventArgs e)
     {
         if (e.Key == VirtualKey.Enter)
         {
@@ -145,7 +145,7 @@ public partial class MainViewModel : ObservableObject
         Clipboard.SetContent(package);
     }
 
-    public async Task DeleteContactAsync()
+    public async void DeleteContactAsync()
     {
         await Repository.DeleteContactAsync(SelectedContact!.UserId);
         await _chatService.RemoveContactAsync(SelectedContact!.UserId);

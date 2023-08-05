@@ -8,14 +8,14 @@
   IgnorableNamespaces="uap rescap">
 
   <Identity
-    Name="2d9fb8e0-55f8-4a43-8da1-dbb0cd88945f"
-    Publisher="CN=david"
-    Version="1.0.0.0" />
+    Name="606DavidTimovski.DirectMessenger"
+    Publisher="CN=43B6C682-5195-4A6E-9EE9-F644821A02C8"
+    Version="0.1.23.0" />
 
-  <mp:PhoneIdentity PhoneProductId="94714064-74ca-41aa-b085-82c994be68cf" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
+  <mp:PhoneIdentity PhoneProductId="367ddd82-28a9-411a-bc13-930719e1e223" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
-    <DisplayName>Direct</DisplayName>
+    <DisplayName>Direct (Messenger)</DisplayName>
     <PublisherDisplayName>David Timovski</PublisherDisplayName>
     <Logo>Assets\Images\logo.png</Logo>
   </Properties>
@@ -34,7 +34,7 @@
       Executable="$targetnametoken$.exe"
       EntryPoint="$targetentrypoint$">
       <uap:VisualElements
-        DisplayName="Direct"
+        DisplayName="Direct (Messenger)"
         BackgroundColor="transparent" Description="Direct messaging" Square150x150Logo="Assets\Images\logo.png" Square44x44Logo="Assets\Images\logo.png">
         <uap:DefaultTile Square71x71Logo="Assets\Images\SmallTile.png" Square310x310Logo="Assets\Images\LargeTile.png" Wide310x150Logo="Assets\Images\logo.png">
           <uap:ShowNameOnTiles>

@@ -187,7 +187,7 @@ internal static class Repository
         await cmd.ExecuteNonQueryAsync();
     }
 
-    internal async static void InitializeDatabaseAsync()
+    internal async static Task InitializeDatabaseAsync()
     {
         await ApplicationData.Current.LocalFolder.CreateFileAsync(DatabaseFileName, CreationCollisionOption.OpenIfExists);
 

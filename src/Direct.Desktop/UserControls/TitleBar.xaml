@@ -10,7 +10,11 @@
     <Border Padding="8 0">
         <StackPanel Orientation="Horizontal">
             <Image Source="/Assets/Images/logo.targetsize-24.png" Width="24" Height="24" VerticalAlignment="Center" />
-            <TextBlock x:Name="AppTitle" Text="{x:Bind Title}" VerticalAlignment="Center" Margin="8 0 0 0" />
+            <TextBlock x:Name="AppTitle"
+                       Text="{x:Bind Title}"
+                       FontFamily="{StaticResource DefaultFontFamily}"
+                       VerticalAlignment="Center"
+                       Margin="8 0 0 0" />
         </StackPanel>
     </Border>
 </UserControl>
