@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
 using Direct.Desktop.Services;
 using Direct.Desktop.Utilities;
@@ -23,6 +24,7 @@ public sealed partial class MainWindow : Window
     private EditContactWindow? editContactWindow;
 
     public MainViewModel ViewModel { get; }
+    public ICommand AddEmojiCommand { get; }
 
     public MainWindow(ISettingsService settingsService, IChatService chatService, IServiceProvider serviceProvider, MainViewModel viewModel)
     {
@@ -38,8 +40,20 @@ public sealed partial class MainWindow : Window
         _serviceProvider = serviceProvider;
 
         ViewModel = viewModel;
+        AddEmojiCommand = new RelayCommand<string>(AddEmoji);
 
         _ = InitializeAsync();
+    }
+
+    private void AddEmoji(string? emoji)
+    {
+        if (emoji is null)
+        {
+            return;
+        }
+
+        ViewModel.AddEmoji(emoji);
+        EmojiFlyout.Hide();
     }
 
     private async Task InitializeAsync()

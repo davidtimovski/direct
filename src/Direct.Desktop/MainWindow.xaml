@@ -5,10 +5,10 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Direct.Desktop.UserControls"
     xmlns:vm="using:Direct.Desktop.ViewModels">
-
+    
     <Grid RequestedTheme="{x:Bind ViewModel.Theme, Mode=OneWay}"
           Background="{ThemeResource WindowBackground}">
-        
+
         <Grid.Resources>
             <ResourceDictionary>
                 <CollectionViewSource x:Name="MessageGroups"
@@ -28,7 +28,7 @@
                 </ResourceDictionary.ThemeDictionaries>
             </ResourceDictionary>
         </Grid.Resources>
-        
+
         <Grid.RowDefinitions>
             <RowDefinition Height="28" />
             <RowDefinition Height="*" />
@@ -152,9 +152,10 @@
 
                                         <Ellipse Grid.Column="2"
                                                  Visibility="{x:Bind Connected, Mode=OneWay}"
+                                                 Fill="{StaticResource CyanBrush}"
+                                                 ToolTipService.ToolTip="Online"
                                                  Width="10"
                                                  Height="10"
-                                                 Fill="{StaticResource CyanBrush}"
                                                  Margin="7 0"
                                                  VerticalAlignment="Center" />
                                     </Grid>
@@ -211,7 +212,7 @@
                                                        Foreground="{ThemeResource MessageSentAtForeground}" />
                                         </StackPanel>
                                     </Border>
-                                    
+
                                     <Border
                                         Background="{x:Bind Background, Mode=OneWay}"
                                         CornerRadius="{StaticResource ComboBoxItemCornerRadius}"
@@ -220,8 +221,9 @@
                                         <TextBlock
                                             Text="{x:Bind Text, Mode=OneWay}"
                                             FontFamily="{StaticResource DefaultFontFamily}"
-                                            IsTextSelectionEnabled="True"
-                                            Foreground="{x:Bind Foreground, Mode=OneWay}" />
+                                            Foreground="{x:Bind Foreground, Mode=OneWay}"
+                                            TextWrapping="WrapWholeWords"
+                                            IsTextSelectionEnabled="True" />
                                     </Border>
                                 </StackPanel>
                             </Border>
@@ -286,13 +288,40 @@
                     </DropDownButton>
 
                     <Border Grid.Row="2" Padding="0 10 0 0">
-                        <TextBox Text="{x:Bind ViewModel.SelectedContact.MessageText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        <Grid Visibility="{x:Bind ViewModel.ContactIsSelected, Mode=OneWay}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <TextBox Grid.Column="0" 
+                                 Text="{x:Bind ViewModel.SelectedContact.MessageText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  KeyUp="{x:Bind ViewModel.MessageBoxKeyUpAsync}"
                                  SelectionStart="{x:Bind ViewModel.SelectedContact.MessageSelectionStart, Mode=OneWay}"
-                                 Visibility="{x:Bind ViewModel.ContactIsSelected, Mode=OneWay}"
                                  IsEnabled="{x:Bind ViewModel.SelectedContact.MessageTextBoxIsEnabled, Mode=OneWay}"
                                  IsSpellCheckEnabled="True"
                                  MaxLength="5000" />
+
+                            <Button Grid.Column="1"
+                                    IsEnabled="{x:Bind ViewModel.SelectedContact.MessageTextBoxIsEnabled, Mode=OneWay}"
+                                    Foreground="{ThemeResource WindowForeground}"
+                                    ToolTipService.ToolTip="Emojis"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Stretch"
+                                    Margin="10 0"
+                                    Padding="15 0">
+                                <Button.Flyout>
+                                    <Flyout x:Name="EmojiFlyout">
+                                        <local:EmojiGrid AddCommand="{x:Bind AddEmojiCommand}" />
+                                    </Flyout>
+                                </Button.Flyout>
+
+                                <FontIcon
+                                    Glyph="&#xED54;"
+                                    FontFamily="Segoe MDL2 Assets"
+                                    FontSize="18" />
+                            </Button>
+                        </Grid>
                     </Border>
                 </Grid>
             </Border>

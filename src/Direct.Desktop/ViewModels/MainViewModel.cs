@@ -138,6 +138,11 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
+    public void AddEmoji(string emoji)
+    {
+        SelectedContact!.MessageText += emoji;
+    }
+
     public void CopyUserID()
     {
         var package = new DataPackage();

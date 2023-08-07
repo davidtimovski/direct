@@ -37,7 +37,7 @@ public partial class MessageViewModel : ObservableObject
         SentAt = sentAt;
         UserIsSender = userIsSender;
 
-        Text = text;
+        Text = EmojiUtil.GenerateEmojis(text);
         SentAtFormatted = FormatDate(sentAt);
         Edited = editedAt.HasValue;
         EditedAt = editedAt.HasValue ? FormatEditedAt(editedAt.Value) : string.Empty;

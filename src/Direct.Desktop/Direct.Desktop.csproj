@@ -75,13 +75,6 @@
 		<Content Remove="Assets\user.targetsize-32.png" />
 		<Content Remove="Assets\user.targetsize-48.png" />
 	</ItemGroup>
-	<ItemGroup>
-		<None Remove="EditContactWindow.xaml" />
-		<None Remove="NewContactWindow.xaml" />
-		<None Remove="SettingsWindow.xaml" />
-		<None Remove="SetupWindow.xaml" />
-		<None Remove="UserControls\TitleBar.xaml" />
-	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.1" />
@@ -116,6 +109,10 @@
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </None>
 	  <Page Update="SettingsWindow.xaml">
+	    <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+	    <SubType>Designer</SubType>
+	  </Page>
+	  <Page Update="UserControls\EmojiButton.xaml">
 	    <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
 	    <SubType>Designer</SubType>
 	  </Page>
