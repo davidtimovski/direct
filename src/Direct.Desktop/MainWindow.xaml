@@ -282,7 +282,7 @@
                                 <MenuFlyoutItem Text="Edit contact"
                                                 Click="EditContact_Click" />
                                 <MenuFlyoutItem Text="Delete contact"
-                                                Click="{x:Bind ViewModel.DeleteContactAsync}" />
+                                                Click="DeleteContact_Click" />
                             </MenuFlyout>
                         </DropDownButton.Flyout>
                     </DropDownButton>

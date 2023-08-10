@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
 using Direct.Desktop.Services;
+using Direct.Desktop.UserControls;
 using Direct.Desktop.Utilities;
 using Direct.Desktop.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
@@ -150,5 +151,22 @@ public sealed partial class MainWindow : Window
         };
         WindowingUtil.Resize(editContactWindow, new SizeInt32(370, 280));
         editContactWindow.Activate();
+    }
+
+    private async void DeleteContact_Click(object _, RoutedEventArgs e)
+    {
+        var content = new DeleteContactDialog(ViewModel.SelectedContact!.Nickname);
+        var dialog = new ContentDialog
+        {
+            XamlRoot = Content.XamlRoot,
+            Style = Application.Current.Resources["DefaultContentDialogStyle"] as Style,
+            RequestedTheme = _settingsService.Theme,
+            Title = "Delete contact",
+            Content = content,
+            PrimaryButtonText = "Yes, delete",
+            CloseButtonText = "No, keep",
+            PrimaryButtonCommand = new RelayCommand(() => ViewModel.DeleteContactAsync(content.DeleteMessages))
+        };
+        await dialog.ShowAsync();
     }
 }

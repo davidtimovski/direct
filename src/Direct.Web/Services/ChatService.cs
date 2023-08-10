@@ -99,9 +99,14 @@ public class ChatService : IChatService
             user.ContactIds.Add(contactId);
         }
 
-        var contact = _connectedUsers[contactId];
+        if (_connectedUsers.TryGetValue(contactId, out var contact))
+        {
+            // Contact is online, check whether they have the user as a contact
+            return contact.ContactIds.Contains(user.Id);
+        }
 
-        return contact.ContactIds.Contains(user.Id);
+        // Contact is not online
+        return false;
     }
 
     public void RemoveContact(string connectionId, Guid contactId)

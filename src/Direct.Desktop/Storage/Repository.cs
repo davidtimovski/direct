@@ -77,18 +77,33 @@ internal static class Repository
         await cmd.ExecuteNonQueryAsync();
     }
 
-    internal async static Task DeleteContactAsync(Guid id)
+    internal async static Task DeleteContactAsync(Guid id, bool deleteMessages)
     {
         using var db = OpenConnection();
+        using var transaction = db.BeginTransaction();
 
-        var cmd = new SqliteCommand
+        var deleteContactsCmd = new SqliteCommand
         {
+            Transaction = transaction,
             Connection = db,
             CommandText = "DELETE FROM contacts WHERE id = @id"
         };
-        cmd.Parameters.AddWithValue("@id", id.ToString());
+        deleteContactsCmd.Parameters.AddWithValue("@id", id.ToString());
+        await deleteContactsCmd.ExecuteNonQueryAsync();
 
-        await cmd.ExecuteNonQueryAsync();
+        if (deleteMessages)
+        {
+            var deleteMessagesCmd = new SqliteCommand
+            {
+                Transaction = transaction,
+                Connection = db,
+                CommandText = "DELETE FROM messages WHERE sender_id = @userId OR recipient_id = @userId"
+            };
+            deleteMessagesCmd.Parameters.AddWithValue("@userId", id.ToString());
+            await deleteMessagesCmd.ExecuteNonQueryAsync();
+        }
+
+        await transaction.CommitAsync();
     }
 
     internal async static Task<List<Message>> GetMessagesAsync(Guid userId)

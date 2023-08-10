@@ -150,9 +150,9 @@ public partial class MainViewModel : ObservableObject
         Clipboard.SetContent(package);
     }
 
-    public async void DeleteContactAsync()
+    public async void DeleteContactAsync(bool deleteMessages)
     {
-        await Repository.DeleteContactAsync(SelectedContact!.UserId);
+        await Repository.DeleteContactAsync(SelectedContact!.UserId, deleteMessages);
         await _chatService.RemoveContactAsync(SelectedContact!.UserId);
     }
 
