@@ -1,4 +1,4 @@
-﻿namespace Direct.Web.Models;
+﻿namespace Direct.Web.Models.ChatService;
 
 public class ConnectedUser
 {
@@ -9,7 +9,7 @@ public class ConnectedUser
         ConnectionIds = new HashSet<string> { connectionId };
     }
 
-    public Guid Id { get; set; }
-    public HashSet<Guid> ContactIds { get; set; }
-    public HashSet<string> ConnectionIds { get; set; }
+    public Guid Id { get; }
+    public HashSet<Guid> ContactIds { get; }
+    public HashSet<string> ConnectionIds { get; }
 }

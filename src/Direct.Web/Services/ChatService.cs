@@ -1,6 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using Direct.Shared.Models;
-using Direct.Web.Models;
+using Direct.Web.Models.ChatService;
 
 namespace Direct.Web.Services;
 
@@ -9,8 +9,8 @@ public interface IChatService
     List<string> AddConnection(Guid userId, HashSet<Guid> contactIds, string connectionId);
     List<string> RemoveConnection(string connectionId);
     Guid? GetUserId(string connectionId);
-    bool AddContact(string connectionId, Guid contactId);
-    void RemoveContact(string connectionId, Guid contactId);
+    AddContactResult AddContact(string connectionId, Guid contactId);
+    RemoveContactResult RemoveContact(string connectionId, Guid contactId);
     List<Guid> GetConnectedContacts(Guid userId, HashSet<Guid> userIds);
     SendMessageResult SendMessage(string senderConnectionId, Guid recipientId, string message);
     UpdateMessageResult UpdateMessage(string senderConnectionId, Guid messageId, Guid recipientId, string text);
@@ -58,7 +58,7 @@ public class ChatService : IChatService
             _connectedUsers.TryAdd(userId, connectedUser);
         }
 
-        return GetContactConnectionIds(userId, connectedUser.ContactIds);
+        return GetMatchingContactConnectionIds(userId, connectedUser.ContactIds);
     }
 
     public List<string> RemoveConnection(string connectionId)
@@ -66,7 +66,7 @@ public class ChatService : IChatService
         var connectedUser = GetUser(connectionId);
         if (connectedUser is null)
         {
-            return new List<string>();        
+            return new List<string>();
         }
 
         if (connectedUser.ConnectionIds.Count > 1)
@@ -78,7 +78,7 @@ public class ChatService : IChatService
             _ = _connectedUsers.Remove(connectedUser.Id, out _);
         }
 
-        return GetContactConnectionIds(connectedUser.Id, connectedUser.ContactIds);
+        return GetMatchingContactConnectionIds(connectedUser.Id, connectedUser.ContactIds);
     }
 
     public Guid? GetUserId(string connectionId)
@@ -90,7 +90,7 @@ public class ChatService : IChatService
     /// <summary>
     /// Adds the contact and returns whether the contact is online.
     /// </summary>
-    public bool AddContact(string connectionId, Guid contactId)
+    public AddContactResult AddContact(string connectionId, Guid contactId)
     {
         ConnectedUser? user = GetUser(connectionId) ?? throw new InvalidOperationException($"Could not find a user for this connectionId: {connectionId}");
 
@@ -101,15 +101,18 @@ public class ChatService : IChatService
 
         if (_connectedUsers.TryGetValue(contactId, out var contact))
         {
-            // Contact is online, check whether they have the user as a contact
-            return contact.ContactIds.Contains(user.Id);
+            // Contact is online, check whether they match
+            if (contact.ContactIds.Contains(user.Id))
+            {
+                return new AddContactResult(user.Id, contact.ConnectionIds.ToList());
+            }
         }
 
         // Contact is not online
-        return false;
+        return new AddContactResult();
     }
 
-    public void RemoveContact(string connectionId, Guid contactId)
+    public RemoveContactResult RemoveContact(string connectionId, Guid contactId)
     {
         ConnectedUser? user = GetUser(connectionId) ?? throw new InvalidOperationException($"Could not find a user for this connectionId: {connectionId}");
 
@@ -117,6 +120,17 @@ public class ChatService : IChatService
         {
             user.ContactIds.Remove(contactId);
         }
+
+        if (_connectedUsers.TryGetValue(contactId, out var contact))
+        {
+            // Contact is online, check whether they match
+            if (contact.ContactIds.Contains(user.Id))
+            {
+                return new RemoveContactResult(user.Id, contact.ConnectionIds.ToList());
+            }
+        }
+
+        return new RemoveContactResult();
     }
 
     /// <summary>
@@ -211,36 +225,8 @@ public class ChatService : IChatService
         return _connectedUsers[senderId].ConnectionIds.Concat(_connectedUsers[recipientId].ConnectionIds).ToList();
     }
 
-    private List<string> GetContactConnectionIds(Guid userId, HashSet<Guid> contactIds)
+    private List<string> GetMatchingContactConnectionIds(Guid userId, HashSet<Guid> contactIds)
     {
         return _connectedUsers.Where(x => contactIds.Contains(x.Value.Id) && x.Value.ContactIds.Contains(userId)).SelectMany(x => x.Value.ConnectionIds).ToList();
     }
-}
-
-public class SendMessageResult
-{
-    public SendMessageResult(bool isSuccessful, List<string> connectionIds, NewMessageDto? message)
-    {
-        IsSuccessful = isSuccessful;
-        ConnectionIds = connectionIds;
-        Message = message;
-    }
-
-    public bool IsSuccessful { get; set; }
-    public List<string> ConnectionIds { get; set; }
-    public NewMessageDto? Message { get; set; }
-}
-
-public class UpdateMessageResult
-{
-    public UpdateMessageResult(bool isSuccessful, List<string> connectionIds, MessageUpdateDto? message)
-    {
-        IsSuccessful = isSuccessful;
-        ConnectionIds = connectionIds;
-        Message = message;
-    }
-
-    public bool IsSuccessful { get; set; }
-    public List<string> ConnectionIds { get; set; }
-    public MessageUpdateDto? Message { get; set; }
 }

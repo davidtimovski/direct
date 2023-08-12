@@ -51,16 +51,30 @@ public class ChatHub : Hub
         }
     }
 
-    public async Task AddContact(Guid userId)
+    public async Task AddContact(Guid contactId)
     {
-        var isConnected = _chatService.AddContact(Context.ConnectionId, userId);
-        await Clients.Caller.SendAsync(ClientEvent.ContactAdded, userId, isConnected);
+        var result = _chatService.AddContact(Context.ConnectionId, contactId);
+
+        await Clients.Caller.SendAsync(ClientEvent.ContactAdded, contactId, result.ContactsMatch);
+
+        // Notify added contact
+        if (result.ContactsMatch)
+        {
+            await Clients.Clients(result.ContactConnectionIds).SendAsync(ClientEvent.ContactConnected, result.UserId!.Value);
+        }
     }
 
-    public async Task RemoveContact(Guid userId)
+    public async Task RemoveContact(Guid contactId)
     {
-        _chatService.RemoveContact(Context.ConnectionId, userId);
-        await Clients.Caller.SendAsync(ClientEvent.ContactRemoved, userId);
+        var result = _chatService.RemoveContact(Context.ConnectionId, contactId);
+
+        await Clients.Caller.SendAsync(ClientEvent.ContactRemoved, contactId);
+
+        // Notify removed contact
+        if (result.ContactsMatch)
+        {
+            await Clients.Clients(result.ContactConnectionIds).SendAsync(ClientEvent.ContactDisconnected, result.UserId!.Value);
+        }
     }
 
     public override async Task OnDisconnectedAsync(Exception? exception)
