@@ -17,7 +17,7 @@ public partial class EditContactViewModel : ObservableObject
     public EditContactViewModel(ISettingsService settingsService, IEventService eventService, string userId, string nickname)
     {
         _settingsService = settingsService;
-        _settingsService.ThemeChanged += ThemeChanged;
+        _settingsService.Changed += SettingsChanged;
 
         _eventService = eventService;
 
@@ -28,7 +28,7 @@ public partial class EditContactViewModel : ObservableObject
         Nickname = nickname;
     }
 
-    private void ThemeChanged(object? _, ThemeChangedEventArgs e)
+    private void SettingsChanged(object? _, SettingsChangedEventArgs e)
     {
         Theme = e.Theme;
     }

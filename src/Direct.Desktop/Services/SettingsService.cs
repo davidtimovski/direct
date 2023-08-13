@@ -8,10 +8,11 @@ public interface ISettingsService
 {
     int WindowWidth { get; set; }
     int WindowHeight { get; set; }
-    ElementTheme Theme { get; set; }
     Guid? UserId { get; set; }
+    ElementTheme Theme { get; set; }
+    double MessageFontSize { get; set; }
 
-    event EventHandler<ThemeChangedEventArgs>? ThemeChanged;
+    event EventHandler<SettingsChangedEventArgs>? Changed;
 
     void Save();
 }
@@ -20,6 +21,7 @@ public class SettingsService : ISettingsService
 {
     private const int DefaultWindowWidth = 1200;
     private const int DefaultWindowHeight = 800;
+    private const double DefaultMessageFontSize = 14;
 
     public SettingsService()
     {
@@ -27,17 +29,21 @@ public class SettingsService : ISettingsService
 
         object? windowWidthValue = localSettings.Values[nameof(WindowWidth)];
         object? windowHeightValue = localSettings.Values[nameof(WindowHeight)];
-        object? themeValue = localSettings.Values[nameof(Theme)];
         object? userIdValue = localSettings.Values[nameof(UserId)];
+        object? themeValue = localSettings.Values[nameof(Theme)];
+        object? messageFontSizeValue = localSettings.Values[nameof(MessageFontSize)];
 
         WindowWidth = windowWidthValue is null ? DefaultWindowWidth : (int)windowWidthValue;
         WindowHeight = windowHeightValue is null ? DefaultWindowHeight : (int)windowHeightValue;
-        _theme = themeValue is null ? ElementTheme.Default : (ElementTheme)themeValue;
         UserId = userIdValue is null ? null : new Guid((string)userIdValue);
+        _theme = themeValue is null ? ElementTheme.Default : (ElementTheme)themeValue;
+        _messageFontSize = messageFontSizeValue is null ? DefaultMessageFontSize : (double)messageFontSizeValue;
     }
 
     public int WindowWidth { get; set; }
     public int WindowHeight { get; set; }
+
+    public Guid? UserId { get; set; }
 
     private ElementTheme _theme;
     public ElementTheme Theme
@@ -49,14 +55,35 @@ public class SettingsService : ISettingsService
             {
                 _theme = value;
                 Save();
-                ThemeChanged?.Invoke(this, new ThemeChangedEventArgs(value));
+                Changed?.Invoke(this, new SettingsChangedEventArgs
+                {
+                    Theme = value,
+                    MessageFontSize = MessageFontSize
+                });
             }
         }
     }
 
-    public Guid? UserId { get; set; }
+    private double _messageFontSize;
+    public double MessageFontSize
+    {
+        get => _messageFontSize;
+        set
+        {
+            if (_messageFontSize != value)
+            {
+                _messageFontSize = value;
+                Save();
+                Changed?.Invoke(this, new SettingsChangedEventArgs
+                {
+                    Theme = Theme,
+                    MessageFontSize = value
+                });
+            }
+        }
+    }
 
-    public event EventHandler<ThemeChangedEventArgs>? ThemeChanged;
+    public event EventHandler<SettingsChangedEventArgs>? Changed;
 
     public void Save()
     {
@@ -64,17 +91,14 @@ public class SettingsService : ISettingsService
 
         localSettings.Values[nameof(WindowWidth)] = WindowWidth;
         localSettings.Values[nameof(WindowHeight)] = WindowHeight;
+        localSettings.Values[nameof(UserId)] = UserId?.ToString();
         localSettings.Values[nameof(Theme)] = (int)Theme;
-        localSettings.Values[nameof(UserId)] = UserId.ToString();
+        localSettings.Values[nameof(MessageFontSize)] = MessageFontSize;
     }
 }
 
-public class ThemeChangedEventArgs : EventArgs
+public class SettingsChangedEventArgs : EventArgs
 {
-    public ThemeChangedEventArgs(ElementTheme theme)
-    {
-        Theme = theme;
-    }
-
-    public ElementTheme Theme { get; init; }
+    public required ElementTheme Theme { get; init; }
+    public required double MessageFontSize { get; init; }
 }

@@ -14,15 +14,15 @@ public partial class ContactViewModel : ObservableObject
 
     public Guid? EditingMessageId { get; set; }
 
-    public ContactViewModel(Guid userId, Guid contactUserId, string nickname, IEnumerable<Message> messages, ElementTheme theme, DateOnly localDate)
+    public ContactViewModel(Guid userId, Guid contactUserId, string nickname, IEnumerable<Message> messages, ElementTheme theme, double messageFontSize, DateOnly localDate)
     {
         UserId = contactUserId;
         Nickname = nickname;
 
-        var query = from messageVm in messages.Select(x => new MessageViewModel(x.Id, x.Text, x.SentAt, x.EditedAt, x.SenderId == userId, theme))
+        var query = from messageVm in messages.Select(x => new MessageViewModel(x.Id, x.Text, x.SentAt, x.EditedAt, x.SenderId == userId, theme, messageFontSize))
                     group messageVm by DateOnly.FromDateTime(messageVm.SentAt) into g
                     orderby g.Key
-                    select new DailyMessageGroup(g.ToList(), g.Key, localDate);
+                    select new DailyMessageGroup(g.ToList(), g.Key, localDate, messageFontSize);
 
         MessageGroups = new ObservableCollection<DailyMessageGroup>(query);
     }

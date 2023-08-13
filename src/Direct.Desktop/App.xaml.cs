@@ -1,10 +1,14 @@
-﻿using Direct.Desktop.Services;
+﻿using System;
+using System.Diagnostics;
+using System.Threading.Tasks;
+using Direct.Desktop.Services;
 using Direct.Desktop.Storage;
 using Direct.Desktop.Utilities;
 using Direct.Desktop.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
+using Microsoft.Windows.AppLifecycle;
 using Windows.Graphics;
 using Windows.Storage;
 
@@ -45,14 +49,22 @@ public partial class App : Application
         services.AddSingleton(DispatcherQueue.GetForCurrentThread());
     }
 
-    protected override void OnLaunched(LaunchActivatedEventArgs args)
+    protected override async void OnLaunched(LaunchActivatedEventArgs args)
     {
+        var isNewInstance = await CheckAppInstanceAsync();
+        if (!isNewInstance)
+        {
+            // Exit our instance and stop
+            Process.GetCurrentProcess().Kill();
+            return;
+        }
+
         const string settingName = "DatabaseInitialized";
         ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
 
         if (localSettings.Values[settingName] is null)
         {
-            Repository.InitializeDatabaseAsync().Wait();
+            await Repository.InitializeDatabaseAsync();
             localSettings.Values[settingName] = true;
         }
 
@@ -70,6 +82,28 @@ public partial class App : Application
             var setupWindow = _serviceProvider.GetRequiredService<SetupWindow>();
             WindowingUtil.Resize(setupWindow, new SizeInt32(500, 400));
             setupWindow?.Activate();
-        }      
+        }
+    }
+
+    /// <summary>
+    /// Helps make sure that we have only a single instance of the app running.
+    /// </summary>
+    private static async Task<bool> CheckAppInstanceAsync()
+    {
+        var appArgs = AppInstance.GetCurrent().GetActivatedEventArgs();
+
+        // Get or register the main instance
+        var mainInstance = AppInstance.FindOrRegisterForKey("main");
+
+        // If the main instance isn't this current instance
+        if (!mainInstance.IsCurrent)
+        {
+            // Redirect activation to that instance
+            await mainInstance.RedirectActivationToAsync(appArgs);
+
+            return false;
+        }
+
+        return true;
     }
 }

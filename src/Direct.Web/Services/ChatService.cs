@@ -23,7 +23,7 @@ public class ChatService : IChatService
     public ChatService(IConfiguration configuration)
     {
         // Test data
-        var testUserId = new Guid(configuration["TestUserId"]!.ToString());
+        var testUserId = Guid.ParseExact(configuration["TestUserId"]!.ToString(), "N");
 
         _connectedUsers.TryAdd(Guid.Parse("018955e6-3bbd-4af9-ab08-1bf6a2d98fe9"), new ConnectedUser
         (

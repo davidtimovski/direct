@@ -4,8 +4,8 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <Button Command="{x:Bind Command}"
-            Content="{x:Bind Emoji}"
+    <Button Content="{x:Bind Emoji}"
+            Command="{x:Bind Command}"
             CommandParameter="{x:Bind Emoji}"
             FontSize="24"
             Padding="1" />

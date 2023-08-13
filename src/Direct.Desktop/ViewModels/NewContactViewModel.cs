@@ -17,7 +17,7 @@ public partial class NewContactViewModel : ObservableObject
     public NewContactViewModel(ISettingsService settingsService, IChatService chatService, IEventService eventService)
     {
         _settingsService = settingsService;
-        _settingsService.ThemeChanged += ThemeChanged;
+        _settingsService.Changed += SettingsChanged;
 
         _chatService = chatService;
         _eventService = eventService;
@@ -25,7 +25,7 @@ public partial class NewContactViewModel : ObservableObject
         Theme = _settingsService.Theme;
     }
 
-    private void ThemeChanged(object? _, ThemeChangedEventArgs e)
+    private void SettingsChanged(object? _, SettingsChangedEventArgs e)
     {
         Theme = e.Theme;
     }

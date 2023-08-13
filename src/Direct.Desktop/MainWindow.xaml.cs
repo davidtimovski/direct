@@ -97,6 +97,12 @@ public sealed partial class MainWindow : Window
         await _chatService.DisconnectAsync();
     }
 
+    private void ContactsListView_SelectionChanged(object _, SelectionChangedEventArgs e)
+    {
+        MessageTextBox.Focus(FocusState.Programmatic);
+        ViewModel.SelectedContactChanged();
+    }
+
     private void SettingsButton_Click(object _, RoutedEventArgs e)
     {
         if (settingsWindow is not null)
@@ -110,7 +116,7 @@ public sealed partial class MainWindow : Window
         {
             settingsWindow = null;
         };
-        WindowingUtil.Resize(settingsWindow, new SizeInt32(400, 150));
+        WindowingUtil.Resize(settingsWindow, new SizeInt32(400, 275));
         settingsWindow.Activate();
     }
 

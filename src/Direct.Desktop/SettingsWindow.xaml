@@ -24,7 +24,7 @@
                 <TextBlock FontFamily="{StaticResource DefaultFontFamilyLight}"
                            Foreground="{ThemeResource WindowForeground}"
                            FontSize="18">Theme</TextBlock>
-                
+
                 <Grid Margin="0 15 0 0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
@@ -44,6 +44,46 @@
                         <x:String>Default</x:String>
                         <x:String>Light</x:String>
                         <x:String>Dark</x:String>
+                    </ComboBox>
+                </Grid>
+
+                <Border Background="#666" Height="1" Margin="10 30 10 20" />
+
+                <TextBlock FontFamily="{StaticResource DefaultFontFamilyLight}"
+                           Foreground="{ThemeResource WindowForeground}"
+                           FontSize="18">Font</TextBlock>
+
+                <Grid Margin="0 15 0 0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0"
+                               FontFamily="{StaticResource DefaultFontFamily}"
+                               VerticalAlignment="Center">Font size</TextBlock>
+
+                    <ComboBox Grid.Column="1"
+                              SelectionChanged="{x:Bind ViewModel.FontSizeChanged}"
+                              SelectedItem="{x:Bind ViewModel.FontSize, Mode=TwoWay}"
+                              FontFamily="{StaticResource DefaultFontFamily}"
+                              HorizontalAlignment="Right"
+                              VerticalAlignment="Center">
+                        <x:Double>12</x:Double>
+                        <x:Double>13</x:Double>
+                        <x:Double>14</x:Double>
+                        <x:Double>15</x:Double>
+                        <x:Double>16</x:Double>
+                        <x:Double>17</x:Double>
+                        <x:Double>18</x:Double>
+                        <x:Double>19</x:Double>
+                        <x:Double>20</x:Double>
+                        <x:Double>21</x:Double>
+                        <x:Double>22</x:Double>
+                        <x:Double>23</x:Double>
+                        <x:Double>24</x:Double>
+                        <x:Double>25</x:Double>
+                        <x:Double>26</x:Double>
                     </ComboBox>
                 </Grid>
             </StackPanel>

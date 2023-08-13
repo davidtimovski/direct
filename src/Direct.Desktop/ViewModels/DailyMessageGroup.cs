@@ -1,20 +1,36 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 
 namespace Direct.Desktop.ViewModels;
 
-public class DailyMessageGroup : ObservableCollection<MessageViewModel>
+public partial class DailyMessageGroup : ObservableCollection<MessageViewModel>
 {
     public DateOnly Date { get; }
 
-    public DailyMessageGroup(List<MessageViewModel> items, DateOnly groupDate, DateOnly localDate) : base(items)
+    public DailyMessageGroup(List<MessageViewModel> messages, DateOnly groupDate, DateOnly localDate, double labelFontSize) : base(messages)
     {
         Date = groupDate;
         DateLabel = FormatHeader(groupDate, localDate);
+        LabelFontSize = labelFontSize;
     }
 
-    public string DateLabel { get; set; }
+    public string DateLabel { get; }
+
+    private double _labelFontSize;
+    public double LabelFontSize
+    {
+        get => _labelFontSize;
+        set
+        {
+            if (_labelFontSize != value)
+            {
+                _labelFontSize = value;
+                OnPropertyChanged(new PropertyChangedEventArgs(nameof(LabelFontSize)));
+            }
+        }
+    }
 
     private static string FormatHeader(DateOnly groupDate, DateOnly localDate)
     {

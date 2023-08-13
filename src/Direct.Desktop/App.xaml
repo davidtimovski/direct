@@ -24,6 +24,7 @@
 
             <!-- Colors -->
             <Color x:Key="CyanColor">#009977</Color>
+            <Color x:Key="CyanColorLight">#00ccaa</Color>
             <Color x:Key="OrangeColor">#d9900b</Color>
 
             <!-- Brushes -->
@@ -35,7 +36,7 @@
             <SolidColorBrush x:Key="SenderMessageForegroundBrushLight" Color="Black" />
             <SolidColorBrush x:Key="SenderMessageBackgroundBrushDark" Color="#323232" />
             <SolidColorBrush x:Key="SenderMessageForegroundBrushDark" Color="White" />
-            <SolidColorBrush x:Key="MessageEditingBackgroundBrush" Color="{StaticResource CyanColor}" />
+            <SolidColorBrush x:Key="MessageEditingBackgroundBrush" Color="{StaticResource CyanColorLight}" />
 
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceDictionary x:Key="Light">

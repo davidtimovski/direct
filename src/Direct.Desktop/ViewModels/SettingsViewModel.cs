@@ -15,10 +15,15 @@ public partial class SettingsViewModel : ObservableObject
 
         Theme = _settingsService.Theme;
         SelectedTheme = Theme.ToString();
+
+        FontSize = _settingsService.MessageFontSize;
     }
 
     [ObservableProperty]
     private ElementTheme theme;
+
+    [ObservableProperty]
+    private double fontSize;
 
     [ObservableProperty]
     private string selectedTheme;
@@ -29,5 +34,10 @@ public partial class SettingsViewModel : ObservableObject
 
         Theme = theme;
         _settingsService.Theme = theme;
+    }
+
+    public void FontSizeChanged()
+    {
+        _settingsService.MessageFontSize = FontSize;
     }
 }

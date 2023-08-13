@@ -5,7 +5,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Direct.Desktop.UserControls"
     xmlns:vm="using:Direct.Desktop.ViewModels">
-    
+
     <Grid RequestedTheme="{x:Bind ViewModel.Theme, Mode=OneWay}"
           Background="{ThemeResource WindowBackground}">
 
@@ -144,6 +144,7 @@
 
                                         <Ellipse Grid.Column="1"
                                                  Visibility="{x:Bind HasUnreadMessages, Mode=OneWay}"
+                                                 ToolTipService.ToolTip="New message(s)"
                                                  Width="10"
                                                  Height="10"
                                                  Fill="{StaticResource OrangeBrush}"
@@ -167,7 +168,7 @@
                     <ListView 
                         ItemsSource="{x:Bind ViewModel.Contacts}"
                         SelectedItem="{x:Bind ViewModel.SelectedContact, Mode=TwoWay}"
-                        SelectionChanged="{x:Bind ViewModel.SelectedContactChanged}"
+                        SelectionChanged="ContactsListView_SelectionChanged"
                         ItemTemplate="{StaticResource ContactListViewTemplate}" />
 
                 </Border>
@@ -199,16 +200,16 @@
                                             <FontIcon
                                                 Visibility="{x:Bind Edited, Mode=OneWay}"
                                                 ToolTipService.ToolTip="{x:Bind EditedAt, Mode=OneWay}"
+                                                FontSize="{x:Bind EditedMessageIconFontSize, Mode=OneWay}"
                                                 Foreground="{ThemeResource MessageSentAtForeground}"
                                                 Glyph="&#xE70F;"
                                                 FontFamily="Segoe MDL2 Assets"
-                                                FontSize="11"
                                                 VerticalAlignment="Center"
                                                 Margin="0 0 5 0" />
 
                                             <TextBlock Text="{x:Bind SentAtFormatted}"
+                                                       FontSize="{x:Bind MetadataFontSize, Mode=OneWay}"
                                                        FontFamily="{StaticResource DefaultFontFamilyLight}"
-                                                       FontSize="13"
                                                        Foreground="{ThemeResource MessageSentAtForeground}" />
                                         </StackPanel>
                                     </Border>
@@ -218,12 +219,15 @@
                                         CornerRadius="{StaticResource ComboBoxItemCornerRadius}"
                                         HorizontalAlignment="{x:Bind Alignment}"
                                         Padding="12 5">
+                                        
                                         <TextBlock
                                             Text="{x:Bind Text, Mode=OneWay}"
-                                            FontFamily="{StaticResource DefaultFontFamily}"
+                                            FontSize="{x:Bind MessageFontSize, Mode=OneWay}"
                                             Foreground="{x:Bind Foreground, Mode=OneWay}"
+                                            FontFamily="{StaticResource DefaultFontFamily}"
                                             TextWrapping="WrapWholeWords"
                                             IsTextSelectionEnabled="True" />
+                                        
                                     </Border>
                                 </StackPanel>
                             </Border>
@@ -256,10 +260,10 @@
                                 <GroupStyle.HeaderTemplate>
                                     <DataTemplate x:DataType="vm:DailyMessageGroup">
                                         <TextBlock Text="{x:Bind DateLabel}"
+                                                   FontSize="{x:Bind LabelFontSize, Mode=OneWay}"
                                                    AutomationProperties.AccessibilityView="Raw"
                                                    FontFamily="{StaticResource DefaultFontFamilyLight}"
                                                    Foreground="{ThemeResource MessageSentAtForeground}"
-                                                   FontSize="14"
                                                    HorizontalAlignment="Stretch" />
                                     </DataTemplate>
                                 </GroupStyle.HeaderTemplate>
@@ -279,10 +283,8 @@
                         </DropDownButton.Content>
                         <DropDownButton.Flyout>
                             <MenuFlyout Placement="Bottom">
-                                <MenuFlyoutItem Text="Edit contact"
-                                                Click="EditContact_Click" />
-                                <MenuFlyoutItem Text="Delete contact"
-                                                Click="DeleteContact_Click" />
+                                <MenuFlyoutItem Click="EditContact_Click">Edit contact</MenuFlyoutItem>
+                                <MenuFlyoutItem Click="DeleteContact_Click">Delete contact</MenuFlyoutItem>
                             </MenuFlyout>
                         </DropDownButton.Flyout>
                     </DropDownButton>
@@ -295,12 +297,13 @@
                             </Grid.ColumnDefinitions>
 
                             <TextBox Grid.Column="0" 
-                                 Text="{x:Bind ViewModel.SelectedContact.MessageText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                 KeyUp="{x:Bind ViewModel.MessageBoxKeyUpAsync}"
-                                 SelectionStart="{x:Bind ViewModel.SelectedContact.MessageSelectionStart, Mode=OneWay}"
-                                 IsEnabled="{x:Bind ViewModel.SelectedContact.MessageTextBoxIsEnabled, Mode=OneWay}"
-                                 IsSpellCheckEnabled="True"
-                                 MaxLength="5000" />
+                                     x:Name="MessageTextBox"
+                                     Text="{x:Bind ViewModel.SelectedContact.MessageText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     KeyUp="{x:Bind ViewModel.MessageBoxKeyUpAsync}"
+                                     SelectionStart="{x:Bind ViewModel.SelectedContact.MessageSelectionStart, Mode=OneWay}"
+                                     IsEnabled="{x:Bind ViewModel.SelectedContact.MessageTextBoxIsEnabled, Mode=OneWay}"
+                                     IsSpellCheckEnabled="True"
+                                     MaxLength="5000" />
 
                             <Button Grid.Column="1"
                                     IsEnabled="{x:Bind ViewModel.SelectedContact.MessageTextBoxIsEnabled, Mode=OneWay}"

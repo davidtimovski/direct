@@ -31,7 +31,7 @@ public partial class MessageViewModel : ObservableObject
     public DateTime SentAt { get; }
     public bool UserIsSender { get; }
 
-    public MessageViewModel(Guid id, string text, DateTime sentAt, DateTime? editedAt, bool userIsSender, ElementTheme theme)
+    public MessageViewModel(Guid id, string text, DateTime sentAt, DateTime? editedAt, bool userIsSender, ElementTheme theme, double messageFontSize)
     {
         Id = id;
         SentAt = sentAt;
@@ -41,6 +41,8 @@ public partial class MessageViewModel : ObservableObject
         SentAtFormatted = FormatDate(sentAt);
         Edited = editedAt.HasValue;
         EditedAt = editedAt.HasValue ? FormatEditedAt(editedAt.Value) : string.Empty;
+
+        SetFontSize(messageFontSize);
 
         if (userIsSender)
         {
@@ -68,6 +70,15 @@ public partial class MessageViewModel : ObservableObject
     private string text;
 
     [ObservableProperty]
+    private double messageFontSize;
+
+    [ObservableProperty]
+    private double metadataFontSize;
+
+    [ObservableProperty]
+    private double editedMessageIconFontSize;
+
+    [ObservableProperty]
     private Brush background;
 
     [ObservableProperty]
@@ -91,6 +102,13 @@ public partial class MessageViewModel : ObservableObject
             Background = SenderMessageBackgroundBrushes[theme];
             Foreground = SenderMessageForegroundBrushes[theme];
         }
+    }
+
+    public void SetFontSize(double messageFontSize)
+    {
+        MessageFontSize = messageFontSize;
+        MetadataFontSize = messageFontSize - 1;
+        EditedMessageIconFontSize = messageFontSize - 3;
     }
 
     public void Update(string text, DateTime editedAt, ElementTheme theme)
