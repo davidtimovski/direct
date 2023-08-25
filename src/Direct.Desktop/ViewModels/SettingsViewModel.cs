@@ -17,6 +17,7 @@ public partial class SettingsViewModel : ObservableObject
         SelectedTheme = Theme.ToString();
 
         FontSize = _settingsService.MessageFontSize;
+        SpellCheckEnabled = _settingsService.SpellCheckEnabled;
     }
 
     [ObservableProperty]
@@ -26,18 +27,26 @@ public partial class SettingsViewModel : ObservableObject
     private double fontSize;
 
     [ObservableProperty]
+    private bool spellCheckEnabled;
+
+    [ObservableProperty]
     private string selectedTheme;
 
-    public void ThemeChanged()
+    partial void OnSelectedThemeChanged(string value)
     {
-        _ = Enum.TryParse(SelectedTheme, out ElementTheme theme);
+        _ = Enum.TryParse(value, out ElementTheme theme);
 
         Theme = theme;
         _settingsService.Theme = theme;
     }
 
-    public void FontSizeChanged()
+    partial void OnFontSizeChanged(double value)
     {
-        _settingsService.MessageFontSize = FontSize;
+        _settingsService.MessageFontSize = value;
+    }
+
+    partial void OnSpellCheckEnabledChanged(bool value)
+    {
+        _settingsService.SpellCheckEnabled = value;
     }
 }

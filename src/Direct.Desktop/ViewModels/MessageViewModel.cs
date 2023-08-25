@@ -10,6 +10,7 @@ namespace Direct.Desktop.ViewModels;
 
 public partial class MessageViewModel : ObservableObject
 {
+    private const double SideMargin = 50; 
     private const string TimeFormat = "HH:mm";
 
     private static readonly SolidColorBrush UserMessageBackgroundBrush = ResourceUtil.GetBrush("CyanBrush");
@@ -47,6 +48,7 @@ public partial class MessageViewModel : ObservableObject
         if (userIsSender)
         {
             Alignment = HorizontalAlignment.Right;
+            Margin = new Thickness(SideMargin, 0, 0, 0);
             Background = UserMessageBackgroundBrush;
             Foreground = UserMessageForegroundBrush;
         }
@@ -58,13 +60,15 @@ public partial class MessageViewModel : ObservableObject
             }
 
             Alignment = HorizontalAlignment.Left;
+            Margin = new Thickness(0, 0, SideMargin, 0);
             Background = SenderMessageBackgroundBrushes[theme];
             Foreground = SenderMessageForegroundBrushes[theme];
         }
     }
 
-    public string SentAtFormatted { get; set; } = null!;
-    public HorizontalAlignment Alignment { get; set; }
+    public string SentAtFormatted { get; }
+    public HorizontalAlignment Alignment { get; }
+    public Thickness Margin { get; }
 
     [ObservableProperty]
     private string text;

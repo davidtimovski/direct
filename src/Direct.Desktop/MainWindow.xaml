@@ -193,7 +193,7 @@
 
                     <Grid.Resources>
                         <DataTemplate x:Key="MessageListTemplate" x:DataType="vm:MessageViewModel">
-                            <Border Padding="0 6">
+                            <Border Margin="{x:Bind Margin}" Padding="0 6">
                                 <StackPanel HorizontalAlignment="{x:Bind Alignment}">
                                     <Border HorizontalAlignment="{x:Bind Alignment}">
                                         <StackPanel Orientation="Horizontal">
@@ -216,8 +216,8 @@
 
                                     <Border
                                         Background="{x:Bind Background, Mode=OneWay}"
-                                        CornerRadius="{StaticResource ComboBoxItemCornerRadius}"
                                         HorizontalAlignment="{x:Bind Alignment}"
+                                        CornerRadius="{StaticResource ComboBoxItemCornerRadius}"
                                         Padding="12 5">
                                         
                                         <TextBlock
@@ -225,7 +225,7 @@
                                             FontSize="{x:Bind MessageFontSize, Mode=OneWay}"
                                             Foreground="{x:Bind Foreground, Mode=OneWay}"
                                             FontFamily="{StaticResource DefaultFontFamily}"
-                                            TextWrapping="WrapWholeWords"
+                                            TextWrapping="Wrap"
                                             IsTextSelectionEnabled="True" />
                                         
                                     </Border>
@@ -299,11 +299,18 @@
                             <TextBox Grid.Column="0" 
                                      x:Name="MessageTextBox"
                                      Text="{x:Bind ViewModel.SelectedContact.MessageText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                     KeyUp="{x:Bind ViewModel.MessageBoxKeyUpAsync}"
                                      SelectionStart="{x:Bind ViewModel.SelectedContact.MessageSelectionStart, Mode=OneWay}"
                                      IsEnabled="{x:Bind ViewModel.SelectedContact.MessageTextBoxIsEnabled, Mode=OneWay}"
-                                     IsSpellCheckEnabled="True"
-                                     MaxLength="5000" />
+                                     IsSpellCheckEnabled="{x:Bind ViewModel.SpellCheckEnabled, Mode=OneWay}"
+                                     AcceptsReturn="True"
+                                     MaxLength="5000">
+
+                                <TextBox.KeyboardAccelerators>
+                                    <KeyboardAccelerator Key="Enter" Modifiers="None" Invoked="MessageTextBoxEnter_Pressed" />
+                                    <KeyboardAccelerator Key="Up" Modifiers="None" Invoked="MessageTextBoxUp_Pressed" />
+                                    <KeyboardAccelerator Key="Escape" Modifiers="None" Invoked="MessageTextBoxEscape_Pressed" />
+                                </TextBox.KeyboardAccelerators>
+                            </TextBox>
 
                             <Button Grid.Column="1"
                                     IsEnabled="{x:Bind ViewModel.SelectedContact.MessageTextBoxIsEnabled, Mode=OneWay}"

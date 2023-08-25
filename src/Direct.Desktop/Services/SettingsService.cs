@@ -11,6 +11,7 @@ public interface ISettingsService
     Guid? UserId { get; set; }
     ElementTheme Theme { get; set; }
     double MessageFontSize { get; set; }
+    bool SpellCheckEnabled { get; set; }
 
     event EventHandler<SettingsChangedEventArgs>? Changed;
 
@@ -32,12 +33,14 @@ public class SettingsService : ISettingsService
         object? userIdValue = localSettings.Values[nameof(UserId)];
         object? themeValue = localSettings.Values[nameof(Theme)];
         object? messageFontSizeValue = localSettings.Values[nameof(MessageFontSize)];
+        object? spellCheckEnabledValue = localSettings.Values[nameof(SpellCheckEnabled)];
 
         WindowWidth = windowWidthValue is null ? DefaultWindowWidth : (int)windowWidthValue;
         WindowHeight = windowHeightValue is null ? DefaultWindowHeight : (int)windowHeightValue;
         UserId = userIdValue is null ? null : new Guid((string)userIdValue);
         _theme = themeValue is null ? ElementTheme.Default : (ElementTheme)themeValue;
         _messageFontSize = messageFontSizeValue is null ? DefaultMessageFontSize : (double)messageFontSizeValue;
+        _spellCheckEnabled = spellCheckEnabledValue is null ? true : (bool)spellCheckEnabledValue;
     }
 
     public int WindowWidth { get; set; }
@@ -58,7 +61,8 @@ public class SettingsService : ISettingsService
                 Changed?.Invoke(this, new SettingsChangedEventArgs
                 {
                     Theme = value,
-                    MessageFontSize = MessageFontSize
+                    MessageFontSize = MessageFontSize,
+                    SpellCheckEnabled = SpellCheckEnabled
                 });
             }
         }
@@ -77,7 +81,28 @@ public class SettingsService : ISettingsService
                 Changed?.Invoke(this, new SettingsChangedEventArgs
                 {
                     Theme = Theme,
-                    MessageFontSize = value
+                    MessageFontSize = value,
+                    SpellCheckEnabled = SpellCheckEnabled
+                });
+            }
+        }
+    }
+
+    private bool _spellCheckEnabled;
+    public bool SpellCheckEnabled
+    {
+        get => _spellCheckEnabled;
+        set
+        {
+            if (_spellCheckEnabled != value)
+            {
+                _spellCheckEnabled = value;
+                Save();
+                Changed?.Invoke(this, new SettingsChangedEventArgs
+                {
+                    Theme = Theme,
+                    MessageFontSize = MessageFontSize,
+                    SpellCheckEnabled = value
                 });
             }
         }
@@ -94,6 +119,7 @@ public class SettingsService : ISettingsService
         localSettings.Values[nameof(UserId)] = UserId?.ToString();
         localSettings.Values[nameof(Theme)] = (int)Theme;
         localSettings.Values[nameof(MessageFontSize)] = MessageFontSize;
+        localSettings.Values[nameof(SpellCheckEnabled)] = SpellCheckEnabled;
     }
 }
 
@@ -101,4 +127,5 @@ public class SettingsChangedEventArgs : EventArgs
 {
     public required ElementTheme Theme { get; init; }
     public required double MessageFontSize { get; init; }
+    public required bool SpellCheckEnabled { get; init; }
 }

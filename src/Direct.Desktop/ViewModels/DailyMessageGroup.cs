@@ -9,7 +9,7 @@ public partial class DailyMessageGroup : ObservableCollection<MessageViewModel>
 {
     public DateOnly Date { get; }
 
-    public DailyMessageGroup(List<MessageViewModel> messages, DateOnly groupDate, DateOnly localDate, double labelFontSize) : base(messages)
+    public DailyMessageGroup(IEnumerable<MessageViewModel> messages, DateOnly groupDate, DateOnly localDate, double labelFontSize) : base(messages)
     {
         Date = groupDate;
         DateLabel = FormatHeader(groupDate, localDate);

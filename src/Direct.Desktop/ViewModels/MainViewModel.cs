@@ -8,9 +8,7 @@ using Direct.Desktop.Services;
 using Direct.Desktop.Storage;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Input;
 using Windows.ApplicationModel.DataTransfer;
-using VirtualKey = Windows.System.VirtualKey;
 
 namespace Direct.Desktop.ViewModels;
 
@@ -46,6 +44,7 @@ public partial class MainViewModel : ObservableObject
         _dispatcherQueue = dispatcherQueue;
 
         Theme = _settingsService.Theme;
+        SpellCheckEnabled = _settingsService.SpellCheckEnabled;
         UserId = _settingsService.UserId!.Value.ToString("N");
 
         ConnectionStatus = new(_chatService, dispatcherQueue);
@@ -53,6 +52,9 @@ public partial class MainViewModel : ObservableObject
 
     [ObservableProperty]
     private ElementTheme theme;
+
+    [ObservableProperty]
+    private bool spellCheckEnabled;
 
     [ObservableProperty]
     private string userId = string.Empty;
@@ -107,38 +109,36 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
-    public async void MessageBoxKeyUpAsync(object _, KeyRoutedEventArgs e)
+    public async Task MessageBoxEnterPressedAsync()
     {
-        if (e.Key == VirtualKey.Enter)
+        var trimmedMessage = SelectedContact!.MessageText.Trim();
+        if (trimmedMessage.Length == 0)
         {
-            var trimmedMessage = SelectedContact!.MessageText.Trim();
-            if (trimmedMessage.Length == 0)
-            {
-                return;
-            }
-
-            SelectedContact!.SendingMessage = true;
-
-            if (SelectedContact!.EditingMessageId.HasValue)
-            {
-                await UpdateMessageAsync(SelectedContact!.EditingMessageId.Value, SelectedContact!.UserId);
-                return;
-            }
-
-            await _chatService.SendMessageAsync(SelectedContact!.UserId, trimmedMessage);
             return;
         }
 
-        if (e.Key == VirtualKey.Up
-            && !SelectedContact!.EditingMessageId.HasValue
-            && SelectedContact!.MessageText == string.Empty)
+        SelectedContact!.SendingMessage = true;
+
+        if (SelectedContact!.EditingMessageId.HasValue)
+        {
+            await UpdateMessageAsync(SelectedContact!.EditingMessageId.Value, SelectedContact!.UserId);
+            return;
+        }
+
+        await _chatService.SendMessageAsync(SelectedContact!.UserId, trimmedMessage);
+    }
+
+    public void MessageBoxUpPressed()
+    {
+        if (!SelectedContact!.EditingMessageId.HasValue && SelectedContact!.MessageText == string.Empty)
         {
             SelectLastSentMessageForUpdate();
-            return;
         }
+    }
 
-        if (e.Key == VirtualKey.Escape
-            && SelectedContact!.EditingMessageId.HasValue)
+    public void MessageBoxEscapePressed()
+    {
+        if (SelectedContact!.EditingMessageId.HasValue)
         {
             DeselectLastSentMessage();
         }
@@ -214,6 +214,7 @@ public partial class MainViewModel : ObservableObject
         }
 
         Theme = e.Theme;
+        SpellCheckEnabled = e.SpellCheckEnabled;
     }
 
     private void ConnectedContactsRetrieved(object? eee, ConnectedContactsRetrievedEventArgs e)
@@ -240,6 +241,20 @@ public partial class MainViewModel : ObservableObject
     }
 
     private void ContactConnected(object? _, ContactConnectedEventArgs e)
+    {
+        var contact = Contacts.FirstOrDefault(x => x.UserId == e.UserId);
+        if (contact is null)
+        {
+            return;
+        }
+
+        _dispatcherQueue.TryEnqueue(() =>
+        {
+            contact.Connected = true;
+        });
+    }
+
+    private void ContactDisconnected(object? _, ContactDisconnectedEventArgs e)
     {
         var contact = Contacts.FirstOrDefault(x => x.UserId == e.UserId);
         if (contact is null)
@@ -284,20 +299,6 @@ public partial class MainViewModel : ObservableObject
         {
             contact.MessageGroups.Clear();
             Contacts.Remove(contact);
-        });
-    }
-
-    private void ContactDisconnected(object? _, ContactDisconnectedEventArgs e)
-    {
-        var contact = Contacts.FirstOrDefault(x => x.UserId == e.UserId);
-        if (contact is null)
-        {
-            return;
-        }
-
-        _dispatcherQueue.TryEnqueue(() =>
-        {
-            contact.Connected = false;
         });
     }
 

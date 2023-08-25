@@ -54,7 +54,6 @@ public sealed partial class MainWindow : Window
         }
 
         ViewModel.AddEmoji(emoji);
-        EmojiFlyout.Hide();
     }
 
     private async Task InitializeAsync()
@@ -84,6 +83,21 @@ public sealed partial class MainWindow : Window
             CloseButtonCommand = closeCommand
         };
         await dialog.ShowAsync();
+    }
+
+    private async void MessageTextBoxEnter_Pressed(KeyboardAccelerator _, KeyboardAcceleratorInvokedEventArgs args)
+    {
+        await ViewModel.MessageBoxEnterPressedAsync();
+    }
+
+    private void MessageTextBoxUp_Pressed(KeyboardAccelerator _, KeyboardAcceleratorInvokedEventArgs args)
+    {
+        ViewModel.MessageBoxUpPressed();
+    }
+
+    private void MessageTextBoxEscape_Pressed(KeyboardAccelerator _, KeyboardAcceleratorInvokedEventArgs args)
+    {
+        ViewModel.MessageBoxEscapePressed();
     }
 
     private async void WindowClosed(object _, WindowEventArgs args)
@@ -116,7 +130,7 @@ public sealed partial class MainWindow : Window
         {
             settingsWindow = null;
         };
-        WindowingUtil.Resize(settingsWindow, new SizeInt32(400, 275));
+        WindowingUtil.Resize(settingsWindow, new SizeInt32(400, 395));
         settingsWindow.Activate();
     }
 

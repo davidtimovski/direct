@@ -36,7 +36,6 @@
                                VerticalAlignment="Center">Selected theme</TextBlock>
 
                     <ComboBox Grid.Column="1"
-                              SelectionChanged="{x:Bind ViewModel.ThemeChanged}"
                               SelectedItem="{x:Bind ViewModel.SelectedTheme, Mode=TwoWay}"
                               FontFamily="{StaticResource DefaultFontFamily}"
                               HorizontalAlignment="Right"
@@ -64,7 +63,6 @@
                                VerticalAlignment="Center">Font size</TextBlock>
 
                     <ComboBox Grid.Column="1"
-                              SelectionChanged="{x:Bind ViewModel.FontSizeChanged}"
                               SelectedItem="{x:Bind ViewModel.FontSize, Mode=TwoWay}"
                               FontFamily="{StaticResource DefaultFontFamily}"
                               HorizontalAlignment="Right"
@@ -85,6 +83,28 @@
                         <x:Double>25</x:Double>
                         <x:Double>26</x:Double>
                     </ComboBox>
+                </Grid>
+                
+                <Border Background="#666" Height="1" Margin="10 30 10 20" />
+
+                <TextBlock FontFamily="{StaticResource DefaultFontFamilyLight}"
+                           Foreground="{ThemeResource WindowForeground}"
+                           FontSize="18">Other</TextBlock>
+
+                <Grid Margin="0 15 0 0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0"
+                               FontFamily="{StaticResource DefaultFontFamily}"
+                               VerticalAlignment="Center">Spell check</TextBlock>
+
+                    <CheckBox Grid.Column="1"
+                              IsChecked="{x:Bind ViewModel.SpellCheckEnabled, Mode=TwoWay}"
+                              HorizontalAlignment="Right"
+                              MinWidth="0" />
                 </Grid>
             </StackPanel>
         </Grid>

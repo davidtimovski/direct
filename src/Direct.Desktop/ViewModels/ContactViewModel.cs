@@ -22,7 +22,7 @@ public partial class ContactViewModel : ObservableObject
         var query = from messageVm in messages.Select(x => new MessageViewModel(x.Id, x.Text, x.SentAt, x.EditedAt, x.SenderId == userId, theme, messageFontSize))
                     group messageVm by DateOnly.FromDateTime(messageVm.SentAt) into g
                     orderby g.Key
-                    select new DailyMessageGroup(g.ToList(), g.Key, localDate, messageFontSize);
+                    select new DailyMessageGroup(g, g.Key, localDate, messageFontSize);
 
         MessageGroups = new ObservableCollection<DailyMessageGroup>(query);
     }
