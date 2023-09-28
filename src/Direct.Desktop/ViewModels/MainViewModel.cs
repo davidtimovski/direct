@@ -117,11 +117,11 @@ public partial class MainViewModel : ObservableObject
             return;
         }
 
-        SelectedContact!.SendingMessage = true;
+        SelectedContact!.MessageText = string.Empty;
 
         if (SelectedContact!.EditingMessageId.HasValue)
         {
-            await UpdateMessageAsync(SelectedContact!.EditingMessageId.Value, SelectedContact!.UserId);
+            await _chatService.UpdateMessageAsync(SelectedContact!.EditingMessageId.Value, SelectedContact!.UserId, trimmedMessage);
             return;
         }
 
@@ -184,17 +184,6 @@ public partial class MainViewModel : ObservableObject
         SelectedContact!.MessageText = string.Empty;
 
         message?.SetTheme(_settingsService.Theme);
-    }
-
-    private async Task UpdateMessageAsync(Guid id, Guid recipientId)
-    {
-        var trimmedMessage = SelectedContact!.MessageText.Trim();
-        if (trimmedMessage.Length == 0)
-        {
-            return;
-        }
-
-        await _chatService.UpdateMessageAsync(id, recipientId, trimmedMessage);
     }
 
     private void SettingsChanged(object? _, SettingsChangedEventArgs e)
@@ -305,23 +294,23 @@ public partial class MainViewModel : ObservableObject
     private async void MessageSent(object? _, MessageSentEventArgs e)
     {
         var localDate = DateOnly.FromDateTime(DateTime.Now);
-        var userIsSender = e.Message.SenderId == _settingsService.UserId;
+        var userIsSender = e.SenderId == _settingsService.UserId;
 
         await Repository.CreateMessageAsync(new Message
         {
-            Id = e.Message.Id,
-            SenderId = e.Message.SenderId,
-            RecipientId = e.Message.RecipientId,
-            Text = e.Message.Text,
-            SentAt = e.Message.SentAtUtc.ToLocalTime()
+            Id = e.Id,
+            SenderId = e.SenderId,
+            RecipientId = e.RecipientId,
+            Text = e.Text,
+            SentAt = e.SentAt
         });
 
         _dispatcherQueue.TryEnqueue(() =>
         {
             var message = new MessageViewModel(
-                e.Message.Id,
-                e.Message.Text,
-                e.Message.SentAtUtc.ToLocalTime(),
+                e.Id,
+                e.Text,
+                e.SentAt,
                 null,
                 userIsSender,
                 _settingsService.Theme,
@@ -329,7 +318,7 @@ public partial class MainViewModel : ObservableObject
 
             if (userIsSender)
             {
-                var recipientContact = Contacts.FirstOrDefault(x => x.UserId == e.Message.RecipientId);
+                var recipientContact = Contacts.FirstOrDefault(x => x.UserId == e.RecipientId);
                 if (recipientContact is null)
                 {
                     return;
@@ -353,13 +342,10 @@ public partial class MainViewModel : ObservableObject
                 {
                     recipientContact.MessageGroups.Add(new DailyMessageGroup(new List<MessageViewModel> { message }, messageSentDate, localDate, _settingsService.MessageFontSize));
                 }
-
-                recipientContact.MessageText = string.Empty;
-                recipientContact.SendingMessage = false;
             }
             else
             {
-                var senderContact = Contacts.FirstOrDefault(x => x.UserId == e.Message.SenderId);
+                var senderContact = Contacts.FirstOrDefault(x => x.UserId == e.SenderId);
                 if (senderContact is null)
                 {
                     return;
@@ -403,26 +389,23 @@ public partial class MainViewModel : ObservableObject
 
         _dispatcherQueue.TryEnqueue(() =>
         {
-            contact.MessageText = string.Empty;
-            contact.SendingMessage = false;
-
             ShowErrorBar(contact, "Message sending failed. Please try again in a short moment.");
         });
     }
 
     private async void MessageUpdated(object? _, MessageUpdatedEventArgs e)
     {
-        await Repository.UpdateMessageAsync(e.Message.Id, e.Message.Text, e.Message.EditedAtUtc.ToLocalTime());
+        await Repository.UpdateMessageAsync(e.Id, e.Text, e.EditedAt);
 
-        if (e.Message.SenderId == _settingsService.UserId)
+        if (e.SenderId == _settingsService.UserId)
         {
-            var recipientContact = Contacts.FirstOrDefault(x => x.UserId == e.Message.RecipientId);
+            var recipientContact = Contacts.FirstOrDefault(x => x.UserId == e.RecipientId);
             if (recipientContact is null)
             {
                 return;
             }
 
-            var message = recipientContact.MessageGroups.SelectMany(x => x).FirstOrDefault(x => x.Id == e.Message.Id);
+            var message = recipientContact.MessageGroups.SelectMany(x => x).FirstOrDefault(x => x.Id == e.Id);
             if (message is null)
             {
                 return;
@@ -430,22 +413,20 @@ public partial class MainViewModel : ObservableObject
 
             _dispatcherQueue.TryEnqueue(() =>
             {
-                message.Update(e.Message.Text, e.Message.EditedAtUtc.ToLocalTime(), _settingsService.Theme);
+                message.Update(e.Text, e.EditedAt, _settingsService.Theme);
 
-                recipientContact.MessageText = string.Empty;
-                recipientContact.SendingMessage = false;
                 recipientContact.EditingMessageId = null;
             });
         }
         else
         {
-            var senderContact = Contacts.FirstOrDefault(x => x.UserId == e.Message.SenderId);
+            var senderContact = Contacts.FirstOrDefault(x => x.UserId == e.SenderId);
             if (senderContact is null)
             {
                 return;
             }
 
-            var message = senderContact.MessageGroups.SelectMany(x => x).FirstOrDefault(x => x.Id == e.Message.Id);
+            var message = senderContact.MessageGroups.SelectMany(x => x).FirstOrDefault(x => x.Id == e.Id);
             if (message is null)
             {
                 return;
@@ -453,7 +434,7 @@ public partial class MainViewModel : ObservableObject
 
             _dispatcherQueue.TryEnqueue(() =>
             {
-                message.Update(e.Message.Text, e.Message.EditedAtUtc.ToLocalTime(), _settingsService.Theme);
+                message.Update(e.Text, e.EditedAt, _settingsService.Theme);
             });
         }
     }
@@ -475,8 +456,6 @@ public partial class MainViewModel : ObservableObject
         _dispatcherQueue.TryEnqueue(() =>
         {
             message.SetTheme(_settingsService.Theme);
-            contact.MessageText = string.Empty;
-            contact.SendingMessage = false;
             contact.EditingMessageId = null;
 
             ShowErrorBar(contact, "Message editing failed. Please try again in a short moment.");

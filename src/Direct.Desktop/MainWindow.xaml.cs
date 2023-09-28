@@ -87,16 +87,19 @@ public sealed partial class MainWindow : Window
 
     private async void MessageTextBoxEnter_Pressed(KeyboardAccelerator _, KeyboardAcceleratorInvokedEventArgs args)
     {
+        args.Handled = true;
         await ViewModel.MessageBoxEnterPressedAsync();
     }
 
     private void MessageTextBoxUp_Pressed(KeyboardAccelerator _, KeyboardAcceleratorInvokedEventArgs args)
     {
+        args.Handled = true;
         ViewModel.MessageBoxUpPressed();
     }
 
     private void MessageTextBoxEscape_Pressed(KeyboardAccelerator _, KeyboardAcceleratorInvokedEventArgs args)
     {
+        args.Handled = true;
         ViewModel.MessageBoxEscapePressed();
     }
 
@@ -113,8 +116,8 @@ public sealed partial class MainWindow : Window
 
     private void ContactsListView_SelectionChanged(object _, SelectionChangedEventArgs e)
     {
-        MessageTextBox.Focus(FocusState.Programmatic);
         ViewModel.SelectedContactChanged();
+        MessageTextBox.Focus(FocusState.Programmatic);
     }
 
     private void SettingsButton_Click(object _, RoutedEventArgs e)

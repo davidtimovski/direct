@@ -33,7 +33,6 @@ public partial class ContactViewModel : ObservableObject
     public ObservableCollection<DailyMessageGroup> MessageGroups;
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(MessageTextBoxIsEnabled))]
     private bool connected;
 
     [ObservableProperty]
@@ -41,12 +40,6 @@ public partial class ContactViewModel : ObservableObject
 
     [ObservableProperty]
     private string messageText = string.Empty;
-
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(MessageTextBoxIsEnabled))]
-    private bool sendingMessage;
-
-    public bool MessageTextBoxIsEnabled => Connected && !SendingMessage;
 
     [ObservableProperty]
     private int messageSelectionStart;

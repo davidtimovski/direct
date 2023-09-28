@@ -300,7 +300,7 @@
                                      x:Name="MessageTextBox"
                                      Text="{x:Bind ViewModel.SelectedContact.MessageText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      SelectionStart="{x:Bind ViewModel.SelectedContact.MessageSelectionStart, Mode=OneWay}"
-                                     IsEnabled="{x:Bind ViewModel.SelectedContact.MessageTextBoxIsEnabled, Mode=OneWay}"
+                                     IsEnabled="{x:Bind ViewModel.SelectedContact.Connected, Mode=OneWay}"
                                      IsSpellCheckEnabled="{x:Bind ViewModel.SpellCheckEnabled, Mode=OneWay}"
                                      AcceptsReturn="True"
                                      MaxLength="5000">
@@ -313,7 +313,7 @@
                             </TextBox>
 
                             <Button Grid.Column="1"
-                                    IsEnabled="{x:Bind ViewModel.SelectedContact.MessageTextBoxIsEnabled, Mode=OneWay}"
+                                    IsEnabled="{x:Bind ViewModel.SelectedContact.Connected, Mode=OneWay}"
                                     Foreground="{ThemeResource WindowForeground}"
                                     ToolTipService.ToolTip="Emojis"
                                     HorizontalAlignment="Right"

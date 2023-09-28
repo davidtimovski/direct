@@ -5,12 +5,14 @@
   xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest"
   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+  xmlns:com="http://schemas.microsoft.com/appx/manifest/com/windows10"
+  xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
   IgnorableNamespaces="uap rescap">
 
   <Identity
     Name="606DavidTimovski.DirectMessenger"
     Publisher="CN=43B6C682-5195-4A6E-9EE9-F644821A02C8"
-    Version="0.1.25.0" />
+    Version="0.1.26.0" />
 
   <mp:PhoneIdentity PhoneProductId="367ddd82-28a9-411a-bc13-930719e1e223" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
@@ -47,6 +49,21 @@
         <uap:SplashScreen Image="Assets\Images\logo.png"/>
         <uap:LockScreen BadgeLogo="Assets\Images\logo.png" Notification="badge"/>
       </uap:VisualElements>
+	  
+	  <Extensions>
+        <desktop:Extension Category="windows.toastNotificationActivation">
+          <desktop:ToastNotificationActivation ToastActivatorCLSID="864704FE-E8CC-47C1-B6A6-1E1EEDBAE1D2" />
+        </desktop:Extension>
+
+        <!--Register COM CLSID-->    
+        <com:Extension Category="windows.comServer">
+          <com:ComServer>
+            <com:ExeServer Executable="Direct.Desktop\Direct.Desktop.exe" DisplayName="Direct" Arguments="----AppNotificationActivated:">
+              <com:Class Id="864704FE-E8CC-47C1-B6A6-1E1EEDBAE1D2" />
+            </com:ExeServer>
+          </com:ComServer>
+        </com:Extension>
+      </Extensions>
     </Application>
   </Applications>
 

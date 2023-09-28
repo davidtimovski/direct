@@ -249,20 +249,36 @@ public class MessageSentEventArgs : EventArgs
 {
     public MessageSentEventArgs(NewMessageDto message)
     {
-        Message = message;
+        Id = message.Id;
+        SenderId = message.SenderId;
+        RecipientId = message.RecipientId;
+        Text = message.Text;
+        SentAt = message.SentAtUtc.ToLocalTime();
     }
 
-    public NewMessageDto Message { get; init; }
+    public Guid Id { get; }
+    public Guid SenderId { get; }
+    public Guid RecipientId { get; }
+    public string Text { get; }
+    public DateTime SentAt { get; }
 }
 
 public class MessageUpdatedEventArgs : EventArgs
 {
     public MessageUpdatedEventArgs(MessageUpdateDto message)
     {
-        Message = message;
+        Id = message.Id;
+        SenderId = message.SenderId;
+        RecipientId = message.RecipientId;
+        Text = message.Text;
+        EditedAt = message.EditedAtUtc.ToLocalTime();
     }
 
-    public MessageUpdateDto Message { get; init; }
+    public Guid Id { get; }
+    public Guid SenderId { get; }
+    public Guid RecipientId { get; }
+    public string Text { get; }
+    public DateTime EditedAt { get; }
 }
 
 public class MessageSendingFailedEventArgs : EventArgs
