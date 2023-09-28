@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Direct.Desktop.Services;
 using Direct.Desktop.Storage;
+using Direct.Desktop.Storage.Entities;
 using Direct.Desktop.Utilities;
 using Microsoft.UI.Xaml;
 

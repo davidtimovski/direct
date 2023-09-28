@@ -30,13 +30,13 @@ public partial class MessageViewModel : ObservableObject
 
     public Guid Id { get; }
     public DateTime SentAt { get; }
-    public bool UserIsSender { get; }
+    public bool IsRecipient { get; }
 
-    public MessageViewModel(Guid id, string text, DateTime sentAt, DateTime? editedAt, bool userIsSender, ElementTheme theme, double messageFontSize)
+    public MessageViewModel(Guid id, string text, DateTime sentAt, DateTime? editedAt, bool isRecipient, ElementTheme theme, double messageFontSize)
     {
         Id = id;
         SentAt = sentAt;
-        UserIsSender = userIsSender;
+        IsRecipient = isRecipient;
 
         Text = EmojiUtil.GenerateEmojis(text);
         SentAtFormatted = FormatDate(sentAt);
@@ -45,14 +45,7 @@ public partial class MessageViewModel : ObservableObject
 
         SetFontSize(messageFontSize);
 
-        if (userIsSender)
-        {
-            Alignment = HorizontalAlignment.Right;
-            Margin = new Thickness(SideMargin, 0, 0, 0);
-            Background = UserMessageBackgroundBrush;
-            Foreground = UserMessageForegroundBrush;
-        }
-        else
+        if (isRecipient)
         {
             if (theme == ElementTheme.Default)
             {
@@ -63,6 +56,13 @@ public partial class MessageViewModel : ObservableObject
             Margin = new Thickness(0, 0, SideMargin, 0);
             Background = SenderMessageBackgroundBrushes[theme];
             Foreground = SenderMessageForegroundBrushes[theme];
+        }
+        else
+        {
+            Alignment = HorizontalAlignment.Right;
+            Margin = new Thickness(SideMargin, 0, 0, 0);
+            Background = UserMessageBackgroundBrush;
+            Foreground = UserMessageForegroundBrush;
         }
     }
 
@@ -96,15 +96,15 @@ public partial class MessageViewModel : ObservableObject
 
     public void SetTheme(ElementTheme theme)
     {
-        if (UserIsSender)
-        {
-            Background = UserMessageBackgroundBrush;
-            Foreground = UserMessageForegroundBrush;
-        }
-        else
+        if (IsRecipient)
         {
             Background = SenderMessageBackgroundBrushes[theme];
             Foreground = SenderMessageForegroundBrushes[theme];
+        }
+        else
+        {
+            Background = UserMessageBackgroundBrush;
+            Foreground = UserMessageForegroundBrush;
         }
     }
 

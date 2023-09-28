@@ -2,9 +2,9 @@
 
 public class MessageUpdateDto
 {
-    public Guid Id { get; set; }
-    public Guid SenderId { get; set; }
-    public Guid RecipientId { get; set; }
-    public required string Text { get; set; }
-    public DateTime EditedAtUtc { get; set; }
+    public required Guid Id { get; init; }
+    public required Guid SenderId { get; init; }
+    public required Guid RecipientId { get; init; }
+    public required string Text { get; init; }
+    public required DateTime EditedAtUtc { get; init; }
 }

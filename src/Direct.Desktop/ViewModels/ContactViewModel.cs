@@ -3,41 +3,62 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
-using Direct.Desktop.Storage;
+using Direct.Desktop.Storage.Entities;
 using Microsoft.UI.Xaml;
 
 namespace Direct.Desktop.ViewModels;
 
 public partial class ContactViewModel : ObservableObject
 {
-    public Guid UserId { get; }
-
+    public Guid Id { get; }
     public Guid? EditingMessageId { get; set; }
+    public DateTime? LastViewed { get; set; }
 
-    public ContactViewModel(
-        Guid userId,
-        Guid contactUserId,
-        string nickname,
-        IEnumerable<Message> messages,
-        ElementTheme theme,
-        double messageFontSize,
-        DateOnly localDate)
+    public ContactViewModel(Guid id, string nickname)
     {
-        UserId = contactUserId;
+        Id = id;
         Nickname = nickname;
+    }
 
-        var query = from messageVm in messages.Select(x => new MessageViewModel(x.Id, x.Text, x.SentAt, x.EditedAt, x.SenderId == userId, theme, messageFontSize))
-                    group messageVm by DateOnly.FromDateTime(messageVm.SentAt) into g
-                    orderby g.Key
-                    select new DailyMessageGroup(g, g.Key, localDate, messageFontSize);
+    public void AddMessages(IEnumerable<Message> messages, ElementTheme theme, double messageFontSize, DateOnly localDate)
+    {
+        var groups = (from messageVm in messages.Select(x => new MessageViewModel(x.Id, x.Text, x.SentAt, x.EditedAt, x.IsRecipient, theme, messageFontSize))
+                      orderby messageVm.SentAt
+                      group messageVm by DateOnly.FromDateTime(messageVm.SentAt) into g
+                      orderby g.Key
+                      select new DailyMessageGroup(g, g.Key, localDate, messageFontSize)).ToList();
 
-        MessageGroups = new ObservableCollection<DailyMessageGroup>(query);
+        if (MessageGroups.Count == 0)
+        {
+            foreach (var group in groups)
+            {
+                MessageGroups.Add(group);
+            }
+        }
+        else
+        {
+            foreach (var group in groups)
+            {
+                var dayGroup = MessageGroups.FirstOrDefault(x => x.Date == group.Date);
+                if (dayGroup is null)
+                {
+                    MessageGroups.Add(group);
+                }
+                else
+                {
+                    foreach (var message in group)
+                    {
+                        dayGroup.Add(message);
+                    }
+                }
+            }
+        }
     }
 
     [ObservableProperty]
     private string nickname;
 
-    public ObservableCollection<DailyMessageGroup> MessageGroups;
+    public ObservableCollection<DailyMessageGroup> MessageGroups = new();
 
     [ObservableProperty]
     private bool connected;

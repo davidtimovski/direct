@@ -114,9 +114,9 @@ public sealed partial class MainWindow : Window
         await _chatService.DisconnectAsync();
     }
 
-    private void ContactsListView_SelectionChanged(object _, SelectionChangedEventArgs e)
+    private async void ContactsListView_SelectionChanged(object _, SelectionChangedEventArgs e)
     {
-        ViewModel.SelectedContactChanged();
+        await ViewModel.SelectedContactChangedAsync();
         MessageTextBox.Focus(FocusState.Programmatic);
     }
 
@@ -133,7 +133,7 @@ public sealed partial class MainWindow : Window
         {
             settingsWindow = null;
         };
-        WindowingUtil.Resize(settingsWindow, new SizeInt32(400, 470));
+        WindowingUtil.Resize(settingsWindow, new SizeInt32(400, 300));
         settingsWindow.Activate();
     }
 
@@ -165,7 +165,7 @@ public sealed partial class MainWindow : Window
         editContactWindow = new EditContactWindow(new EditContactViewModel(
             _serviceProvider.GetRequiredService<ISettingsService>(),
             _serviceProvider.GetRequiredService<IEventService>(),
-            ViewModel.SelectedContact!.UserId.ToString("N"),
+            ViewModel.SelectedContact!.Id.ToString("N"),
             ViewModel.SelectedContact!.Nickname
         ));
         editContactWindow.Closed += (object sender, WindowEventArgs args) =>

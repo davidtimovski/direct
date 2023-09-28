@@ -2,7 +2,10 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
+using Direct.Desktop.Storage.Entities;
+using Direct.Desktop.Storage.Models;
 using Microsoft.Data.Sqlite;
 using Windows.Storage;
 
@@ -11,6 +14,8 @@ namespace Direct.Desktop.Storage;
 internal static class Repository
 {
     private const string DatabaseFileName = "direct.db";
+    private const int RecentMessagesLimit = 20;
+
     private static readonly string _connectionString;
 
     static Repository()
@@ -19,39 +24,56 @@ internal static class Repository
         _connectionString = $"Data Source={dbFilePath}";
     }
 
-    internal async static Task<List<Contact>> GetAllContactsAsync()
+    internal async static Task<List<ContactForView>> GetAllContactsAsync()
     {
-        using var db = OpenConnection();
+        using var connection = OpenConnection();
 
-        var cmd = new SqliteCommand
+        var contactsCmd = new SqliteCommand
         {
-            Connection = db,
-            CommandText = "SELECT * FROM contacts"
+            Connection = connection,
+            CommandText = "SELECT id, nickname FROM contacts"
         };
 
-        var result = new List<Contact>();
+        var result = new List<ContactForView>();
 
-        SqliteDataReader query = await cmd.ExecuteReaderAsync();
-        while (query.Read())
+        SqliteDataReader contactsReader = await contactsCmd.ExecuteReaderAsync();
+        while (contactsReader.Read())
         {
-            result.Add(new Contact
+            result.Add(new ContactForView
             {
-                Id = new Guid(query.GetString(0)),
-                Nickname = query.GetString(1),
-                AddedOn = Iso8601ToDateTime(query.GetString(2))
+                Id = new Guid(contactsReader.GetString(0)),
+                Nickname = contactsReader.GetString(1)
             });
         }
 
-        return result;
+        // Order contacts by the timestamp of the last message the user had with them
+        var lastMessagesCmd = new SqliteCommand
+        {
+            Connection = connection,
+            CommandText = @"WITH ranked_messages AS (
+                                SELECT m.*, ROW_NUMBER() OVER (PARTITION BY contact_id ORDER BY sent_at DESC) AS rn
+                                FROM messages AS m
+                            )
+                            SELECT contact_id, sent_at FROM ranked_messages WHERE rn = 1 ORDER BY sent_at DESC"
+        };
+
+        var lastMessageLookup = new Dictionary<Guid, DateTime>(result.Count);
+        SqliteDataReader lastMessagesReader = await lastMessagesCmd.ExecuteReaderAsync();
+        while (lastMessagesReader.Read())
+        {
+            lastMessageLookup.Add(new Guid(lastMessagesReader.GetString(0)), Iso8601ToDateTime(lastMessagesReader.GetString(1)));
+        }
+
+        return result.OrderByDescending(x => lastMessageLookup[x.Id]).ToList();
     }
 
     internal async static Task CreateContactAsync(Contact contact)
     {
-        using var db = OpenConnection();
+        using var connection = OpenConnection();
 
         var cmd = new SqliteCommand
         {
-            Connection = db,
+            Connection = connection,
             CommandText = @"INSERT INTO contacts (id, nickname, added_on)
                             VALUES (@id, @nickname, @added_on)"
         };
@@ -64,11 +86,11 @@ internal static class Repository
 
     internal async static Task UpdateContactAsync(Guid id, string nickname)
     {
-        using var db = OpenConnection();
+        using var connection = OpenConnection();
 
         var cmd = new SqliteCommand
         {
-            Connection = db,
+            Connection = connection,
             CommandText = "UPDATE contacts SET nickname = @nickname WHERE id = @id"
         };
         cmd.Parameters.AddWithValue("@id", id.ToString());
@@ -79,13 +101,13 @@ internal static class Repository
 
     internal async static Task DeleteContactAsync(Guid id, bool deleteMessages)
     {
-        using var db = OpenConnection();
-        using var transaction = db.BeginTransaction();
+        using var connection = OpenConnection();
+        using var transaction = connection.BeginTransaction();
 
         var deleteContactsCmd = new SqliteCommand
         {
             Transaction = transaction,
-            Connection = db,
+            Connection = connection,
             CommandText = "DELETE FROM contacts WHERE id = @id"
         };
         deleteContactsCmd.Parameters.AddWithValue("@id", id.ToString());
@@ -96,8 +118,8 @@ internal static class Repository
             var deleteMessagesCmd = new SqliteCommand
             {
                 Transaction = transaction,
-                Connection = db,
-                CommandText = "DELETE FROM messages WHERE sender_id = @userId OR recipient_id = @userId"
+                Connection = connection,
+                CommandText = "DELETE FROM messages WHERE contact_id = @userId"
             };
             deleteMessagesCmd.Parameters.AddWithValue("@userId", id.ToString());
             await deleteMessagesCmd.ExecuteNonQueryAsync();
@@ -106,61 +128,39 @@ internal static class Repository
         await transaction.CommitAsync();
     }
 
-    internal async static Task<List<Message>> GetMessagesAsync(Guid userId)
+    internal async static Task<List<Message>> GetRecentMessagesAsync(Guid contactId, DateTime? from)
     {
-        using var db = OpenConnection();
+        var sql = from.HasValue
+            ? $"SELECT * FROM messages WHERE contact_id = @contact_id AND sent_at >= @from ORDER BY sent_at DESC LIMIT {RecentMessagesLimit}"
+            : $"SELECT * FROM messages WHERE contact_id = @contact_id ORDER BY sent_at DESC LIMIT {RecentMessagesLimit}";
+
+        using var connection = OpenConnection();
 
         var cmd = new SqliteCommand
         {
-            Connection = db,
-            CommandText = "SELECT * FROM messages WHERE sender_id = @userId OR recipient_id = @userId ORDER BY sent_at"
+            Connection = connection,
+            CommandText = sql
         };
-        cmd.Parameters.AddWithValue("@userId", userId.ToString());
-
-        var result = new List<Message>();
-
-        SqliteDataReader query = await cmd.ExecuteReaderAsync();
-        while (query.Read())
+        cmd.Parameters.AddWithValue("@contact_id", contactId.ToString());
+        if (from.HasValue)
         {
-            result.Add(new Message
-            {
-                Id = new Guid(query.GetString(0)),
-                SenderId = new Guid(query.GetString(1)),
-                RecipientId = new Guid(query.GetString(2)),
-                Text = query.GetString(3),
-                Reaction = query.IsDBNull(4) ? null : query.GetString(4),
-                SentAt = Iso8601ToDateTime(query.GetString(5)),
-                EditedAt = query.IsDBNull(6) ? null : Iso8601ToDateTime(query.GetString(6))
-            });
+            cmd.Parameters.AddWithValue("@from", DateTimeToIso8601(from.Value));
         }
 
-        return result;
-    }
-
-    internal async static Task<List<Message>> GetAllMessagesAsync()
-    {
-        var db = OpenConnection();
-
-        var cmd = new SqliteCommand
-        {
-            Connection = db,
-            CommandText = "SELECT * FROM messages ORDER BY sent_at"
-        };
-
         var result = new List<Message>();
 
-        SqliteDataReader query = await cmd.ExecuteReaderAsync();
-        while (query.Read())
+        SqliteDataReader reader = await cmd.ExecuteReaderAsync();
+        while (reader.Read())
         {
             result.Add(new Message
             {
-                Id = new Guid(query.GetString(0)),
-                SenderId = new Guid(query.GetString(1)),
-                RecipientId = new Guid(query.GetString(2)),
-                Text = query.GetString(3),
-                Reaction = query.IsDBNull(4) ? null : query.GetString(4),
-                SentAt = Iso8601ToDateTime(query.GetString(5)),
-                EditedAt = query.IsDBNull(6) ? null : Iso8601ToDateTime(query.GetString(6))
+                Id = new Guid(reader.GetString(0)),
+                ContactId = new Guid(reader.GetString(1)),
+                IsRecipient = reader.GetBoolean(2),
+                Text = reader.GetString(3),
+                Reaction = reader.IsDBNull(4) ? null : reader.GetString(4),
+                SentAt = Iso8601ToDateTime(reader.GetString(5)),
+                EditedAt = reader.IsDBNull(6) ? null : Iso8601ToDateTime(reader.GetString(6))
             });
         }
 
@@ -169,17 +169,17 @@ internal static class Repository
 
     internal async static Task CreateMessageAsync(Message message)
     {
-        using var db = OpenConnection();
+        using var connection = OpenConnection();
 
         var cmd = new SqliteCommand
         {
-            Connection = db,
-            CommandText = @"INSERT INTO messages (id, sender_id, recipient_id, message, reaction, sent_at, edited_at)
-                            VALUES (@id, @sender_id, @recipient_id, @message, NULL, @sent_at, NULL)"
+            Connection = connection,
+            CommandText = @"INSERT INTO messages (id, contact_id, is_recipient, message, reaction, sent_at, edited_at)
+                            VALUES (@id, @contact_id, @is_recipient, @message, NULL, @sent_at, NULL)"
         };
         cmd.Parameters.AddWithValue("@id", message.Id.ToString());
-        cmd.Parameters.AddWithValue("@sender_id", message.SenderId.ToString());
-        cmd.Parameters.AddWithValue("@recipient_id", message.RecipientId.ToString());
+        cmd.Parameters.AddWithValue("@contact_id", message.ContactId.ToString());
+        cmd.Parameters.AddWithValue("@is_recipient", message.IsRecipient);
         cmd.Parameters.AddWithValue("@message", message.Text);
         cmd.Parameters.AddWithValue("@sent_at", DateTimeToIso8601(message.SentAt));
 
@@ -188,11 +188,11 @@ internal static class Repository
 
     internal async static Task UpdateMessageAsync(Guid id, string message, DateTime editedAt)
     {
-        using var db = OpenConnection();
+        using var connection = OpenConnection();
 
         var cmd = new SqliteCommand
         {
-            Connection = db,
+            Connection = connection,
             CommandText = "UPDATE messages SET message = @message, edited_at = @edited_at WHERE id = @id"
         };
         cmd.Parameters.AddWithValue("@id", id.ToString());
@@ -206,42 +206,39 @@ internal static class Repository
     {
         await ApplicationData.Current.LocalFolder.CreateFileAsync(DatabaseFileName, CreationCollisionOption.OpenIfExists);
 
-        using var db = OpenConnection();
+        using var connection = OpenConnection();
 
         var sql = @"CREATE TABLE IF NOT EXISTS contacts
                     (
-	                    id TEXT PRIMARY KEY,
-	                    nickname TEXT NOT NULL,
-	                    added_on TEXT NOT NULL
+                        id TEXT PRIMARY KEY,
+                        nickname TEXT NOT NULL,
+                        added_on TEXT NOT NULL
                     );
 
                     CREATE TABLE IF NOT EXISTS messages
                     (
-	                    id TEXT PRIMARY KEY,
-	                    sender_id TEXT NOT NULL,
-	                    recipient_id TEXT NOT NULL,
-	                    message TEXT NOT NULL,
+                        id TEXT PRIMARY KEY,
+                        contact_id TEXT NOT NULL,
+                        is_recipient TINYINT NOT NULL,
+                        message TEXT NOT NULL,
                         reaction TEXT,
-	                    sent_at TEXT NOT NULL,
+                        sent_at TEXT NOT NULL,
                         edited_at TEXT
                     );
 
-                    CREATE INDEX IF NOT EXISTS sender_id_ix 
-                    ON messages(sender_id);
+                    CREATE INDEX IF NOT EXISTS contact_id_ix 
+                    ON messages(contact_id);";
 
-                    CREATE INDEX IF NOT EXISTS recipient_id_ix 
-                    ON messages(recipient_id);";
-
-        var cmd = new SqliteCommand(sql, db);
+        var cmd = new SqliteCommand(sql, connection);
 
         cmd.ExecuteNonQuery();
     }
 
     private static SqliteConnection OpenConnection()
     {
-        var db = new SqliteConnection(_connectionString);
-        db.Open();
-        return db;
+        var connection = new SqliteConnection(_connectionString);
+        connection.Open();
+        return connection;
     }
 
     private static string DateTimeToIso8601(DateTime dateTime)

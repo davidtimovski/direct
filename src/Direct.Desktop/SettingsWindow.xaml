@@ -15,7 +15,7 @@
 
         <local:TitleBar x:Name="AppTitleBar" Grid.Row="0" Title="Settings" />
 
-        <Grid Grid.Row="1" Padding="20 10 20 20">
+        <Grid Grid.Row="1" Padding="20 0 20 10">
             <Grid.RowDefinitions>
                 <RowDefinition />
             </Grid.RowDefinitions>
@@ -30,7 +30,7 @@
                     <NavigationViewItem x:Name="GeneralItem" Content="General" Tag="General" IsSelected="True" />
                     <NavigationViewItem x:Name="FeaturesItem" Content="Features" Tag="Features" />
                 </NavigationView.MenuItems>
-                <Frame x:Name="ContentFrame" Background="{ThemeResource WindowBackground}" Padding="5 25 5 5" />
+                <Frame x:Name="ContentFrame" Background="{ThemeResource WindowBackground}" Padding="5 10 5 0" />
             </NavigationView>
         </Grid>
 

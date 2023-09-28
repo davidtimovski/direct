@@ -43,12 +43,14 @@
                     <SolidColorBrush x:Key="WindowBackground" Color="#fafafa" />
                     <SolidColorBrush x:Key="WindowForeground" Color="#444" />
                     <SolidColorBrush x:Key="MessageSentAtForeground" Color="#666" />
+                    <SolidColorBrush x:Key="SeparatorBackground" Color="#d9d9d9" />
                 </ResourceDictionary>
 
                 <ResourceDictionary x:Key="Dark">
                     <SolidColorBrush x:Key="WindowBackground" Color="#171717" />
                     <SolidColorBrush x:Key="WindowForeground" Color="#ccc" />
                     <SolidColorBrush x:Key="MessageSentAtForeground" Color="#aaa" />
+                    <SolidColorBrush x:Key="SeparatorBackground" Color="#363636" />
                 </ResourceDictionary>
             </ResourceDictionary.ThemeDictionaries>
         </ResourceDictionary>
