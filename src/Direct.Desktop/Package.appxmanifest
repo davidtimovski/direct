@@ -49,21 +49,6 @@
         <uap:SplashScreen Image="Assets\Images\logo.png"/>
         <uap:LockScreen BadgeLogo="Assets\Images\logo.png" Notification="badge"/>
       </uap:VisualElements>
-	  
-	  <Extensions>
-        <desktop:Extension Category="windows.toastNotificationActivation">
-          <desktop:ToastNotificationActivation ToastActivatorCLSID="864704FE-E8CC-47C1-B6A6-1E1EEDBAE1D2" />
-        </desktop:Extension>
-
-        <!--Register COM CLSID-->    
-        <com:Extension Category="windows.comServer">
-          <com:ComServer>
-            <com:ExeServer Executable="Direct.Desktop\Direct.Desktop.exe" DisplayName="Direct" Arguments="----AppNotificationActivated:">
-              <com:Class Id="864704FE-E8CC-47C1-B6A6-1E1EEDBAE1D2" />
-            </com:ExeServer>
-          </com:ComServer>
-        </com:Extension>
-      </Extensions>
     </Application>
   </Applications>
 
