@@ -1,6 +1,6 @@
 using Microsoft.UI.Xaml.Controls;
 
-namespace Direct.Desktop.UserControls;
+namespace Direct.Desktop.Pages;
 
 public sealed partial class DeleteContactDialog : Page
 {

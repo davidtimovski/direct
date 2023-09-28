@@ -25,10 +25,10 @@
                        FontSize="16"
                        HorizontalTextAlignment="Center"
                        Margin="0 30 0 15">
-                        <Run>In order to start you first need a User ID.</Run>
+                        <Run>In order to start you first need an ID.</Run>
                         <LineBreak/>
                         <LineBreak/>
-                        <Run>If you already have an existing one, paste it here.</Run>
+                        <Run>If you already have an existing one, paste it below.</Run>
                         <LineBreak/>
                         <Run>Otherwise, generate a new one.</Run>
             </TextBlock>
@@ -39,7 +39,7 @@
                              IsEnabled="{x:Bind ViewModel.UserIdTextBoxEnabled, Mode=OneWay}"
                              FontFamily="{StaticResource DefaultFontFamily}"
                              TextAlignment="Center"
-                             PlaceholderText="User ID"  
+                             PlaceholderText="Your ID"  
                              MaxLength="32" />
 
                     <Grid Margin="0 15 0 0">
@@ -51,7 +51,7 @@
                         <Button Grid.Column="0"
                                 Click="{x:Bind ViewModel.GenerateUserID}" 
                                 IsEnabled="{x:Bind ViewModel.GenerateButtonEnabled, Mode=OneWay}"
-                                FontFamily="{StaticResource DefaultFontFamily}">Generate User ID</Button>
+                                FontFamily="{StaticResource DefaultFontFamily}">Generate ID</Button>
 
                         <Button Grid.Column="1"
                                 Click="{x:Bind Start}" 

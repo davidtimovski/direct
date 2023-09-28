@@ -57,14 +57,14 @@
                             DefaultLabelPosition="Right">
                     <AppBarButton Icon="Contact2"
                                   LabelPosition="Collapsed"
-                                  ToolTipService.ToolTip="User ID">
+                                  ToolTipService.ToolTip="ID">
                         <AppBarButton.Flyout>
                             <Flyout>
                                 <StackPanel>
                                     <TextBlock FontFamily="{StaticResource DefaultFontFamilyLight}"
                                                Foreground="{StaticResource OrangeBrush}"
                                                FontSize="18"
-                                               Margin="0 0 0 10">Your user ID</TextBlock>
+                                               Margin="0 0 0 10">Your ID</TextBlock>
 
                                     <TextBlock FontFamily="{StaticResource DefaultFontFamily}"
                                                Foreground="{ThemeResource WindowForeground}"
@@ -77,7 +77,7 @@
                                         </Grid.ColumnDefinitions>
 
                                         <TextBox Grid.Column="0"
-                                                 ToolTipService.ToolTip="User ID"
+                                                 ToolTipService.ToolTip="ID"
                                                  Text="{x:Bind ViewModel.UserId, Mode=OneWay}"
                                                  FontFamily="{StaticResource DefaultFontFamily}"
                                                  IsReadOnly="True"
@@ -86,7 +86,7 @@
                                                  VerticalAlignment="Center" />
 
                                         <Button Grid.Column="1"
-                                                Click="{x:Bind ViewModel.CopyUserID}"
+                                                Click="{x:Bind ViewModel.CopyID}"
                                                 ToolTipService.ToolTip="Copy"
                                                 VerticalAlignment="Stretch"
                                                 Margin="10 0 0 0">
@@ -313,6 +313,7 @@
                             </TextBox>
 
                             <Button Grid.Column="1"
+                                    Visibility="{x:Bind ViewModel.EmojiPickerVisible, Mode=OneWay}"
                                     IsEnabled="{x:Bind ViewModel.SelectedContact.Connected, Mode=OneWay}"
                                     Foreground="{ThemeResource WindowForeground}"
                                     ToolTipService.ToolTip="Emojis"

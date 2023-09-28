@@ -24,7 +24,7 @@
                 <TextBlock FontFamily="{StaticResource DefaultFontFamily}"
                            Foreground="{ThemeResource WindowForeground}"
                            FontSize="16"
-                           Margin="0 0 0 5">User ID</TextBlock>
+                           Margin="0 0 0 5">ID</TextBlock>
                 
                 <TextBox Text="{x:Bind ViewModel.UserId}"
                          IsEnabled="False"

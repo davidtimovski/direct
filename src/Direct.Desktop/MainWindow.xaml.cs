@@ -2,8 +2,8 @@ using System;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
+using Direct.Desktop.Pages;
 using Direct.Desktop.Services;
-using Direct.Desktop.UserControls;
 using Direct.Desktop.Utilities;
 using Direct.Desktop.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
@@ -133,7 +133,7 @@ public sealed partial class MainWindow : Window
         {
             settingsWindow = null;
         };
-        WindowingUtil.Resize(settingsWindow, new SizeInt32(400, 395));
+        WindowingUtil.Resize(settingsWindow, new SizeInt32(400, 470));
         settingsWindow.Activate();
     }
 
@@ -163,11 +163,11 @@ public sealed partial class MainWindow : Window
         }
 
         editContactWindow = new EditContactWindow(new EditContactViewModel(
-                _serviceProvider.GetRequiredService<ISettingsService>(),
-                _serviceProvider.GetRequiredService<IEventService>(),
-                ViewModel.SelectedContact!.UserId.ToString("N"),
-                ViewModel.SelectedContact!.Nickname
-            ));
+            _serviceProvider.GetRequiredService<ISettingsService>(),
+            _serviceProvider.GetRequiredService<IEventService>(),
+            ViewModel.SelectedContact!.UserId.ToString("N"),
+            ViewModel.SelectedContact!.Nickname
+        ));
         editContactWindow.Closed += (object sender, WindowEventArgs args) =>
         {
             editContactWindow = null;

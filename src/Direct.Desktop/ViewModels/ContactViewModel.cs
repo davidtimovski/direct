@@ -14,7 +14,14 @@ public partial class ContactViewModel : ObservableObject
 
     public Guid? EditingMessageId { get; set; }
 
-    public ContactViewModel(Guid userId, Guid contactUserId, string nickname, IEnumerable<Message> messages, ElementTheme theme, double messageFontSize, DateOnly localDate)
+    public ContactViewModel(
+        Guid userId,
+        Guid contactUserId,
+        string nickname,
+        IEnumerable<Message> messages,
+        ElementTheme theme,
+        double messageFontSize,
+        DateOnly localDate)
     {
         UserId = contactUserId;
         Nickname = nickname;

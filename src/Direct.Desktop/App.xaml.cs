@@ -38,6 +38,8 @@ public partial class App : Application
 
         services.AddTransient<SettingsWindow>();
         services.AddTransient<SettingsViewModel>();
+        services.AddTransient<GeneralSettingsViewModel>();
+        services.AddTransient<FeaturesSettingsViewModel>();
 
         services.AddTransient<NewContactWindow>();
         services.AddTransient<NewContactViewModel>();

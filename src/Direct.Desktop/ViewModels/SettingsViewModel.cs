@@ -1,5 +1,4 @@
-﻿using System;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Direct.Desktop.Services;
 using Microsoft.UI.Xaml;
 
@@ -7,46 +6,28 @@ namespace Direct.Desktop.ViewModels;
 
 public partial class SettingsViewModel : ObservableObject
 {
-    private readonly ISettingsService _settingsService;
-
-    public SettingsViewModel(ISettingsService settingsService)
+    public SettingsViewModel(
+        ISettingsService settingsService,
+        GeneralSettingsViewModel generalSettingsViewModel,
+        FeaturesSettingsViewModel featuresSettings)
     {
-        _settingsService = settingsService;
+        settingsService.Changed += SettingsChanged;
 
-        Theme = _settingsService.Theme;
-        SelectedTheme = Theme.ToString();
+        Theme = settingsService.Theme;
 
-        FontSize = _settingsService.MessageFontSize;
-        SpellCheckEnabled = _settingsService.SpellCheckEnabled;
+        GeneralSettings = generalSettingsViewModel;
+        FeaturesSettings = featuresSettings;
     }
 
     [ObservableProperty]
     private ElementTheme theme;
 
-    [ObservableProperty]
-    private double fontSize;
+    public GeneralSettingsViewModel GeneralSettings { get; set; }
 
-    [ObservableProperty]
-    private bool spellCheckEnabled;
+    public FeaturesSettingsViewModel FeaturesSettings { get; set; }
 
-    [ObservableProperty]
-    private string selectedTheme;
-
-    partial void OnSelectedThemeChanged(string value)
+    private void SettingsChanged(object? _, SettingsChangedEventArgs e)
     {
-        _ = Enum.TryParse(value, out ElementTheme theme);
-
-        Theme = theme;
-        _settingsService.Theme = theme;
-    }
-
-    partial void OnFontSizeChanged(double value)
-    {
-        _settingsService.MessageFontSize = value;
-    }
-
-    partial void OnSpellCheckEnabledChanged(bool value)
-    {
-        _settingsService.SpellCheckEnabled = value;
+        Theme = e.Theme;
     }
 }

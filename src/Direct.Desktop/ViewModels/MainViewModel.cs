@@ -44,6 +44,7 @@ public partial class MainViewModel : ObservableObject
         _dispatcherQueue = dispatcherQueue;
 
         Theme = _settingsService.Theme;
+        EmojiPickerVisible = _settingsService.EmojiPickerEnabled;
         SpellCheckEnabled = _settingsService.SpellCheckEnabled;
         UserId = _settingsService.UserId!.Value.ToString("N");
 
@@ -52,6 +53,9 @@ public partial class MainViewModel : ObservableObject
 
     [ObservableProperty]
     private ElementTheme theme;
+
+    [ObservableProperty]
+    private bool emojiPickerVisible;
 
     [ObservableProperty]
     private bool spellCheckEnabled;
@@ -80,7 +84,14 @@ public partial class MainViewModel : ObservableObject
             foreach (var contact in contacts)
             {
                 var contactMessages = messages.Where(x => x.SenderId == contact.Id || x.RecipientId == contact.Id);
-                contactViewModels.Add(new ContactViewModel(_settingsService.UserId!.Value, contact.Id, contact.Nickname, contactMessages, _settingsService.Theme, _settingsService.MessageFontSize, localDate: DateOnly.FromDateTime(DateTime.Now)));
+                contactViewModels.Add(new ContactViewModel(
+                    _settingsService.UserId!.Value,
+                    contact.Id,
+                    contact.Nickname,
+                    contactMessages,
+                    _settingsService.Theme,
+                    _settingsService.MessageFontSize,
+                    localDate: DateOnly.FromDateTime(DateTime.Now)));
             }
 
             var orderedContacts = contactViewModels.OrderByDescending(
@@ -149,7 +160,7 @@ public partial class MainViewModel : ObservableObject
         SelectedContact!.MessageText += emoji;
     }
 
-    public void CopyUserID()
+    public void CopyID()
     {
         var package = new DataPackage();
         package.SetText(UserId);
@@ -204,6 +215,7 @@ public partial class MainViewModel : ObservableObject
 
         Theme = e.Theme;
         SpellCheckEnabled = e.SpellCheckEnabled;
+        EmojiPickerVisible = e.EmojiPickerEnabled;
     }
 
     private void ConnectedContactsRetrieved(object? eee, ConnectedContactsRetrievedEventArgs e)
@@ -465,7 +477,14 @@ public partial class MainViewModel : ObservableObject
     private async void ContactAddedLocally(object? sender, ContactAddedLocallyEventArgs e)
     {
         var contactMessages = await Repository.GetMessagesAsync(e.UserId);
-        Contacts.Add(new ContactViewModel(_settingsService.UserId!.Value, e.UserId, e.Nickname, contactMessages, _settingsService.Theme, _settingsService.MessageFontSize, localDate: DateOnly.FromDateTime(DateTime.Now)));
+        Contacts.Add(new ContactViewModel(
+            _settingsService.UserId!.Value,
+            e.UserId,
+            e.Nickname,
+            contactMessages,
+            _settingsService.Theme,
+            _settingsService.MessageFontSize,
+            localDate: DateOnly.FromDateTime(DateTime.Now)));
     }
 
     private void ContactEdited(object? sender, ContactEditedLocallyEventArgs e)

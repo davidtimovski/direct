@@ -35,7 +35,7 @@ internal static class EmojiUtil
             {
                 foreach (var replacement in replacements)
                 {
-                    if (text[i] == replacement.Match[0] && text[i + 1] == replacement.Match[1])
+                    if (text[i].Equals(replacement.Match[0]) && text[i + 1].Equals(replacement.Match[1]))
                     {
                         builder.Append(replacement.Emoji);
                         i++;

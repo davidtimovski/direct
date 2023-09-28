@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="Direct.Desktop.Pages.SettingsGeneralPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <StackPanel>
+        <TextBlock FontFamily="{StaticResource DefaultFontFamilyLight}"
+                   Foreground="{ThemeResource WindowForeground}"
+                   FontSize="18">Theme</TextBlock>
+
+        <Grid Margin="0 15 0 0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Grid.Column="0"
+                   FontFamily="{StaticResource DefaultFontFamily}"
+                   VerticalAlignment="Center">Selected theme</TextBlock>
+
+            <ComboBox Grid.Column="1"
+                      SelectedItem="{x:Bind ViewModel.SelectedTheme, Mode=TwoWay}"
+                      FontFamily="{StaticResource DefaultFontFamily}"
+                      HorizontalAlignment="Right"
+                      VerticalAlignment="Center">
+                <x:String>Default</x:String>
+                <x:String>Light</x:String>
+                <x:String>Dark</x:String>
+            </ComboBox>
+        </Grid>
+
+        <Border Background="#666" Height="1" Margin="10 30 10 20" />
+
+        <TextBlock FontFamily="{StaticResource DefaultFontFamilyLight}"
+                   Foreground="{ThemeResource WindowForeground}"
+                   FontSize="18">Font</TextBlock>
+
+        <Grid Margin="0 15 0 0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Grid.Column="0"
+                       FontFamily="{StaticResource DefaultFontFamily}"
+                       VerticalAlignment="Center">Font size</TextBlock>
+
+            <ComboBox Grid.Column="1"
+                      SelectedItem="{x:Bind ViewModel.FontSize, Mode=TwoWay}"
+                      FontFamily="{StaticResource DefaultFontFamily}"
+                      HorizontalAlignment="Right"
+                      VerticalAlignment="Center">
+                <x:Double>12</x:Double>
+                <x:Double>13</x:Double>
+                <x:Double>14</x:Double>
+                <x:Double>15</x:Double>
+                <x:Double>16</x:Double>
+                <x:Double>17</x:Double>
+                <x:Double>18</x:Double>
+                <x:Double>19</x:Double>
+                <x:Double>20</x:Double>
+                <x:Double>21</x:Double>
+                <x:Double>22</x:Double>
+                <x:Double>23</x:Double>
+                <x:Double>24</x:Double>
+                <x:Double>25</x:Double>
+                <x:Double>26</x:Double>
+                <x:Double>27</x:Double>
+                <x:Double>28</x:Double>
+                <x:Double>29</x:Double>
+                <x:Double>30</x:Double>
+            </ComboBox>
+        </Grid>
+
+        <Border Background="#666" Height="1" Margin="10 30 10 20" />
+
+        <TextBlock FontFamily="{StaticResource DefaultFontFamilyLight}"
+                   Foreground="{ThemeResource WindowForeground}"
+                   FontSize="18">Other</TextBlock>
+
+        <Grid Margin="0 15 0 0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Grid.Column="0"
+                       FontFamily="{StaticResource DefaultFontFamily}"
+                       VerticalAlignment="Center">Spell check</TextBlock>
+
+            <CheckBox Grid.Column="1"
+                      IsChecked="{x:Bind ViewModel.SpellCheckEnabled, Mode=TwoWay}"
+                      ToolTipService.ToolTip="{x:Bind ViewModel.SpellCheckCheckBoxTooltip, Mode=OneWay}"
+                      HorizontalAlignment="Right"
+                      MinWidth="0" />
+        </Grid>
+    </StackPanel>
+
+</Page>
