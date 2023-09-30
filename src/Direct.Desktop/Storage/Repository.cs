@@ -14,7 +14,7 @@ namespace Direct.Desktop.Storage;
 internal static class Repository
 {
     private const string DatabaseFileName = "direct.db";
-    private const int RecentMessagesLimit = 20;
+    private const int RecentMessagesLimit = 30;
 
     private static readonly string _connectionString;
 
@@ -35,15 +35,19 @@ internal static class Repository
         };
 
         var result = new List<ContactForView>();
+        var lastMessageTsLookup = new Dictionary<Guid, DateTime>();
 
         SqliteDataReader contactsReader = await contactsCmd.ExecuteReaderAsync();
         while (contactsReader.Read())
         {
+            var id = new Guid(contactsReader.GetString(0));
+
             result.Add(new ContactForView
             {
-                Id = new Guid(contactsReader.GetString(0)),
+                Id = id,
                 Nickname = contactsReader.GetString(1)
             });
+            lastMessageTsLookup.Add(id, DateTime.MinValue);
         }
 
         // Order contacts by the timestamp of the last message the user had with them
@@ -57,14 +61,14 @@ internal static class Repository
                             SELECT contact_id, sent_at FROM ranked_messages WHERE rn = 1 ORDER BY sent_at DESC"
         };
 
-        var lastMessageLookup = new Dictionary<Guid, DateTime>(result.Count);
         SqliteDataReader lastMessagesReader = await lastMessagesCmd.ExecuteReaderAsync();
         while (lastMessagesReader.Read())
         {
-            lastMessageLookup.Add(new Guid(lastMessagesReader.GetString(0)), Iso8601ToDateTime(lastMessagesReader.GetString(1)));
+            var id = new Guid(lastMessagesReader.GetString(0));
+            lastMessageTsLookup[id] = Iso8601ToDateTime(lastMessagesReader.GetString(1));
         }
 
-        return result.OrderByDescending(x => lastMessageLookup[x.Id]).ToList();
+        return result.OrderByDescending(x => lastMessageTsLookup[x.Id]).ToList();
     }
 
     internal async static Task CreateContactAsync(Contact contact)
@@ -227,7 +231,10 @@ internal static class Repository
                     );
 
                     CREATE INDEX IF NOT EXISTS contact_id_ix 
-                    ON messages(contact_id);";
+                    ON messages(contact_id);
+
+                    CREATE INDEX IF NOT EXISTS sent_at_ix 
+                    ON messages(sent_at);";
 
         var cmd = new SqliteCommand(sql, connection);
 

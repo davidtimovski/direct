@@ -18,14 +18,14 @@
                 VerticalAlignment="Center"
                 Margin="0 0 5 0" />
 
-            <TextBlock FontFamily="{StaticResource DefaultFontFamily}">Deleting a contact will not delete the messages you have with them.</TextBlock>
+            <TextBlock FontFamily="{StaticResource DefaultFontFamily}">Deleting this contact will not delete the messages you have with them.</TextBlock>
         </StackPanel>
 
         <TextBlock FontFamily="{StaticResource DefaultFontFamily}"
                    Margin="0 0 0 20">If you add the same contact again you will still have your message history.</TextBlock>
 
         <CheckBox IsChecked="{x:Bind DeleteMessages, Mode=TwoWay}"
-                  FontFamily="{StaticResource DefaultFontFamily}">Delete my messages with this contact</CheckBox>
+                  FontFamily="{StaticResource DefaultFontFamily}">Delete our messages as well</CheckBox>
     </StackPanel>
 
 </Page>

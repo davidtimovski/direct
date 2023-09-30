@@ -56,11 +56,13 @@ public partial class ContactViewModel : ObservableObject
     }
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(MessageTextBoxPlaceholder))]
     private string nickname;
 
     public ObservableCollection<DailyMessageGroup> MessageGroups = new();
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(MessageTextBoxPlaceholder))]
     private bool connected;
 
     [ObservableProperty]
@@ -68,6 +70,8 @@ public partial class ContactViewModel : ObservableObject
 
     [ObservableProperty]
     private string messageText = string.Empty;
+
+    public string? MessageTextBoxPlaceholder => Connected ? null : $"{Nickname} is currently offline";
 
     [ObservableProperty]
     private int messageSelectionStart;

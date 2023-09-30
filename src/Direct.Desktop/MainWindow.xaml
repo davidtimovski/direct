@@ -234,6 +234,27 @@
                         </DataTemplate>
                     </Grid.Resources>
 
+                    <Border Grid.Row="0"
+                            Visibility="{x:Bind ViewModel.ContactIsSelected, Mode=OneWay}"
+                            Padding="0 0 0 10"
+                            BorderThickness="0 0 0 1"
+                            BorderBrush="{ThemeResource SeparatorBackground}">
+                        <DropDownButton HorizontalAlignment="Right"
+                                        VerticalAlignment="Top"
+                                        FlowDirection="RightToLeft"
+                                        AutomationProperties.Name="Setting">
+                            <DropDownButton.Content>
+                                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE713;" />
+                            </DropDownButton.Content>
+                            <DropDownButton.Flyout>
+                                <MenuFlyout Placement="Bottom">
+                                    <MenuFlyoutItem Click="EditContact_Click">Edit contact</MenuFlyoutItem>
+                                    <MenuFlyoutItem Click="DeleteContact_Click">Delete contact</MenuFlyoutItem>
+                                </MenuFlyout>
+                            </DropDownButton.Flyout>
+                        </DropDownButton>
+                    </Border>
+
                     <InfoBar
                         Grid.Row="0"
                         IsOpen="{x:Bind ViewModel.SelectedContact.ErrorBarVisible, Mode=OneWay}"
@@ -272,23 +293,6 @@
 
                     </ListView>
 
-                    <DropDownButton Grid.Row="1"
-                                    Visibility="{x:Bind ViewModel.ContactIsSelected, Mode=OneWay}"
-                                    HorizontalAlignment="Right"
-                                    VerticalAlignment="Top"
-                                    FlowDirection="RightToLeft"
-                                    AutomationProperties.Name="Setting">
-                        <DropDownButton.Content>
-                            <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE713;" />
-                        </DropDownButton.Content>
-                        <DropDownButton.Flyout>
-                            <MenuFlyout Placement="Bottom">
-                                <MenuFlyoutItem Click="EditContact_Click">Edit contact</MenuFlyoutItem>
-                                <MenuFlyoutItem Click="DeleteContact_Click">Delete contact</MenuFlyoutItem>
-                            </MenuFlyout>
-                        </DropDownButton.Flyout>
-                    </DropDownButton>
-
                     <Border Grid.Row="2" Padding="0 10 0 0">
                         <Grid Visibility="{x:Bind ViewModel.ContactIsSelected, Mode=OneWay}">
                             <Grid.ColumnDefinitions>
@@ -302,6 +306,7 @@
                                      SelectionStart="{x:Bind ViewModel.SelectedContact.MessageSelectionStart, Mode=OneWay}"
                                      IsEnabled="{x:Bind ViewModel.SelectedContact.Connected, Mode=OneWay}"
                                      IsSpellCheckEnabled="{x:Bind ViewModel.SpellCheckEnabled, Mode=OneWay}"
+                                     PlaceholderText="{x:Bind ViewModel.SelectedContact.MessageTextBoxPlaceholder, Mode=OneWay}"
                                      AcceptsReturn="True"
                                      MaxLength="5000">
 

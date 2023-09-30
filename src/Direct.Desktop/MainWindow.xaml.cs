@@ -186,8 +186,8 @@ public sealed partial class MainWindow : Window
             RequestedTheme = _settingsService.Theme,
             Title = "Delete contact",
             Content = content,
-            PrimaryButtonText = "Yes, delete",
-            CloseButtonText = "No, keep",
+            PrimaryButtonText = "Delete",
+            CloseButtonText = "Cancel",
             PrimaryButtonCommand = new RelayCommand(() => ViewModel.DeleteContactAsync(content.DeleteMessages))
         };
         await dialog.ShowAsync();
