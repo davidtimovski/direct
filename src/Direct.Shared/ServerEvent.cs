@@ -9,4 +9,8 @@ public static class ServerEvent
 
     public const string SendMessage = "SendMessage";
     public const string UpdateMessage = "UpdateMessage";
+
+    public const string RequestMessagePull = "RequestMessagePull";
+    public const string MessageUpstream = "MessageUpstream";
+    public const string MessageDownstream = "MessageDownstream";
 }

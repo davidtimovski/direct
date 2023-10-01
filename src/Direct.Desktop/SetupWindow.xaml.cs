@@ -18,6 +18,7 @@ public sealed partial class SetupWindow : Window
     public SetupWindow(ISettingsService settingsService, IServiceProvider serviceProvider, SetupViewModel viewModel)
     {
         InitializeComponent();
+        Title = "Setup";
 
         ExtendsContentIntoTitleBar = true;
         SetTitleBar(AppTitleBar);

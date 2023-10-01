@@ -37,6 +37,7 @@ public partial class MainViewModel : ObservableObject
         _chatService.MessageSendingFailed += MessageSendingFailed;
         _chatService.MessageUpdated += MessageUpdated;
         _chatService.MessageUpdatingFailed += MessageUpdatingFailed;
+        _chatService.MessagePullCompleted += MessagePullCompleted;
 
         _eventService = eventService;
         _eventService.ContactAddedLocally += ContactAddedLocally;
@@ -80,7 +81,7 @@ public partial class MainViewModel : ObservableObject
 
         foreach (var contact in contacts)
         {
-            Contacts.Add(new ContactViewModel(contact.Id, contact.Nickname));
+            Contacts.Add(new ContactViewModel(contact.Id, contact.Nickname, _settingsService.Theme, _settingsService.MessageFontSize));
         }
 
         var contactIds = contacts.Select(x => x.Id).ToHashSet();
@@ -98,14 +99,10 @@ public partial class MainViewModel : ObservableObject
 
         if (SelectedContact.LastViewed is null || SelectedContact.HasUnreadMessages)
         {
-            var messages = await Repository.GetRecentMessagesAsync(SelectedContact.Id, SelectedContact.LastViewed);
-            if (messages.Count > 0)
+            var recentMessages = await Repository.GetRecentMessagesAsync(SelectedContact.Id, SelectedContact.LastViewed);
+            if (recentMessages.Count > 0)
             {
-                SelectedContact.AddMessages(
-                    messages,
-                    _settingsService.Theme,
-                    _settingsService.MessageFontSize,
-                    DateOnly.FromDateTime(DateTime.Now));
+                SelectedContact.SetMessages(recentMessages);
             }
 
             if (SelectedContact.HasUnreadMessages)
@@ -198,16 +195,7 @@ public partial class MainViewModel : ObservableObject
     {
         foreach (var contact in Contacts)
         {
-            foreach (var group in contact.MessageGroups)
-            {
-                group.LabelFontSize = e.MessageFontSize;
-
-                foreach (var message in group)
-                {
-                    message.SetTheme(Theme);
-                    message.SetFontSize(e.MessageFontSize);
-                }
-            }
+            contact.SetThemeAndFontSize(e.Theme, e.MessageFontSize);
         }
 
         Theme = e.Theme;
@@ -306,14 +294,7 @@ public partial class MainViewModel : ObservableObject
         var isRecipient = _settingsService.UserId == e.RecipientId;
         var contactId = isRecipient ? e.SenderId : e.RecipientId;
 
-        await Repository.CreateMessageAsync(new Message
-        {
-            Id = e.Id,
-            ContactId = contactId,
-            IsRecipient = isRecipient,
-            Text = e.Text,
-            SentAt = e.SentAt
-        });
+        await Repository.CreateMessageAsync(new Message(e.Id, contactId, isRecipient, e.Text, null, e.SentAt, null));
 
         var contact = Contacts.FirstOrDefault(x => x.Id == contactId);
         if (contact is null)
@@ -431,12 +412,39 @@ public partial class MainViewModel : ObservableObject
         });
     }
 
-    private void ContactAddedLocally(object? sender, ContactAddedLocallyEventArgs e)
+    private void MessagePullCompleted(object? _, MessagePullCompletedEventArgs e)
     {
-        Contacts.Add(new ContactViewModel(e.UserId, e.Nickname));
+        if (e.Created == 0)
+        {
+            return;
+        }
+
+        var contact = Contacts.FirstOrDefault(x => x.Id == e.ContactId);
+        if (contact is null)
+        {
+            return;
+        }
+
+        _dispatcherQueue.TryEnqueue(async () =>
+        {
+            if (contact == SelectedContact)
+            {
+                var recentMessages = await Repository.GetRecentMessagesAsync(contact.Id, null);
+                contact.SetMessages(recentMessages);
+            }
+            else
+            {
+                contact.LastViewed = null;
+            }
+        });
     }
 
-    private void ContactEdited(object? sender, ContactEditedLocallyEventArgs e)
+    private void ContactAddedLocally(object? _, ContactAddedLocallyEventArgs e)
+    {
+        Contacts.Add(new ContactViewModel(e.UserId, e.Nickname, _settingsService.Theme, _settingsService.MessageFontSize));
+    }
+
+    private void ContactEdited(object? _, ContactEditedLocallyEventArgs e)
     {
         var contact = Contacts.FirstOrDefault(x => x.Id == e.UserId);
         if (contact is null)

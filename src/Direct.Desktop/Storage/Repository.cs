@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Direct.Desktop.Storage.Entities;
 using Direct.Desktop.Storage.Models;
@@ -42,11 +43,7 @@ internal static class Repository
         {
             var id = new Guid(contactsReader.GetString(0));
 
-            result.Add(new ContactForView
-            {
-                Id = id,
-                Nickname = contactsReader.GetString(1)
-            });
+            result.Add(new ContactForView(id, contactsReader.GetString(1)));
             lastMessageTsLookup.Add(id, DateTime.MinValue);
         }
 
@@ -157,15 +154,15 @@ internal static class Repository
         while (reader.Read())
         {
             result.Add(new Message
-            {
-                Id = new Guid(reader.GetString(0)),
-                ContactId = new Guid(reader.GetString(1)),
-                IsRecipient = reader.GetBoolean(2),
-                Text = reader.GetString(3),
-                Reaction = reader.IsDBNull(4) ? null : reader.GetString(4),
-                SentAt = Iso8601ToDateTime(reader.GetString(5)),
-                EditedAt = reader.IsDBNull(6) ? null : Iso8601ToDateTime(reader.GetString(6))
-            });
+            (
+                new Guid(reader.GetString(0)),
+                new Guid(reader.GetString(1)),
+                reader.GetBoolean(2),
+                reader.GetString(3),
+                reader.IsDBNull(4) ? null : reader.GetString(4),
+                Iso8601ToDateTime(reader.GetString(5)),
+                reader.IsDBNull(6) ? null : Iso8601ToDateTime(reader.GetString(6))
+            ));
         }
 
         return result;
@@ -204,6 +201,112 @@ internal static class Repository
         cmd.Parameters.AddWithValue("@edited_at", DateTimeToIso8601(editedAt));
 
         await cmd.ExecuteNonQueryAsync();
+    }
+
+    internal async static Task<List<Message>> GetMessagesForSyncAsync(Guid contactId)
+    {
+        using var connection = OpenConnection();
+
+        var cmd = new SqliteCommand
+        {
+            Connection = connection,
+            CommandText = "SELECT * FROM messages WHERE contact_id = @contact_id"
+        };
+        cmd.Parameters.AddWithValue("@contact_id", contactId.ToString());
+
+        var result = new List<Message>();
+
+        SqliteDataReader reader = await cmd.ExecuteReaderAsync();
+        while (reader.Read())
+        {
+            result.Add(new Message
+            (
+                new Guid(reader.GetString(0)),
+                new Guid(reader.GetString(1)),
+                reader.GetBoolean(2),
+                reader.GetString(3),
+                reader.IsDBNull(4) ? null : reader.GetString(4),
+                Iso8601ToDateTime(reader.GetString(5)),
+                reader.IsDBNull(6) ? null : Iso8601ToDateTime(reader.GetString(6))
+            ));
+        }
+
+        return result;
+    }
+
+    internal async static Task<int> CreateMissingMessagesAsync(List<Message> messages)
+    {
+        using var connection = OpenConnection();
+
+        var ids = messages.Select(x => x.Id).ToList();
+
+        var inParams = string.Join(",", Enumerable.Range(0, ids.Count).Select(i => "@id" + i));
+        var queryCmd = new SqliteCommand
+        {
+            Connection = connection,
+            CommandText = $"SELECT id FROM messages WHERE id IN ({inParams})"
+        };
+        for (var i = 0; i < ids.Count; i++)
+        {
+            queryCmd.Parameters.AddWithValue($"@id{i}", ids[i].ToString());
+        }
+
+        var existingIds = new HashSet<Guid>();
+
+        SqliteDataReader queryReader = await queryCmd.ExecuteReaderAsync();
+        while (queryReader.Read())
+        {
+            existingIds.Add(new Guid(queryReader.GetString(0)));
+        }
+
+        var newIds = ids.Where(x => !existingIds.Contains(x)).ToHashSet();
+        if (newIds.Count == 0)
+        {
+            return 0;
+        }
+
+        // Insert in chunks of 500
+        var newMessageChunks = messages.Where(x => newIds.Contains(x.Id)).Chunk(500).ToList();
+
+        using var transaction = connection.BeginTransaction();
+
+        var builder = new StringBuilder();
+        foreach (var chunk in newMessageChunks)
+        {
+            var insertCmd = new SqliteCommand
+            {
+                Connection = connection,
+                Transaction = transaction
+            };
+
+            builder.Append("INSERT INTO messages (id, contact_id, is_recipient, message, reaction, sent_at, edited_at) VALUES ");
+
+            var values = new string[chunk.Length];
+            for (var i = 0; i < chunk.Length; i++)
+            {
+                values[i] = $"(@id{i}, @contact_id{i}, @is_recipient{i}, @message{i}, @reaction{i}, @sent_at{i}, @edited_at{i})";
+
+                insertCmd.Parameters.AddWithValue($"@id{i}", chunk[i].Id.ToString());
+                insertCmd.Parameters.AddWithValue($"@contact_id{i}", chunk[i].ContactId.ToString());
+                insertCmd.Parameters.AddWithValue($"@is_recipient{i}", chunk[i].IsRecipient);
+                insertCmd.Parameters.AddWithValue($"@message{i}", chunk[i].Text);
+                insertCmd.Parameters.AddWithValue($"@reaction{i}", chunk[i].Reaction is null ? DBNull.Value : chunk[i].Reaction);
+                insertCmd.Parameters.AddWithValue($"@sent_at{i}", DateTimeToIso8601(chunk[i].SentAt));
+                insertCmd.Parameters.AddWithValue($"@edited_at{i}", chunk[i].EditedAt is null ? DBNull.Value : DateTimeToIso8601(chunk[i].EditedAt!.Value));
+            }
+
+            builder.Append(string.Join(',', values));
+
+            insertCmd.CommandText = builder.ToString();
+
+            await insertCmd.ExecuteNonQueryAsync();
+
+            builder.Clear();
+        }
+
+        await transaction.CommitAsync();
+
+        return newIds.Count;
     }
 
     internal async static Task InitializeDatabaseAsync()

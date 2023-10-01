@@ -51,6 +51,7 @@ public partial class NewContactViewModel : ObservableObject
 
     public bool AddButtonEnabled =>
         ValidationUtil.UserIdIsValid(UserId)
+        && Guid.ParseExact(UserId, "N") != _settingsService.UserId
         && ValidationUtil.NicknameIsValid(Nickname)
         && !Adding;
 
@@ -59,11 +60,11 @@ public partial class NewContactViewModel : ObservableObject
         Adding = true;
 
         var contact = new Contact
-        {
-            Id = Guid.ParseExact(UserId, "N"),
-            Nickname = Nickname.Trim(),
-            AddedOn = DateTime.Now
-        };
+        (
+            Guid.ParseExact(UserId, "N"),
+            Nickname.Trim(),
+            DateTime.Now
+        );
         await Repository.CreateContactAsync(contact);
         _eventService.RaiseContactAdded(contact.Id, contact.Nickname);
 

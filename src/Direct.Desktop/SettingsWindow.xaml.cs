@@ -12,6 +12,7 @@ public sealed partial class SettingsWindow : Window
     public SettingsWindow(SettingsViewModel viewModel)
     {
         InitializeComponent();
+        Title = "Settings";
 
         ExtendsContentIntoTitleBar = true;
         SetTitleBar(AppTitleBar);

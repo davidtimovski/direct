@@ -1,4 +1,6 @@
-﻿using Direct.Shared;
+﻿using System.Runtime.CompilerServices;
+using Direct.Shared;
+using Direct.Shared.Models;
 using Direct.Web.Services;
 using Microsoft.AspNetCore.SignalR;
 
@@ -7,10 +9,12 @@ namespace Direct.Web.Hubs;
 public class ChatHub : Hub
 {
     private readonly IChatService _chatService;
+    private readonly IPullService _pullService;
 
-    public ChatHub(IChatService chatService)
+    public ChatHub(IChatService chatService, IPullService pullService)
     {
-       _chatService = chatService;
+        _chatService = chatService;
+        _pullService = pullService;
     }
 
     public async Task UserJoin(Guid userId, HashSet<Guid> contactIds)
@@ -75,6 +79,39 @@ public class ChatHub : Hub
         {
             await Clients.Clients(result.ContactConnectionIds).SendAsync(ClientEvent.ContactDisconnected, result.UserId!.Value);
         }
+    }
+
+    public async Task RequestMessagePull(Guid contactId)
+    {
+        var result = _chatService.RequestMessagePull(Context.ConnectionId, contactId);
+
+        _pullService.Create(result.SenderConnectionId, Context.ConnectionId);
+
+        await Clients.Client(result.SenderConnectionId).SendAsync(ClientEvent.StartMessageUpstream, result.RecipientUserId);
+    }
+
+    public async Task MessageUpstream(IAsyncEnumerable<StreamedMessageDto> messageStream)
+    {
+        await foreach (var message in messageStream)
+        {
+            _pullService.AddMessage(Context.ConnectionId, message);
+        }
+
+        var recipientConnectionId = _pullService.GetRecipientConnectionId(Context.ConnectionId);
+        await Clients.Client(recipientConnectionId).SendAsync(ClientEvent.StartMessageDownstream);
+    }
+
+    public async IAsyncEnumerable<StreamedMessageDto> MessageDownstream([EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        var messages = _pullService.GetMessages(Context.ConnectionId);
+
+        foreach (var message in messages)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            yield return message;
+        }
+
+        _pullService.Complete(Context.ConnectionId);
     }
 
     public override async Task OnDisconnectedAsync(Exception? exception)

@@ -11,7 +11,7 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <local:TitleBar x:Name="AppTitleBar" Grid.Row="0" Title="Setup" />
+        <local:TitleBar x:Name="AppTitleBar" Grid.Row="0" Title="{x:Bind Title}" />
 
         <StackPanel Grid.Row="1" VerticalAlignment="Center">
             <TextBlock Text="Welcome"

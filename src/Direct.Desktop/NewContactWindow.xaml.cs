@@ -10,6 +10,7 @@ public sealed partial class NewContactWindow : Window
     public NewContactWindow(NewContactViewModel viewModel)
     {
         InitializeComponent();
+        Title = "Add new contact";
 
         ExtendsContentIntoTitleBar = true;
         SetTitleBar(AppTitleBar);

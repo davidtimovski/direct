@@ -10,23 +10,31 @@ namespace Direct.Desktop.ViewModels;
 
 public partial class ContactViewModel : ObservableObject
 {
+    private ElementTheme theme;
+    private double messageFontSize;
+
     public Guid Id { get; }
     public Guid? EditingMessageId { get; set; }
     public DateTime? LastViewed { get; set; }
 
-    public ContactViewModel(Guid id, string nickname)
+    public ContactViewModel(Guid id, string nickname, ElementTheme theme, double messageFontSize)
     {
+        this.theme = theme;
+        this.messageFontSize = messageFontSize;
+
         Id = id;
         Nickname = nickname;
     }
 
-    public void AddMessages(IEnumerable<Message> messages, ElementTheme theme, double messageFontSize, DateOnly localDate)
+    public void SetMessages(List<Message> messages)
     {
+        MessageGroups.Clear();
+
         var groups = (from messageVm in messages.Select(x => new MessageViewModel(x.Id, x.Text, x.SentAt, x.EditedAt, x.IsRecipient, theme, messageFontSize))
                       orderby messageVm.SentAt
                       group messageVm by DateOnly.FromDateTime(messageVm.SentAt) into g
                       orderby g.Key
-                      select new DailyMessageGroup(g, g.Key, localDate, messageFontSize)).ToList();
+                      select new DailyMessageGroup(g, g.Key, localDate: DateOnly.FromDateTime(DateTime.Now), messageFontSize)).ToList();
 
         if (MessageGroups.Count == 0)
         {
@@ -51,6 +59,23 @@ public partial class ContactViewModel : ObservableObject
                         dayGroup.Add(message);
                     }
                 }
+            }
+        }
+    }
+
+    public void SetThemeAndFontSize(ElementTheme theme, double messageFontSize)
+    {
+        this.theme = theme;
+        this.messageFontSize = messageFontSize;
+
+        foreach (var group in MessageGroups)
+        {
+            group.LabelFontSize = messageFontSize;
+
+            foreach (var message in group)
+            {
+                message.SetTheme(theme);
+                message.SetFontSize(messageFontSize);
             }
         }
     }

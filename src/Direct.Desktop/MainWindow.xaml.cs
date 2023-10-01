@@ -7,6 +7,7 @@ using Direct.Desktop.Services;
 using Direct.Desktop.Utilities;
 using Direct.Desktop.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
@@ -22,6 +23,7 @@ public sealed partial class MainWindow : Window
 
     private SettingsWindow? settingsWindow;
     private NewContactWindow? newContactWindow;
+    private PullMessagesWindow? pullMessagesWindow;
     private EditContactWindow? editContactWindow;
 
     public MainViewModel ViewModel { get; }
@@ -30,6 +32,7 @@ public sealed partial class MainWindow : Window
     public MainWindow(ISettingsService settingsService, IChatService chatService, IServiceProvider serviceProvider, MainViewModel viewModel)
     {
         InitializeComponent();
+        Title = "Direct";
 
         Closed += WindowClosed;
 
@@ -152,6 +155,32 @@ public sealed partial class MainWindow : Window
         };
         WindowingUtil.Resize(newContactWindow, new SizeInt32(370, 280));
         newContactWindow.Activate();
+    }
+
+    private void PullMessages_Click(object _, RoutedEventArgs e)
+    {
+        if (pullMessagesWindow is not null)
+        {
+            pullMessagesWindow.Activate();
+            return;
+        }
+
+        pullMessagesWindow = new PullMessagesWindow(
+            _serviceProvider.GetRequiredService<IChatService>(),
+            new PullMessagesViewModel(
+                _serviceProvider.GetRequiredService<ISettingsService>(),
+                _serviceProvider.GetRequiredService<IChatService>(),
+                _serviceProvider.GetRequiredService<DispatcherQueue>(),
+                ViewModel.SelectedContact!.Id,
+                ViewModel.SelectedContact!.Nickname
+            )
+        );
+        pullMessagesWindow.Closed += (object sender, WindowEventArgs args) =>
+        {
+            pullMessagesWindow = null;
+        };
+        WindowingUtil.Resize(pullMessagesWindow, new SizeInt32(370, 300));
+        pullMessagesWindow.Activate();
     }
 
     private void EditContact_Click(object _, RoutedEventArgs e)

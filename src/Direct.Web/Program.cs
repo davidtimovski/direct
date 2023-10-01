@@ -1,3 +1,4 @@
+using Direct.Web;
 using Direct.Web.Hubs;
 using Direct.Web.Services;
 using Microsoft.AspNetCore.Http.Connections;
@@ -8,6 +9,9 @@ builder.Services.AddRazorPages();
 builder.Services.AddSignalR().AddMessagePackProtocol();
 
 builder.Services.AddSingleton<IChatService, ChatService>();
+builder.Services.AddSingleton<IPullService, PullService>();
+
+builder.Services.AddHostedService<PullOperationsCleaner>();
 
 builder.WebHost.UseUrls("http://localhost:5250");
 

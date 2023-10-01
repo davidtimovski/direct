@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using Direct.Desktop.Storage;
+using Direct.Desktop.Storage.Entities;
 using Direct.Shared;
 using Direct.Shared.Models;
 using Microsoft.AspNetCore.SignalR.Client;
@@ -22,6 +26,9 @@ public interface IChatService
     event EventHandler<MessageSendingFailedEventArgs>? MessageSendingFailed;
     event EventHandler<MessageUpdatedEventArgs>? MessageUpdated;
     event EventHandler<MessageUpdatingFailedEventArgs>? MessageUpdatingFailed;
+    event EventHandler<MessagePullBatchReceivedEventArgs>? MessagePullBatchReceived;
+    event EventHandler<MessagePullCompletedEventArgs>? MessagePullCompleted;
+    event EventHandler<MessagePullCanceledEventArgs>? MessagePullCanceled;
 
     Task<bool> ConnectAsync(Guid userId, HashSet<Guid> contactIds);
     Task DisconnectAsync();
@@ -30,14 +37,20 @@ public interface IChatService
     Task UpdateMessageAsync(Guid id, Guid recipientId, string message);
     Task AddContactAsync(Guid userId);
     Task RemoveContactAsync(Guid userId);
+    Task RequestMessagePullAsync(Guid contactId);
+    void CancelMessagePull();
 }
 
 public class ChatService : IChatService
 {
+    private const int StreamingNotificationBatchSize = 200;
+
     private readonly HubConnection _connection;
     private readonly HashSet<Guid> _contactIds = new();
 
-    private Guid? _userId;
+    private Guid? userId;
+    private CancellationTokenSource? streamingCTS;
+    private Guid? steamingSenderId;
 
     public ChatService()
     {
@@ -61,7 +74,7 @@ public class ChatService : IChatService
         _connection.Reconnected += async (string? arg) =>
         {
             Reconnected?.Invoke(this, new EventArgs());
-            await _connection.InvokeAsync(ServerEvent.UserJoin, _userId!.Value, _contactIds);
+            await _connection.InvokeAsync(ServerEvent.UserJoin, userId!.Value, _contactIds);
         };
 
         _connection.On<Guid>(ClientEvent.ContactConnected, (userId) =>
@@ -103,6 +116,46 @@ public class ChatService : IChatService
         {
             MessageUpdatingFailed?.Invoke(this, new MessageUpdatingFailedEventArgs(messageId, recipientId));
         });
+
+        _connection.On<Guid>(ClientEvent.StartMessageUpstream, async (contactId) =>
+        {
+            var messages = await Repository.GetMessagesForSyncAsync(contactId);
+            var streamedMessages = messages.Select(x => new StreamedMessageDto(x.Id, x.IsRecipient, x.Text, x.Reaction, x.SentAt.ToUniversalTime(), x.EditedAt?.ToUniversalTime()));
+
+            async IAsyncEnumerable<StreamedMessageDto> clientStreamData()
+            {
+                foreach (var message in streamedMessages)
+                {
+                    yield return await Task.FromResult(message);
+                }
+            }
+
+            await _connection.SendAsync(ServerEvent.MessageUpstream, clientStreamData());
+        });
+
+        _connection.On(ClientEvent.StartMessageDownstream, async () =>
+        {
+            var messageStream = _connection.StreamAsync<StreamedMessageDto>(ServerEvent.MessageDownstream, streamingCTS!.Token);
+
+            var messages = new List<Message>();
+            var pulled = 0;
+            var batch = 1;
+            await foreach (var message in messageStream)
+            {
+                messages.Add(new Message(message.Id, steamingSenderId!.Value, !message.IsRecipient, message.Text, message.Reaction, message.SentAtUtc.ToLocalTime(), message.EditedAtUtc?.ToLocalTime()));
+                pulled++;
+
+                if (pulled == batch * StreamingNotificationBatchSize)
+                {
+                    MessagePullBatchReceived?.Invoke(this, new MessagePullBatchReceivedEventArgs(pulled));
+                    batch++;
+                }
+            }
+
+            var created = await Repository.CreateMissingMessagesAsync(messages);
+
+            MessagePullCompleted?.Invoke(this, new MessagePullCompletedEventArgs(steamingSenderId!.Value, pulled, created));
+        });
     }
 
     public event EventHandler<ConnectedContactsRetrievedEventArgs>? ConnectedContactsRetrieved;
@@ -116,6 +169,9 @@ public class ChatService : IChatService
     public event EventHandler<MessageSendingFailedEventArgs>? MessageSendingFailed;
     public event EventHandler<MessageUpdatedEventArgs>? MessageUpdated;
     public event EventHandler<MessageUpdatingFailedEventArgs>? MessageUpdatingFailed;
+    public event EventHandler<MessagePullBatchReceivedEventArgs>? MessagePullBatchReceived;
+    public event EventHandler<MessagePullCompletedEventArgs>? MessagePullCompleted;
+    public event EventHandler<MessagePullCanceledEventArgs>? MessagePullCanceled;
 
     public async Task<bool> ConnectAsync(Guid userId, HashSet<Guid> contactIds)
     {
@@ -128,12 +184,12 @@ public class ChatService : IChatService
 
             _contactIds.Add(contactId);
         }
-        _userId = userId;
+        this.userId = userId;
 
         try
         {
             await _connection.StartAsync();
-            await _connection.InvokeAsync(ServerEvent.UserJoin, _userId.Value, contactIds);
+            await _connection.InvokeAsync(ServerEvent.UserJoin, this.userId.Value, contactIds);
             return true;
         }
         catch
@@ -160,7 +216,7 @@ public class ChatService : IChatService
             try
             {
                 await _connection.StartAsync();
-                await _connection.InvokeAsync(ServerEvent.UserJoin, _userId!.Value, _contactIds);
+                await _connection.InvokeAsync(ServerEvent.UserJoin, userId!.Value, _contactIds);
 
                 timer.Stop();
             }
@@ -190,6 +246,22 @@ public class ChatService : IChatService
     public async Task RemoveContactAsync(Guid userId)
     {
         await _connection.InvokeAsync(ServerEvent.RemoveContact, userId);
+    }
+
+    public async Task RequestMessagePullAsync(Guid contactId)
+    {
+        streamingCTS = new CancellationTokenSource();
+        steamingSenderId = contactId;
+        await _connection.InvokeAsync(ServerEvent.RequestMessagePull, contactId);
+    }
+
+    public void CancelMessagePull()
+    {
+        streamingCTS?.Cancel();
+
+        MessagePullCanceled?.Invoke(this, new MessagePullCanceledEventArgs(steamingSenderId!.Value));
+
+        steamingSenderId = null;
     }
 }
 
@@ -301,4 +373,38 @@ public class MessageUpdatingFailedEventArgs : EventArgs
 
     public Guid MessageId { get; init; }
     public Guid RecipientId { get; init; }
+}
+
+public class MessagePullBatchReceivedEventArgs : EventArgs
+{
+    public MessagePullBatchReceivedEventArgs(int count)
+    {
+        Count = count;
+    }
+
+    public int Count { get; init; }
+}
+
+public class MessagePullCompletedEventArgs : EventArgs
+{
+    public MessagePullCompletedEventArgs(Guid contactId, int pulled, int created)
+    {
+        ContactId = contactId;
+        Pulled = pulled;
+        Created = created;
+    }
+
+    public Guid ContactId { get; init; }
+    public int Pulled { get; init; }
+    public int Created { get; init; }
+}
+
+public class MessagePullCanceledEventArgs : EventArgs
+{
+    public MessagePullCanceledEventArgs(Guid contactId)
+    {
+        ContactId = contactId;
+    }
+
+    public Guid ContactId { get; init; }
 }

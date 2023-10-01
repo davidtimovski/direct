@@ -76,7 +76,7 @@
 		<Content Remove="Assets\user.targetsize-32.png" />
 		<Content Remove="Assets\user.targetsize-48.png" />
 	</ItemGroup>
-
+	
 	<ItemGroup>
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.1" />
 		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="7.0.11" />
@@ -109,6 +109,10 @@
 	  <None Update="Assets\Images\logo.targetsize-24.png">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </None>
+	  <Page Update="PullMessagesWindow.xaml">
+	    <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+	    <SubType>Designer</SubType>
+	  </Page>
 	  <Page Update="Pages\SettingsFeaturesPage.xaml">
 	    <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
 	    <SubType>Designer</SubType>

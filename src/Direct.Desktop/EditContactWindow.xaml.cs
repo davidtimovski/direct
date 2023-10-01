@@ -10,6 +10,7 @@ public sealed partial class EditContactWindow : Window
     public EditContactWindow(EditContactViewModel viewModel)
     {
         InitializeComponent();
+        Title = "Edit contact";
 
         ExtendsContentIntoTitleBar = true;
         SetTitleBar(AppTitleBar);

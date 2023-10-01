@@ -9,11 +9,22 @@ public interface IChatService
     List<string> AddConnection(Guid userId, HashSet<Guid> contactIds, string connectionId);
     List<string> RemoveConnection(string connectionId);
     Guid? GetUserId(string connectionId);
+
+    /// <summary>
+    /// Adds the contact and returns whether the contact is online.
+    /// </summary>
     AddContactResult AddContact(string connectionId, Guid contactId);
     RemoveContactResult RemoveContact(string connectionId, Guid contactId);
+
+    /// <summary>
+    /// Gets the contacts which also have the user as a contact.
+    /// </summary>
     List<Guid> GetConnectedContacts(Guid userId, HashSet<Guid> userIds);
+
+    string GetFirstConnectionId(Guid userId);
     SendMessageResult SendMessage(string senderConnectionId, Guid recipientId, string message);
     UpdateMessageResult UpdateMessage(string senderConnectionId, Guid messageId, Guid recipientId, string text);
+    RequestMessagePullResult RequestMessagePull(string requestorConnectionId, Guid contactId);
 }
 
 public class ChatService : IChatService
@@ -29,14 +40,14 @@ public class ChatService : IChatService
         (
             Guid.Parse("018955e6-3bbd-4af9-ab08-1bf6a2d98fe9"),
             new HashSet<Guid> { testUserId },
-            "something else"
+            new HashSet<string> { "something else" }
         ));
 
         _connectedUsers.TryAdd(Guid.Parse("018955e6-3bbe-469d-bb1a-e0f74724d46d"), new ConnectedUser
         (
             Guid.Parse("018955e6-3bbe-469d-bb1a-e0f74724d46d"),
             new HashSet<Guid> { testUserId },
-            "something"
+            new HashSet<string> { "something" }
         ));
     }
 
@@ -53,7 +64,7 @@ public class ChatService : IChatService
             (
                 userId,
                 contactIds,
-                connectionId
+                new HashSet<string> { connectionId }
             );
             _connectedUsers.TryAdd(userId, connectedUser);
         }
@@ -87,12 +98,15 @@ public class ChatService : IChatService
         return user?.Id;
     }
 
-    /// <summary>
-    /// Adds the contact and returns whether the contact is online.
-    /// </summary>
+    /// <inheritdoc />
     public AddContactResult AddContact(string connectionId, Guid contactId)
     {
         ConnectedUser? user = GetUser(connectionId) ?? throw new InvalidOperationException($"Could not find a user for this connectionId: {connectionId}");
+
+        if (user.Id == contactId)
+        {
+            throw new InvalidOperationException("User cannot add themselves as a contact");
+        }
 
         if (!user.ContactIds.Contains(contactId))
         {
@@ -104,12 +118,12 @@ public class ChatService : IChatService
             // Contact is online, check whether they match
             if (contact.ContactIds.Contains(user.Id))
             {
-                return new AddContactResult(user.Id, contact.ConnectionIds.ToList());
+                return new AddContactResult(true, user.Id, contact.ConnectionIds.ToList());
             }
         }
 
         // Contact is not online
-        return new AddContactResult();
+        return new AddContactResult(false, null, new List<string>());
     }
 
     public RemoveContactResult RemoveContact(string connectionId, Guid contactId)
@@ -126,21 +140,24 @@ public class ChatService : IChatService
             // Contact is online, check whether they match
             if (contact.ContactIds.Contains(user.Id))
             {
-                return new RemoveContactResult(user.Id, contact.ConnectionIds.ToList());
+                return new RemoveContactResult(true, user.Id, contact.ConnectionIds.ToList());
             }
         }
 
-        return new RemoveContactResult();
+        return new RemoveContactResult(false, null, new List<string>());
     }
 
-    /// <summary>
-    /// Gets the contacts which also have the user as a contact.
-    /// </summary>
+    /// <inheritdoc />
     public List<Guid> GetConnectedContacts(Guid userId, HashSet<Guid> userIds)
     {
         return _connectedUsers.Values
             .Where(x => userIds.Contains(x.Id) && x.ContactIds.Contains(userId))
             .Select(x => x.Id).ToList();
+    }
+
+    public string GetFirstConnectionId(Guid userId)
+    {
+        return _connectedUsers[userId].ConnectionIds.First();
     }
 
     public SendMessageResult SendMessage(string senderConnectionId, Guid recipientId, string message)
@@ -161,13 +178,13 @@ public class ChatService : IChatService
             true,
             connectionIds,
             new NewMessageDto
-            {
-                Id = Guid.NewGuid(),
-                SenderId = senderId.Value,
-                RecipientId = recipientId,
-                Text = message,
-                SentAtUtc = DateTime.UtcNow
-            });
+            (
+                Guid.NewGuid(),
+                senderId.Value,
+                recipientId,
+                message,
+                DateTime.UtcNow
+            ));
     }
 
     public UpdateMessageResult UpdateMessage(string senderConnectionId, Guid messageId, Guid recipientId, string text)
@@ -188,17 +205,36 @@ public class ChatService : IChatService
             true,
             connectionIds,
             new MessageUpdateDto
-            {
-                Id = messageId,
-                SenderId = senderId.Value,
-                RecipientId = recipientId,
-                Text = text,
-                EditedAtUtc = DateTime.UtcNow
-            });
+            (
+                messageId,
+                senderId.Value,
+                recipientId,
+                text,
+                DateTime.UtcNow
+            ));
+    }
+
+    public RequestMessagePullResult RequestMessagePull(string requestorConnectionId, Guid contactId)
+    {
+        Guid? recipientUserId = GetUserId(requestorConnectionId) ?? throw new InvalidOperationException($"Could not find a userId for this connectionId: {requestorConnectionId}");
+
+        if (!CanSendMessageTo(recipientUserId.Value, contactId))
+        {
+            throw new InvalidOperationException("Message sync requestor isn't allowed to request from the specified contact");
+        }
+
+        var senderConnectionId = GetFirstConnectionId(contactId);
+
+        return new RequestMessagePullResult(recipientUserId.Value, senderConnectionId);
     }
 
     private bool CanSendMessageTo(Guid senderId, Guid recipientId)
     {
+        if (senderId == recipientId)
+        {
+            return false;
+        }
+
         if (_connectedUsers.TryGetValue(recipientId, out var recipient))
         {
             return recipient.ContactIds.Contains(senderId);

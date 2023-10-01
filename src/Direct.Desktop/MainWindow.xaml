@@ -34,7 +34,7 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <local:TitleBar x:Name="AppTitleBar" Grid.Row="0" Title="Direct" />
+        <local:TitleBar x:Name="AppTitleBar" Grid.Row="0" Title="{x:Bind Title}" />
 
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
@@ -201,7 +201,7 @@
                                                 Visibility="{x:Bind Edited, Mode=OneWay}"
                                                 ToolTipService.ToolTip="{x:Bind EditedAt, Mode=OneWay}"
                                                 FontSize="{x:Bind EditedMessageIconFontSize, Mode=OneWay}"
-                                                Foreground="{ThemeResource MessageSentAtForeground}"
+                                                Foreground="{ThemeResource GreyForeground}"
                                                 Glyph="&#xE70F;"
                                                 FontFamily="Segoe MDL2 Assets"
                                                 VerticalAlignment="Center"
@@ -210,7 +210,7 @@
                                             <TextBlock Text="{x:Bind SentAtFormatted}"
                                                        FontSize="{x:Bind MetadataFontSize, Mode=OneWay}"
                                                        FontFamily="{StaticResource DefaultFontFamilyLight}"
-                                                       Foreground="{ThemeResource MessageSentAtForeground}" />
+                                                       Foreground="{ThemeResource GreyForeground}" />
                                         </StackPanel>
                                     </Border>
 
@@ -248,6 +248,8 @@
                             </DropDownButton.Content>
                             <DropDownButton.Flyout>
                                 <MenuFlyout Placement="Bottom">
+                                    <MenuFlyoutItem Click="PullMessages_Click"
+                                                    Visibility="{x:Bind ViewModel.SelectedContact.Connected, Mode=OneWay}">Pull messages</MenuFlyoutItem>
                                     <MenuFlyoutItem Click="EditContact_Click">Edit contact</MenuFlyoutItem>
                                     <MenuFlyoutItem Click="DeleteContact_Click">Delete contact</MenuFlyoutItem>
                                 </MenuFlyout>
@@ -284,7 +286,7 @@
                                                    FontSize="{x:Bind LabelFontSize, Mode=OneWay}"
                                                    AutomationProperties.AccessibilityView="Raw"
                                                    FontFamily="{StaticResource DefaultFontFamilyLight}"
-                                                   Foreground="{ThemeResource MessageSentAtForeground}"
+                                                   Foreground="{ThemeResource GreyForeground}"
                                                    HorizontalAlignment="Stretch" />
                                     </DataTemplate>
                                 </GroupStyle.HeaderTemplate>
