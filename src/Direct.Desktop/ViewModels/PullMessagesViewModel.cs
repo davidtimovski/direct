@@ -10,12 +10,12 @@ namespace Direct.Desktop.ViewModels;
 public partial class PullMessagesViewModel : ObservableObject
 {
     private readonly ISettingsService _settingsService;
-    private readonly IChatService _chatService;
+    private readonly IPullProxy _pullProxy;
     private readonly DispatcherQueue _dispatcherQueue;
 
     public PullMessagesViewModel(
         ISettingsService settingsService,
-        IChatService chatService,
+        IPullProxy pullProxy,
         DispatcherQueue dispatcherQueue,
         Guid contactId,
         string contactNickname)
@@ -23,9 +23,9 @@ public partial class PullMessagesViewModel : ObservableObject
         _settingsService = settingsService;
         _settingsService.Changed += SettingsChanged;
 
-        _chatService = chatService;
-        _chatService.MessagePullBatchReceived += MessagePullBatchReceived;
-        _chatService.MessagePullCompleted += MessagePullCompleted;
+        _pullProxy = pullProxy;
+        _pullProxy.BatchReceived += MessagePullBatchReceived;
+        _pullProxy.Completed += MessagePullCompleted;
 
         _dispatcherQueue = dispatcherQueue;
 
@@ -88,7 +88,7 @@ public partial class PullMessagesViewModel : ObservableObject
     private bool resultTextIsVisible;
 
     [ObservableProperty]
-    private string resultText;
+    private string resultText = string.Empty;
 
     [ObservableProperty]
     private bool startButtonIsVisible = true;
@@ -101,6 +101,6 @@ public partial class PullMessagesViewModel : ObservableObject
         LoaderIsPaused = false;
         StartButtonIsVisible = false;
 
-        await _chatService.RequestMessagePullAsync(ContactId);
+        await _pullProxy.RequestMessagePullAsync(ContactId);
     }
 }

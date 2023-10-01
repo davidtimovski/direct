@@ -18,7 +18,7 @@ namespace Direct.Desktop;
 public sealed partial class MainWindow : Window
 {
     private readonly ISettingsService _settingsService;
-    private readonly IChatService _chatService;
+    private readonly IConnectionService _connectionService;
     private readonly IServiceProvider _serviceProvider;
 
     private SettingsWindow? settingsWindow;
@@ -29,7 +29,7 @@ public sealed partial class MainWindow : Window
     public MainViewModel ViewModel { get; }
     public ICommand AddEmojiCommand { get; }
 
-    public MainWindow(ISettingsService settingsService, IChatService chatService, IServiceProvider serviceProvider, MainViewModel viewModel)
+    public MainWindow(ISettingsService settingsService, IConnectionService connectionService, IServiceProvider serviceProvider, MainViewModel viewModel)
     {
         InitializeComponent();
         Title = "Direct";
@@ -40,7 +40,7 @@ public sealed partial class MainWindow : Window
         SetTitleBar(AppTitleBar);
 
         _settingsService = settingsService;
-        _chatService = chatService;
+        _connectionService = connectionService;
         _serviceProvider = serviceProvider;
 
         ViewModel = viewModel;
@@ -82,7 +82,7 @@ public sealed partial class MainWindow : Window
             Content = "Do you want me to keep retrying every minute?",
             PrimaryButtonText = "Yes, please",
             CloseButtonText = "No, exit",
-            PrimaryButtonCommand = new RelayCommand(_chatService.StartConnectionRetry),
+            PrimaryButtonCommand = new RelayCommand(_connectionService.StartConnectionRetry),
             CloseButtonCommand = closeCommand
         };
         await dialog.ShowAsync();
@@ -114,7 +114,7 @@ public sealed partial class MainWindow : Window
         _settingsService.WindowHeight = windowSize.Height;
         _settingsService.Save();
 
-        await _chatService.DisconnectAsync();
+        await _connectionService.DisconnectAsync();
     }
 
     private async void ContactsListView_SelectionChanged(object _, SelectionChangedEventArgs e)
@@ -166,10 +166,10 @@ public sealed partial class MainWindow : Window
         }
 
         pullMessagesWindow = new PullMessagesWindow(
-            _serviceProvider.GetRequiredService<IChatService>(),
+            _serviceProvider.GetRequiredService<IPullProxy>(),
             new PullMessagesViewModel(
                 _serviceProvider.GetRequiredService<ISettingsService>(),
-                _serviceProvider.GetRequiredService<IChatService>(),
+                _serviceProvider.GetRequiredService<IPullProxy>(),
                 _serviceProvider.GetRequiredService<DispatcherQueue>(),
                 ViewModel.SelectedContact!.Id,
                 ViewModel.SelectedContact!.Nickname

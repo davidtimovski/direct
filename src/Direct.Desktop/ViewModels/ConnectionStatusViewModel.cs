@@ -15,9 +15,9 @@ public partial class ConnectionStatusViewModel : ObservableObject
     private static readonly Brush ConnectedBrush = ResourceUtil.GetBrush("CyanBrush");
     private static readonly Brush ConnectingBrush = ResourceUtil.GetBrush("OrangeBrush");
 
-    public ConnectionStatusViewModel(IChatService chatService, DispatcherQueue dispatcherQueue)
+    public ConnectionStatusViewModel(IConnectionService connectionService, DispatcherQueue dispatcherQueue)
     {
-        chatService.ConnectedContactsRetrieved += (object? _, ConnectedContactsRetrievedEventArgs _) =>
+        connectionService.ConnectedContactsRetrieved += (object? _, ConnectedContactsRetrievedEventArgs _) =>
         {
             dispatcherQueue.TryEnqueue(() =>
             {
@@ -25,7 +25,7 @@ public partial class ConnectionStatusViewModel : ObservableObject
             });
         };
 
-        chatService.Reconnecting += (object? _, EventArgs _) =>
+        connectionService.Reconnecting += (object? _, EventArgs _) =>
         {
             dispatcherQueue.TryEnqueue(() =>
             {
@@ -33,7 +33,7 @@ public partial class ConnectionStatusViewModel : ObservableObject
             });
         };
 
-        chatService.Reconnected += (object? _, EventArgs _) =>
+        connectionService.Reconnected += (object? _, EventArgs _) =>
         {
             dispatcherQueue.TryEnqueue(() =>
             {

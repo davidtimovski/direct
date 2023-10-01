@@ -45,7 +45,10 @@ public partial class App : Application
         services.AddTransient<NewContactViewModel>();
 
         services.AddSingleton<ISettingsService, SettingsService>();
-        services.AddSingleton<IChatService, ChatService>();
+        services.AddSingleton<IConnectionService, ConnectionService>();
+        services.AddSingleton<IContactProxy, ContactProxy>();
+        services.AddSingleton<IMessagingProxy, MessagingProxy>();
+        services.AddSingleton<IPullProxy, PullProxy>();
         services.AddSingleton<IEventService, EventService>();
 
         services.AddSingleton(DispatcherQueue.GetForCurrentThread());

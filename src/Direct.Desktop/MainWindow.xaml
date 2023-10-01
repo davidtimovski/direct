@@ -187,6 +187,7 @@
                 <Grid MaxWidth="1200" MinWidth="200">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                         <RowDefinition Height="50" />
                     </Grid.RowDefinitions>
@@ -234,7 +235,14 @@
                         </DataTemplate>
                     </Grid.Resources>
 
-                    <Border Grid.Row="0"
+                    <InfoBar Grid.Row="0"
+                             IsOpen="{x:Bind ViewModel.SelectedContact.InfoBarVisible, Mode=OneWay}"
+                             Message="{x:Bind ViewModel.SelectedContact.InfoBarMessage, Mode=OneWay}"
+                             Severity="{x:Bind ViewModel.SelectedContact.InfoBarSeverity, Mode=OneWay}"
+                             IsClosable="False"
+                             Margin="0 0 0 10" />
+
+                    <Border Grid.Row="1"
                             Visibility="{x:Bind ViewModel.ContactIsSelected, Mode=OneWay}"
                             Padding="0 0 0 10"
                             BorderThickness="0 0 0 1"
@@ -257,15 +265,8 @@
                         </DropDownButton>
                     </Border>
 
-                    <InfoBar
-                        Grid.Row="0"
-                        IsOpen="{x:Bind ViewModel.SelectedContact.ErrorBarVisible, Mode=OneWay}"
-                        Message="{x:Bind ViewModel.SelectedContact.ErrorBarMessage, Mode=OneWay}"
-                        Severity="Error"
-                        IsClosable="False" />
-
                     <ListView
-                        Grid.Row="1"
+                        Grid.Row="2"
                         SelectionMode="None"
                         ItemsSource="{x:Bind MessageGroups.View, Mode=OneWay}"
                         ItemTemplate="{StaticResource MessageListTemplate}">
@@ -295,7 +296,7 @@
 
                     </ListView>
 
-                    <Border Grid.Row="2" Padding="0 10 0 0">
+                    <Border Grid.Row="3" Padding="0 10 0 0">
                         <Grid Visibility="{x:Bind ViewModel.ContactIsSelected, Mode=OneWay}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />

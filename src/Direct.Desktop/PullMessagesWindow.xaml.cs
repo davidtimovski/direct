@@ -6,11 +6,11 @@ namespace Direct.Desktop;
 
 public sealed partial class PullMessagesWindow : Window
 {
-    private readonly IChatService _chatService;
+    private readonly IPullProxy _pullProxy;
 
     public PullMessagesViewModel ViewModel { get; }
 
-    public PullMessagesWindow(IChatService chatService, PullMessagesViewModel viewModel)
+    public PullMessagesWindow(IPullProxy pullProxy, PullMessagesViewModel viewModel)
     {
         InitializeComponent();
         Title = $"Pull messages from {viewModel.ContactNickname}";
@@ -18,7 +18,7 @@ public sealed partial class PullMessagesWindow : Window
         ExtendsContentIntoTitleBar = true;
         SetTitleBar(AppTitleBar);
 
-        _chatService = chatService;
+        _pullProxy = pullProxy;
 
         Closed += WindowClosed;
 
@@ -27,6 +27,6 @@ public sealed partial class PullMessagesWindow : Window
 
     private void WindowClosed(object sender, WindowEventArgs args)
     {
-        _chatService.CancelMessagePull();
+        _pullProxy.CancelMessagePull();
     }
 }

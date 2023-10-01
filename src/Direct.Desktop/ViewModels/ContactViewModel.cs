@@ -5,6 +5,7 @@ using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Direct.Desktop.Storage.Entities;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 
 namespace Direct.Desktop.ViewModels;
 
@@ -80,6 +81,31 @@ public partial class ContactViewModel : ObservableObject
         }
     }
 
+    public void ShowInfoBar(string message, InfoBarSeverity severity, double? secondsVisible = 6)
+    {
+        InfoBarMessage = message;
+        InfoBarVisible = true;
+        InfoBarSeverity = severity;
+
+        if (secondsVisible.HasValue)
+        {
+            var dispatcherTimer = new DispatcherTimer();
+            dispatcherTimer.Tick += (object? sender, object e) =>
+            {
+                HideInfoBar();
+                dispatcherTimer.Stop();
+            };
+            dispatcherTimer.Interval = TimeSpan.FromSeconds(secondsVisible.Value);
+            dispatcherTimer.Start();
+        }
+    }
+
+    public void HideInfoBar()
+    {
+        InfoBarVisible = false;
+        InfoBarMessage = null;
+    }
+
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(MessageTextBoxPlaceholder))]
     private string nickname;
@@ -102,8 +128,11 @@ public partial class ContactViewModel : ObservableObject
     private int messageSelectionStart;
 
     [ObservableProperty]
-    private bool errorBarVisible;
+    private bool infoBarVisible;
 
     [ObservableProperty]
-    private string? errorBarMessage;
+    private string? infoBarMessage;
+
+    [ObservableProperty]
+    private InfoBarSeverity infoBarSeverity;
 }

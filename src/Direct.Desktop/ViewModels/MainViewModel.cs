@@ -9,6 +9,7 @@ using Direct.Desktop.Storage;
 using Direct.Desktop.Storage.Entities;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Windows.ApplicationModel.DataTransfer;
 
 namespace Direct.Desktop.ViewModels;
@@ -16,28 +17,43 @@ namespace Direct.Desktop.ViewModels;
 public partial class MainViewModel : ObservableObject
 {
     private readonly ISettingsService _settingsService;
-    private readonly IChatService _chatService;
+    private readonly IConnectionService _connectionService;
+    private readonly IContactProxy _contactProxy;
+    private readonly IMessagingProxy _messagingProxy;
     private readonly IEventService _eventService;
     private readonly DispatcherQueue _dispatcherQueue;
 
-    public MainViewModel(ISettingsService settingsService, IChatService chatService, IEventService eventService, DispatcherQueue dispatcherQueue)
+    public MainViewModel(
+        ISettingsService settingsService,
+        IConnectionService connectionService,
+        IContactProxy contactProxy,
+        IMessagingProxy messagingProxy,
+        IPullProxy pullProxy,
+        IEventService eventService,
+        DispatcherQueue dispatcherQueue)
     {
         _settingsService = settingsService;
         _settingsService.Changed += SettingsChanged;
 
-        _chatService = chatService;
-        _chatService.ConnectedContactsRetrieved += ConnectedContactsRetrieved;
-        _chatService.Reconnecting += Reconnecting;
+        _connectionService = connectionService;
+        _connectionService.ConnectedContactsRetrieved += ConnectedContactsRetrieved;
+        _connectionService.Reconnecting += Reconnecting;
 
-        _chatService.ContactConnected += ContactConnected;
-        _chatService.ContactDisconnected += ContactDisconnected;
-        _chatService.ContactAdded += ContactAdded;
-        _chatService.ContactRemoved += ContactRemoved;
-        _chatService.MessageSent += MessageSent;
-        _chatService.MessageSendingFailed += MessageSendingFailed;
-        _chatService.MessageUpdated += MessageUpdated;
-        _chatService.MessageUpdatingFailed += MessageUpdatingFailed;
-        _chatService.MessagePullCompleted += MessagePullCompleted;
+        _contactProxy = contactProxy;
+        _contactProxy.Connected += ContactConnected;
+        _contactProxy.Disconnected += ContactDisconnected;
+        _contactProxy.Added += ContactAdded;
+        _contactProxy.Removed += ContactRemoved;
+
+        _messagingProxy = messagingProxy;
+        _messagingProxy.Sent += MessageSent;
+        _messagingProxy.SendingFailed += MessageSendingFailed;
+        _messagingProxy.Updated += MessageUpdated;
+        _messagingProxy.UpdatingFailed += MessageUpdatingFailed;
+
+        pullProxy.UpstreamStarted += MessagePullUpstreamStarted;
+        pullProxy.UpstreamCompleted += MessagePullUpstreamCompleted;
+        pullProxy.Completed += MessagePullCompleted;
 
         _eventService = eventService;
         _eventService.ContactAddedLocally += ContactAddedLocally;
@@ -50,7 +66,7 @@ public partial class MainViewModel : ObservableObject
         SpellCheckEnabled = _settingsService.SpellCheckEnabled;
         UserId = _settingsService.UserId!.Value.ToString("N");
 
-        ConnectionStatus = new(_chatService, dispatcherQueue);
+        ConnectionStatus = new(_connectionService, dispatcherQueue);
     }
 
     [ObservableProperty]
@@ -85,7 +101,7 @@ public partial class MainViewModel : ObservableObject
         }
 
         var contactIds = contacts.Select(x => x.Id).ToHashSet();
-        return await _chatService.ConnectAsync(_settingsService.UserId!.Value, contactIds);
+        return await _connectionService.ConnectAsync(_settingsService.UserId!.Value, contactIds);
     }
 
     public async Task SelectedContactChangedAsync()
@@ -126,11 +142,11 @@ public partial class MainViewModel : ObservableObject
 
         if (SelectedContact!.EditingMessageId.HasValue)
         {
-            await _chatService.UpdateMessageAsync(SelectedContact!.EditingMessageId.Value, SelectedContact!.Id, trimmedMessage);
+            await _messagingProxy.UpdateMessageAsync(SelectedContact!.EditingMessageId.Value, SelectedContact!.Id, trimmedMessage);
             return;
         }
 
-        await _chatService.SendMessageAsync(SelectedContact!.Id, trimmedMessage);
+        await _messagingProxy.SendMessageAsync(SelectedContact!.Id, trimmedMessage);
     }
 
     public void MessageBoxUpPressed()
@@ -164,7 +180,7 @@ public partial class MainViewModel : ObservableObject
     public async void DeleteContactAsync(bool deleteMessages)
     {
         await Repository.DeleteContactAsync(SelectedContact!.Id, deleteMessages);
-        await _chatService.RemoveContactAsync(SelectedContact!.Id);
+        await _contactProxy.RemoveContactAsync(SelectedContact!.Id);
     }
 
     private void SelectLastSentMessageForUpdate()
@@ -352,7 +368,35 @@ public partial class MainViewModel : ObservableObject
 
         _dispatcherQueue.TryEnqueue(() =>
         {
-            ShowErrorBar(contact, "Message sending failed. Please try again in a short moment.");
+            contact.ShowInfoBar("Message sending failed. Please try again in a short moment.", InfoBarSeverity.Error);
+        });
+    }
+
+    private void MessagePullUpstreamStarted(object? _, MessagePullUpstreamEventArgs e)
+    {
+        var contact = Contacts.FirstOrDefault(x => x.Id == e.ContactId);
+        if (contact is null)
+        {
+            return;
+        }
+
+        _dispatcherQueue.TryEnqueue(() =>
+        {
+            contact.ShowInfoBar("Streaming messages towards contact..", InfoBarSeverity.Informational);
+        });
+    }
+
+    private void MessagePullUpstreamCompleted(object? _, MessagePullUpstreamEventArgs e)
+    {
+        var contact = Contacts.FirstOrDefault(x => x.Id == e.ContactId);
+        if (contact is null)
+        {
+            return;
+        }
+
+        _dispatcherQueue.TryEnqueue(() =>
+        {
+            contact.HideInfoBar();
         });
     }
 
@@ -408,7 +452,7 @@ public partial class MainViewModel : ObservableObject
 
             contact.EditingMessageId = null;
 
-            ShowErrorBar(contact, "Message editing failed. Please try again in a short moment.");
+            contact.ShowInfoBar("Message editing failed. Please try again in a short moment.", InfoBarSeverity.Error);
         });
     }
 
@@ -453,21 +497,5 @@ public partial class MainViewModel : ObservableObject
         }
 
         contact.Nickname = e.Nickname;
-    }
-
-    private static void ShowErrorBar(ContactViewModel contact, string message)
-    {
-        contact.ErrorBarMessage = message;
-        contact.ErrorBarVisible = true;
-
-        var dispatcherTimer = new DispatcherTimer();
-        dispatcherTimer.Tick += (object? sender, object e) =>
-        {
-            contact.ErrorBarVisible = false;
-            contact.ErrorBarMessage = null;
-            dispatcherTimer.Stop();
-        };
-        dispatcherTimer.Interval = TimeSpan.FromSeconds(5);
-        dispatcherTimer.Start();
     }
 }

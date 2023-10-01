@@ -12,15 +12,15 @@ namespace Direct.Desktop.ViewModels;
 public partial class NewContactViewModel : ObservableObject
 {
     private readonly ISettingsService _settingsService;
-    private readonly IChatService _chatService;
+    private readonly IContactProxy _contactProxy;
     private readonly IEventService _eventService;
 
-    public NewContactViewModel(ISettingsService settingsService, IChatService chatService, IEventService eventService)
+    public NewContactViewModel(ISettingsService settingsService, IContactProxy contactProxy, IEventService eventService)
     {
         _settingsService = settingsService;
         _settingsService.Changed += SettingsChanged;
 
-        _chatService = chatService;
+        _contactProxy = contactProxy;
         _eventService = eventService;
 
         Theme = _settingsService.Theme;
@@ -68,6 +68,6 @@ public partial class NewContactViewModel : ObservableObject
         await Repository.CreateContactAsync(contact);
         _eventService.RaiseContactAdded(contact.Id, contact.Nickname);
 
-        await _chatService.AddContactAsync(contact.Id);
+        await _contactProxy.AddContactAsync(contact.Id);
     }
 }
