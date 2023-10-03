@@ -15,11 +15,13 @@
                        FontFamily="{StaticResource DefaultFontFamily}"
                        VerticalAlignment="Center">Emoji picker</TextBlock>
 
-            <CheckBox Grid.Column="1"
-                      IsChecked="{x:Bind ViewModel.EmojiPickerEnabled, Mode=TwoWay}"
-                      ToolTipService.ToolTip="{x:Bind ViewModel.EmojiPickerCheckBoxTooltip, Mode=OneWay}"
-                      HorizontalAlignment="Right"
-                      MinWidth="0" />
+            <ToggleSwitch Grid.Column="1"
+                          IsOn="{x:Bind ViewModel.EmojiPickerEnabled, Mode=TwoWay}"
+                          ToolTipService.ToolTip="{x:Bind ViewModel.EmojiPickerToggleTooltip, Mode=OneWay}"
+                          OnContent=""
+                          OffContent=""
+                          MinWidth="0"
+                          HorizontalAlignment="Right" />
         </Grid>
     </StackPanel>
 

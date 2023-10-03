@@ -3,13 +3,11 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Direct.Desktop.Services;
 using Direct.Desktop.Storage;
-using Direct.Desktop.Utilities;
 using Direct.Desktop.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.Windows.AppLifecycle;
-using Windows.Graphics;
 using Windows.Storage;
 
 namespace Direct.Desktop;
@@ -28,7 +26,7 @@ public partial class App : Application
         _serviceProvider = services.BuildServiceProvider();
     }
 
-    private void ConfigureServices(ServiceCollection services)
+    private static void ConfigureServices(ServiceCollection services)
     {
         services.AddSingleton<SetupWindow>();
         services.AddSingleton<SetupViewModel>();
@@ -78,14 +76,12 @@ public partial class App : Application
         {
             // Show main window
             var mainWindow = _serviceProvider.GetRequiredService<MainWindow>();
-            WindowingUtil.Resize(mainWindow, new SizeInt32(settingsService.WindowWidth, settingsService.WindowHeight));
             mainWindow.Activate();
         }
         else
         {
             // Show setup window
             var setupWindow = _serviceProvider.GetRequiredService<SetupWindow>();
-            WindowingUtil.Resize(setupWindow, new SizeInt32(500, 400));
             setupWindow?.Activate();
         }
     }

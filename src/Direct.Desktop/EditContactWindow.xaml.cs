@@ -1,5 +1,6 @@
 using Direct.Desktop.ViewModels;
 using Microsoft.UI.Xaml;
+using Windows.Graphics;
 
 namespace Direct.Desktop;
 
@@ -9,6 +10,7 @@ public sealed partial class EditContactWindow : Window
 
     public EditContactWindow(EditContactViewModel viewModel)
     {
+        AppWindow.Resize(new SizeInt32(370, 280));
         InitializeComponent();
         Title = "Edit contact";
 

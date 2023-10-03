@@ -2,6 +2,7 @@ using Direct.Desktop.Pages;
 using Direct.Desktop.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Windows.Graphics;
 
 namespace Direct.Desktop;
 
@@ -11,6 +12,7 @@ public sealed partial class SettingsWindow : Window
 
     public SettingsWindow(SettingsViewModel viewModel)
     {
+        AppWindow.Resize(new SizeInt32(400, 300));
         InitializeComponent();
         Title = "Settings";
 

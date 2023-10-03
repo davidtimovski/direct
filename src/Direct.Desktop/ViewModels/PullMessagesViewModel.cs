@@ -96,7 +96,7 @@ public partial class PullMessagesViewModel : ObservableObject
     [ObservableProperty]
     private bool loaderIsPaused = true;
 
-    public async Task StartAsync()
+    public async void StartAsync()
     {
         LoaderIsPaused = false;
         StartButtonIsVisible = false;

@@ -1,6 +1,5 @@
 using System;
 using Direct.Desktop.Services;
-using Direct.Desktop.Utilities;
 using Direct.Desktop.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
@@ -17,6 +16,7 @@ public sealed partial class SetupWindow : Window
 
     public SetupWindow(ISettingsService settingsService, IServiceProvider serviceProvider, SetupViewModel viewModel)
     {
+        AppWindow.Resize(new SizeInt32(500, 400));
         InitializeComponent();
         Title = "Setup";
 
@@ -34,7 +34,6 @@ public sealed partial class SetupWindow : Window
         _settingsService.Save();
 
         var mainWindow = _serviceProvider.GetRequiredService<MainWindow>();
-        WindowingUtil.Resize(mainWindow, new SizeInt32(_settingsService.WindowWidth, _settingsService.WindowHeight));
         mainWindow.Activate();
 
         Close();

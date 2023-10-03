@@ -2,7 +2,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using Direct.Desktop.Services;
 using Microsoft.UI.Xaml;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Direct.Desktop.ViewModels;
 
@@ -27,10 +26,10 @@ public partial class GeneralSettingsViewModel : ObservableObject
     private double fontSize;
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(SpellCheckCheckBoxTooltip))]
+    [NotifyPropertyChangedFor(nameof(SpellCheckToggleTooltip))]
     private bool spellCheckEnabled;
 
-    public string SpellCheckCheckBoxTooltip => SpellCheckEnabled ? "Disable" : "Enable";
+    public string SpellCheckToggleTooltip => SpellCheckEnabled ? "Disable" : "Enable";
 
     partial void OnSelectedThemeChanged(string value)
     {

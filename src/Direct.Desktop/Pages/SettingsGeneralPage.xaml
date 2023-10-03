@@ -77,11 +77,14 @@
                        FontFamily="{StaticResource DefaultFontFamily}"
                        VerticalAlignment="Center">Spell check</TextBlock>
 
-            <CheckBox Grid.Column="1"
-                      IsChecked="{x:Bind ViewModel.SpellCheckEnabled, Mode=TwoWay}"
-                      ToolTipService.ToolTip="{x:Bind ViewModel.SpellCheckCheckBoxTooltip, Mode=OneWay}"
-                      HorizontalAlignment="Right"
-                      MinWidth="0" />
+            <ToggleSwitch Grid.Column="1"
+                          IsOn="{x:Bind ViewModel.SpellCheckEnabled, Mode=TwoWay}"
+                          ToolTipService.ToolTip="{x:Bind ViewModel.SpellCheckToggleTooltip, Mode=OneWay}"
+                          OnContent=""
+                          OffContent=""
+                          MinWidth="0"
+                          HorizontalAlignment="Right" />
+
         </Grid>
     </StackPanel>
 

@@ -21,7 +21,7 @@
             </Grid.RowDefinitions>
 
             <StackPanel VerticalAlignment="Center">
-
+                
                 <TextBlock FontFamily="{StaticResource DefaultFontFamily}"
                            Foreground="{ThemeResource WindowForeground}"
                            FontSize="16"

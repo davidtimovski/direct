@@ -14,10 +14,10 @@ public partial class FeaturesSettingsViewModel : ObservableObject
     }
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(EmojiPickerCheckBoxTooltip))]
+    [NotifyPropertyChangedFor(nameof(EmojiPickerToggleTooltip))]
     private bool emojiPickerEnabled;
 
-    public string EmojiPickerCheckBoxTooltip => EmojiPickerEnabled ? "Disable" : "Enable";
+    public string EmojiPickerToggleTooltip => EmojiPickerEnabled ? "Disable" : "Enable";
 
     partial void OnEmojiPickerEnabledChanged(bool value)
     {

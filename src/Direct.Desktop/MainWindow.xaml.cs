@@ -4,7 +4,6 @@ using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
 using Direct.Desktop.Pages;
 using Direct.Desktop.Services;
-using Direct.Desktop.Utilities;
 using Direct.Desktop.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Dispatching;
@@ -31,6 +30,7 @@ public sealed partial class MainWindow : Window
 
     public MainWindow(ISettingsService settingsService, IConnectionService connectionService, IServiceProvider serviceProvider, MainViewModel viewModel)
     {
+        AppWindow.Resize(new SizeInt32(settingsService.WindowWidth, settingsService.WindowHeight));
         InitializeComponent();
         Title = "Direct";
 
@@ -108,10 +108,8 @@ public sealed partial class MainWindow : Window
 
     private async void WindowClosed(object _, WindowEventArgs args)
     {
-        var windowSize = WindowingUtil.GetSize(this);
-
-        _settingsService.WindowWidth = windowSize.Width;
-        _settingsService.WindowHeight = windowSize.Height;
+        _settingsService.WindowWidth = AppWindow.Size.Width;
+        _settingsService.WindowHeight = AppWindow.Size.Height;
         _settingsService.Save();
 
         await _connectionService.DisconnectAsync();
@@ -136,7 +134,6 @@ public sealed partial class MainWindow : Window
         {
             settingsWindow = null;
         };
-        WindowingUtil.Resize(settingsWindow, new SizeInt32(400, 300));
         settingsWindow.Activate();
     }
 
@@ -153,7 +150,6 @@ public sealed partial class MainWindow : Window
         {
             newContactWindow = null;
         };
-        WindowingUtil.Resize(newContactWindow, new SizeInt32(370, 280));
         newContactWindow.Activate();
     }
 
@@ -179,7 +175,6 @@ public sealed partial class MainWindow : Window
         {
             pullMessagesWindow = null;
         };
-        WindowingUtil.Resize(pullMessagesWindow, new SizeInt32(370, 300));
         pullMessagesWindow.Activate();
     }
 
@@ -201,7 +196,6 @@ public sealed partial class MainWindow : Window
         {
             editContactWindow = null;
         };
-        WindowingUtil.Resize(editContactWindow, new SizeInt32(370, 280));
         editContactWindow.Activate();
     }
 

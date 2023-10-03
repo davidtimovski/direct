@@ -1,6 +1,7 @@
 using Direct.Desktop.Services;
 using Direct.Desktop.ViewModels;
 using Microsoft.UI.Xaml;
+using Windows.Graphics;
 
 namespace Direct.Desktop;
 
@@ -12,6 +13,7 @@ public sealed partial class PullMessagesWindow : Window
 
     public PullMessagesWindow(IPullProxy pullProxy, PullMessagesViewModel viewModel)
     {
+        AppWindow.Resize(new SizeInt32(370, 300));
         InitializeComponent();
         Title = $"Pull messages from {viewModel.ContactNickname}";
 
