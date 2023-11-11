@@ -13,5 +13,5 @@ public sealed partial class DeleteContactDialog : Page
 
     public string Text { get; }
 
-    public bool DeleteMessages { get; set; }
+    public bool DeleteMessages { get; set; } = true;
 }

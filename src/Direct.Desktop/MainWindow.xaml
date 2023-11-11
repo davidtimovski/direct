@@ -92,8 +92,7 @@
                                                 Margin="10 0 0 0">
                                             <FontIcon
                                                 Glyph="&#xE8C8;"
-                                                FontFamily="Segoe MDL2 Assets"
-                                                FontSize="12" />
+                                                FontFamily="Segoe MDL2 Assets" />
                                         </Button>
                                     </Grid>
                                 </StackPanel>
