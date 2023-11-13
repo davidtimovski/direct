@@ -2,4 +2,4 @@
 
 namespace Direct.Desktop.Storage.Models;
 
-public record ContactForView(Guid Id, string Nickname);
+public record ContactForView(Guid Id, string Nickname, string? ProfileImage);

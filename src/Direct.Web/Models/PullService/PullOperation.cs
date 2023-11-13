@@ -1,6 +1,6 @@
 ﻿using Direct.Shared.Models;
 
-namespace Direct.Web.Models.SyncService;
+namespace Direct.Web.Models.PullService;
 
 public class PullOperation
 {

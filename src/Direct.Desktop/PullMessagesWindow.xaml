@@ -3,7 +3,7 @@
     x:Class="Direct.Desktop.PullMessagesWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:Direct.Desktop.UserControls">
+    xmlns:uc="using:Direct.Desktop.UserControls">
 
     <Grid RequestedTheme="{x:Bind ViewModel.Theme, Mode=OneWay}"
           Background="{ThemeResource WindowBackground}">
@@ -13,7 +13,7 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <local:TitleBar x:Name="AppTitleBar" Grid.Row="0" Title="{x:Bind Title}" />
+        <uc:TitleBar x:Name="AppTitleBar" Grid.Row="0" Title="{x:Bind Title}" />
 
         <Grid Grid.Row="1" Width="300">
             <Grid.RowDefinitions>

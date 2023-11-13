@@ -75,7 +75,10 @@ public partial class PullMessagesViewModel : ObservableObject
 
     private void SettingsChanged(object? _, SettingsChangedEventArgs e)
     {
-        Theme = e.Theme;
+        if (e.ChangedSetting == Setting.Theme)
+        {
+            Theme = e.Theme;
+        }
     }
 
     [ObservableProperty]

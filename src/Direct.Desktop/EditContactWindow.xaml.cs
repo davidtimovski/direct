@@ -14,10 +14,18 @@ public sealed partial class EditContactWindow : Window
         InitializeComponent();
         Title = "Edit contact";
 
+        NicknameTextBox.Loaded += NicknameTextBox_Loaded;
+
         ExtendsContentIntoTitleBar = true;
         SetTitleBar(AppTitleBar);
 
         ViewModel = viewModel;
+    }
+
+    private void NicknameTextBox_Loaded(object sender, RoutedEventArgs e)
+    {
+        NicknameTextBox.Select(0, NicknameTextBox.Text.Length);
+        NicknameTextBox.Focus(FocusState.Programmatic);
     }
 
     private async void SaveContact_Click(object _, RoutedEventArgs e)

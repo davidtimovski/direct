@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Direct.Desktop.Storage.Entities;
+using Direct.Desktop.Utilities;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -18,16 +19,17 @@ public partial class ContactViewModel : ObservableObject
     public Guid? EditingMessageId { get; set; }
     public DateTime? LastViewed { get; set; }
 
-    public ContactViewModel(Guid id, string nickname, ElementTheme theme, double messageFontSize)
+    public ContactViewModel(Guid id, string nickname, string? profileImage, ElementTheme theme, double messageFontSize)
     {
         this.theme = theme;
         this.messageFontSize = messageFontSize;
 
         Id = id;
         Nickname = nickname;
+        ProfileImageSource = ProfileImageUtil.GetSource(profileImage);
     }
 
-    public void SetMessages(List<Message> messages)
+    public void SetMessages(IReadOnlyList<Message> messages)
     {
         MessageGroups.Clear();
 
@@ -106,9 +108,17 @@ public partial class ContactViewModel : ObservableObject
         InfoBarMessage = null;
     }
 
+    public void SetProfileImage(string profileImage)
+    {
+        ProfileImageSource = ProfileImageUtil.GetSource(profileImage);
+    }
+
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(MessageTextBoxPlaceholder))]
     private string nickname;
+
+    [ObservableProperty]
+    private string profileImageSource;
 
     public ObservableCollection<DailyMessageGroup> MessageGroups = new();
 

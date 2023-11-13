@@ -6,8 +6,12 @@ namespace Direct.Web.Services;
 
 public interface IChatService
 {
-    List<string> AddConnection(Guid userId, HashSet<Guid> contactIds, string connectionId);
-    List<string> RemoveConnection(string connectionId);
+    /// <summary>
+    /// Adds the connection and returns the connected contact connection IDs.
+    /// </summary>
+    IReadOnlyList<string> AddConnection(Guid userId, string profileImage, HashSet<Guid> contactIds, string connectionId);
+
+    IReadOnlyList<string> RemoveConnection(string connectionId);
     Guid? GetUserId(string connectionId);
 
     /// <summary>
@@ -19,12 +23,17 @@ public interface IChatService
     /// <summary>
     /// Gets the contacts which also have the user as a contact.
     /// </summary>
-    List<Guid> GetConnectedContacts(Guid userId, HashSet<Guid> userIds);
+    IReadOnlyList<ConnectedContactDto> GetConnectedContacts(Guid userId, HashSet<Guid> userIds);
 
     string GetFirstConnectionId(Guid userId);
     SendMessageResult SendMessage(string senderConnectionId, Guid recipientId, string message);
     UpdateMessageResult UpdateMessage(string senderConnectionId, Guid messageId, Guid recipientId, string text);
     RequestMessagePullResult RequestMessagePull(string requestorConnectionId, Guid contactId);
+
+    /// <summary>
+    /// Updates the profile image and returns the connected contact connection IDs.
+    /// </summary>
+    UpdateProfileImageResult UpdateProfileImage(string connectionId, string profileImage);
 }
 
 public class ChatService : IChatService
@@ -37,21 +46,23 @@ public class ChatService : IChatService
         var testUserId = Guid.ParseExact(configuration["TestUserId"]!.ToString(), "N");
 
         _connectedUsers.TryAdd(Guid.Parse("018955e6-3bbd-4af9-ab08-1bf6a2d98fe9"), new ConnectedUser
-        (
-            Guid.Parse("018955e6-3bbd-4af9-ab08-1bf6a2d98fe9"),
-            new HashSet<Guid> { testUserId },
-            new HashSet<string> { "something else" }
-        ));
+        {
+            Id = Guid.Parse("018955e6-3bbd-4af9-ab08-1bf6a2d98fe9"),
+            ProfileImage = "Haluna",
+            ContactIds = new HashSet<Guid> { testUserId },
+            ConnectionIds = new HashSet<string> { "something else" }
+        });
 
         _connectedUsers.TryAdd(Guid.Parse("018955e6-3bbe-469d-bb1a-e0f74724d46d"), new ConnectedUser
-        (
-            Guid.Parse("018955e6-3bbe-469d-bb1a-e0f74724d46d"),
-            new HashSet<Guid> { testUserId },
-            new HashSet<string> { "something" }
-        ));
+        {
+            Id = Guid.Parse("018955e6-3bbe-469d-bb1a-e0f74724d46d"),
+            ProfileImage = "Ubos",
+            ContactIds = new HashSet<Guid> { testUserId },
+            ConnectionIds = new HashSet<string> { "something" }
+        });
     }
 
-    public List<string> AddConnection(Guid userId, HashSet<Guid> contactIds, string connectionId)
+    public IReadOnlyList<string> AddConnection(Guid userId, string profileImage, HashSet<Guid> contactIds, string connectionId)
     {
         if (_connectedUsers.TryGetValue(userId, out ConnectedUser? connectedUser))
         {
@@ -61,18 +72,19 @@ public class ChatService : IChatService
         else
         {
             connectedUser = new ConnectedUser
-            (
-                userId,
-                contactIds,
-                new HashSet<string> { connectionId }
-            );
+            {
+                Id = userId,
+                ProfileImage = profileImage,
+                ContactIds = contactIds,
+                ConnectionIds = new HashSet<string> { connectionId }
+            };
             _connectedUsers.TryAdd(userId, connectedUser);
         }
 
         return GetMatchingContactConnectionIds(userId, connectedUser.ContactIds);
     }
 
-    public List<string> RemoveConnection(string connectionId)
+    public IReadOnlyList<string> RemoveConnection(string connectionId)
     {
         var connectedUser = GetUser(connectionId);
         if (connectedUser is null)
@@ -118,12 +130,12 @@ public class ChatService : IChatService
             // Contact is online, check whether they match
             if (contact.ContactIds.Contains(user.Id))
             {
-                return new AddContactResult(true, user.Id, contact.ConnectionIds.ToList());
+                return new AddContactResult(true, user.Id, user.ProfileImage, contact.ConnectionIds.ToList());
             }
         }
 
         // Contact is not online
-        return new AddContactResult(false, null, new List<string>());
+        return new AddContactResult(false, null, null, new List<string>());
     }
 
     public RemoveContactResult RemoveContact(string connectionId, Guid contactId)
@@ -148,11 +160,11 @@ public class ChatService : IChatService
     }
 
     /// <inheritdoc />
-    public List<Guid> GetConnectedContacts(Guid userId, HashSet<Guid> userIds)
+    public IReadOnlyList<ConnectedContactDto> GetConnectedContacts(Guid userId, HashSet<Guid> userIds)
     {
         return _connectedUsers.Values
             .Where(x => userIds.Contains(x.Id) && x.ContactIds.Contains(userId))
-            .Select(x => x.Id).ToList();
+            .Select(x => new ConnectedContactDto(x.Id, x.ProfileImage)).ToList();
     }
 
     public string GetFirstConnectionId(Guid userId)
@@ -228,6 +240,17 @@ public class ChatService : IChatService
         return new RequestMessagePullResult(recipientUserId.Value, senderConnectionId);
     }
 
+    public UpdateProfileImageResult UpdateProfileImage(string connectionId, string profileImage)
+    {
+        Guid? userId = GetUserId(connectionId) ?? throw new InvalidOperationException($"Could not find a userId for this connectionId: {connectionId}");
+
+        _connectedUsers[userId.Value].ProfileImage = profileImage;
+
+        var contactConnectionIds = GetMatchingContactConnectionIds(userId.Value, _connectedUsers[userId.Value].ContactIds);
+
+        return new UpdateProfileImageResult(userId.Value, contactConnectionIds);
+    }
+
     private bool CanSendMessageTo(Guid senderId, Guid recipientId)
     {
         if (senderId == recipientId)
@@ -256,12 +279,12 @@ public class ChatService : IChatService
         return null;
     }
 
-    private List<string> GetConnectionIds(Guid senderId, Guid recipientId)
+    private IReadOnlyList<string> GetConnectionIds(Guid senderId, Guid recipientId)
     {
         return _connectedUsers[senderId].ConnectionIds.Concat(_connectedUsers[recipientId].ConnectionIds).ToList();
     }
 
-    private List<string> GetMatchingContactConnectionIds(Guid userId, HashSet<Guid> contactIds)
+    private IReadOnlyList<string> GetMatchingContactConnectionIds(Guid userId, HashSet<Guid> contactIds)
     {
         return _connectedUsers.Where(x => contactIds.Contains(x.Value.Id) && x.Value.ContactIds.Contains(userId)).SelectMany(x => x.Value.ConnectionIds).ToList();
     }

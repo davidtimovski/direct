@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Direct.Shared;
+using Direct.Shared.Models;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Dispatching;
@@ -27,7 +28,7 @@ public interface IConnectionService
     /// </summary>
     event EventHandler? Reconnected;
 
-    Task<bool> ConnectAsync(Guid userId, HashSet<Guid> contactIds);
+    Task<bool> ConnectAsync(Guid userId, string profileImage, HashSet<Guid> contactIds);
     Task DisconnectAsync();
     void StartConnectionRetry();
 }
@@ -45,9 +46,9 @@ public class ConnectionService : IConnectionService
            .WithAutomaticReconnect()
            .Build();
 
-        Connection.On<List<Guid>>(ClientEvent.ConnectedContactsRetrieved, (connectedUserIds) =>
+        Connection.On<IReadOnlyList<ConnectedContactDto>>(ClientEvent.ConnectedContactsRetrieved, (connectedUsers) =>
         {
-            ConnectedContactsRetrieved?.Invoke(this, new ConnectedContactsRetrievedEventArgs(connectedUserIds));
+            ConnectedContactsRetrieved?.Invoke(this, new ConnectedContactsRetrievedEventArgs(connectedUsers));
         });
 
         Connection.Reconnecting += (Exception? arg) =>
@@ -69,7 +70,7 @@ public class ConnectionService : IConnectionService
     public event EventHandler? Reconnecting;
     public event EventHandler? Reconnected;
 
-    public async Task<bool> ConnectAsync(Guid userId, HashSet<Guid> contactIds)
+    public async Task<bool> ConnectAsync(Guid userId, string profileImage, HashSet<Guid> contactIds)
     {
         foreach (var contactId in contactIds)
         {
@@ -85,7 +86,7 @@ public class ConnectionService : IConnectionService
         try
         {
             await Connection.StartAsync();
-            await Connection.InvokeAsync(ServerEvent.UserJoin, this.userId.Value, contactIds);
+            await Connection.InvokeAsync(ServerEvent.UserJoin, this.userId.Value, profileImage, contactIds);
             return true;
         }
         catch
@@ -127,10 +128,10 @@ public class ConnectionService : IConnectionService
 
 public class ConnectedContactsRetrievedEventArgs : EventArgs
 {
-    public ConnectedContactsRetrievedEventArgs(List<Guid> connectedUserIds)
+    public ConnectedContactsRetrievedEventArgs(IReadOnlyList<ConnectedContactDto> connectedUsers)
     {
-        ConnectedUserIds = connectedUserIds;
+        ConnectedUsers = connectedUsers;
     }
 
-    public List<Guid> ConnectedUserIds { get; init; }
+    public IReadOnlyList<ConnectedContactDto> ConnectedUsers { get; init; }
 }

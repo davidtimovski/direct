@@ -20,6 +20,7 @@ public sealed partial class MainWindow : Window
     private readonly IConnectionService _connectionService;
     private readonly IServiceProvider _serviceProvider;
 
+    private ProfileWindow? profileWindow;
     private SettingsWindow? settingsWindow;
     private NewContactWindow? newContactWindow;
     private PullMessagesWindow? pullMessagesWindow;
@@ -119,6 +120,22 @@ public sealed partial class MainWindow : Window
     {
         await ViewModel.SelectedContactChangedAsync();
         MessageTextBox.Focus(FocusState.Programmatic);
+    }
+
+    private void ProfileButton_Click(object _, RoutedEventArgs e)
+    {
+        if (profileWindow is not null)
+        {
+            profileWindow.Activate();
+            return;
+        }
+
+        profileWindow = _serviceProvider.GetRequiredService<ProfileWindow>();
+        profileWindow.Closed += (object _, WindowEventArgs args) =>
+        {
+            profileWindow = null;
+        };
+        profileWindow.Activate();
     }
 
     private void SettingsButton_Click(object _, RoutedEventArgs e)

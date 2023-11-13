@@ -2,4 +2,4 @@
 
 namespace Direct.Web.Models.ChatService;
 
-public record SendMessageResult(bool IsSuccessful, List<string> ConnectionIds, NewMessageDto? Message);
+public record SendMessageResult(bool IsSuccessful, IReadOnlyList<string> ConnectionIds, NewMessageDto? Message);

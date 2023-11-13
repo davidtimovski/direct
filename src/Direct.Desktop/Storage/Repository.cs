@@ -25,14 +25,14 @@ internal static class Repository
         _connectionString = $"Data Source={dbFilePath}";
     }
 
-    internal async static Task<List<ContactForView>> GetAllContactsAsync()
+    internal async static Task<IReadOnlyList<ContactForView>> GetAllContactsAsync()
     {
         using var connection = OpenConnection();
 
         var contactsCmd = new SqliteCommand
         {
             Connection = connection,
-            CommandText = "SELECT id, nickname FROM contacts"
+            CommandText = "SELECT id, nickname, profile_image FROM contacts"
         };
 
         var result = new List<ContactForView>();
@@ -42,8 +42,10 @@ internal static class Repository
         while (contactsReader.Read())
         {
             var id = new Guid(contactsReader.GetString(0));
+            var nickname = contactsReader.GetString(1);
+            var profileImage = contactsReader.IsDBNull(2) ? null : contactsReader.GetString(2);
 
-            result.Add(new ContactForView(id, contactsReader.GetString(1)));
+            result.Add(new ContactForView(id, nickname, profileImage));
             lastMessageTsLookup.Add(id, DateTime.MinValue);
         }
 
@@ -68,6 +70,32 @@ internal static class Repository
         return result.OrderByDescending(x => lastMessageTsLookup[x.Id]).ToList();
     }
 
+    internal async static Task UpdateContactsProfileImagesAsync(IReadOnlyList<KeyValuePair<Guid, string>> contactDetails)
+    {
+        using var connection = OpenConnection();
+        using var transaction = connection.BeginTransaction();
+
+        var cmd = new SqliteCommand
+        {
+            Connection = connection,
+            Transaction = transaction
+        };
+
+        var builder = new StringBuilder();
+        for (var i = 0; i < contactDetails.Count; i++)
+        {
+            builder.Append($"UPDATE contacts SET profile_image = @profile_image{i} WHERE id = @id{i};");
+
+            cmd.Parameters.AddWithValue($"@id{i}", contactDetails[i].Key.ToString());
+            cmd.Parameters.AddWithValue($"@profile_image{i}", contactDetails[i].Value);
+        }
+
+        cmd.CommandText = builder.ToString();
+
+        await cmd.ExecuteNonQueryAsync();
+        await transaction.CommitAsync();
+    }
+
     internal async static Task CreateContactAsync(Contact contact)
     {
         using var connection = OpenConnection();
@@ -75,8 +103,8 @@ internal static class Repository
         var cmd = new SqliteCommand
         {
             Connection = connection,
-            CommandText = @"INSERT INTO contacts (id, nickname, added_on)
-                            VALUES (@id, @nickname, @added_on)"
+            CommandText = @"INSERT INTO contacts (id, nickname, profile_image, added_on)
+                            VALUES (@id, @nickname, NULL, @added_on)"
         };
         cmd.Parameters.AddWithValue("@id", contact.Id.ToString());
         cmd.Parameters.AddWithValue("@nickname", contact.Nickname);
@@ -85,7 +113,7 @@ internal static class Repository
         await cmd.ExecuteNonQueryAsync();
     }
 
-    internal async static Task UpdateContactAsync(Guid id, string nickname)
+    internal async static Task UpdateContactNicknameAsync(Guid id, string nickname)
     {
         using var connection = OpenConnection();
 
@@ -96,6 +124,21 @@ internal static class Repository
         };
         cmd.Parameters.AddWithValue("@id", id.ToString());
         cmd.Parameters.AddWithValue("@nickname", nickname);
+
+        await cmd.ExecuteNonQueryAsync();
+    }
+
+    internal async static Task UpdateContactProfileImageAsync(Guid id, string profileImage)
+    {
+        using var connection = OpenConnection();
+
+        var cmd = new SqliteCommand
+        {
+            Connection = connection,
+            CommandText = "UPDATE contacts SET profile_image = @profile_image WHERE id = @id"
+        };
+        cmd.Parameters.AddWithValue("@id", id.ToString());
+        cmd.Parameters.AddWithValue("@profile_image", profileImage);
 
         await cmd.ExecuteNonQueryAsync();
     }
@@ -129,7 +172,7 @@ internal static class Repository
         await transaction.CommitAsync();
     }
 
-    internal async static Task<List<Message>> GetRecentMessagesAsync(Guid contactId, DateTime? from)
+    internal async static Task<IReadOnlyList<Message>> GetRecentMessagesAsync(Guid contactId, DateTime? from)
     {
         var sql = from.HasValue
             ? $"SELECT * FROM messages WHERE contact_id = @contact_id AND sent_at >= @from ORDER BY sent_at DESC LIMIT {RecentMessagesLimit}"
@@ -203,7 +246,7 @@ internal static class Repository
         await cmd.ExecuteNonQueryAsync();
     }
 
-    internal async static Task<List<Message>> GetMessagesForSyncAsync(Guid contactId)
+    internal async static Task<IReadOnlyList<Message>> GetMessagesForSyncAsync(Guid contactId)
     {
         using var connection = OpenConnection();
 
@@ -319,6 +362,7 @@ internal static class Repository
                     (
                         id TEXT PRIMARY KEY,
                         nickname TEXT NOT NULL,
+                        profile_image TEXT,
                         added_on TEXT NOT NULL
                     );
 

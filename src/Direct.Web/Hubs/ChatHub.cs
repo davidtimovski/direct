@@ -17,14 +17,40 @@ public class ChatHub : Hub
         _pullService = pullService;
     }
 
-    public async Task UserJoin(Guid userId, HashSet<Guid> contactIds)
+    public async Task UserJoin(Guid userId, string profileImage, HashSet<Guid> contactIds)
     {
-        var contactConnectionIds = _chatService.AddConnection(userId, contactIds, Context.ConnectionId);
+        var contactConnectionIds = _chatService.AddConnection(userId, profileImage, contactIds, Context.ConnectionId);
 
         var connected = _chatService.GetConnectedContacts(userId, contactIds);
 
         await Clients.Caller.SendAsync(ClientEvent.ConnectedContactsRetrieved, connected);
         await Clients.Clients(contactConnectionIds).SendAsync(ClientEvent.ContactConnected, userId);
+    }
+
+    public async Task AddContact(Guid contactId)
+    {
+        var result = _chatService.AddContact(Context.ConnectionId, contactId);
+
+        await Clients.Caller.SendAsync(ClientEvent.ContactAdded, contactId, result.ContactsMatch);
+
+        // Notify added contact
+        if (result.ContactsMatch)
+        {
+            await Clients.Clients(result.ContactConnectionIds).SendAsync(ClientEvent.ContactConnected, result.UserId!.Value, result.ProfileImage);
+        }
+    }
+
+    public async Task RemoveContact(Guid contactId)
+    {
+        var result = _chatService.RemoveContact(Context.ConnectionId, contactId);
+
+        await Clients.Caller.SendAsync(ClientEvent.ContactRemoved, contactId);
+
+        // Notify removed contact
+        if (result.ContactsMatch)
+        {
+            await Clients.Clients(result.ContactConnectionIds).SendAsync(ClientEvent.ContactDisconnected, result.UserId!.Value);
+        }
     }
 
     public async Task SendMessage(Guid recipientId, string message)
@@ -52,32 +78,6 @@ public class ChatHub : Hub
         else
         {
             await Clients.Caller.SendAsync(ClientEvent.MessageUpdatingFailed, recipientId);
-        }
-    }
-
-    public async Task AddContact(Guid contactId)
-    {
-        var result = _chatService.AddContact(Context.ConnectionId, contactId);
-
-        await Clients.Caller.SendAsync(ClientEvent.ContactAdded, contactId, result.ContactsMatch);
-
-        // Notify added contact
-        if (result.ContactsMatch)
-        {
-            await Clients.Clients(result.ContactConnectionIds).SendAsync(ClientEvent.ContactConnected, result.UserId!.Value);
-        }
-    }
-
-    public async Task RemoveContact(Guid contactId)
-    {
-        var result = _chatService.RemoveContact(Context.ConnectionId, contactId);
-
-        await Clients.Caller.SendAsync(ClientEvent.ContactRemoved, contactId);
-
-        // Notify removed contact
-        if (result.ContactsMatch)
-        {
-            await Clients.Clients(result.ContactConnectionIds).SendAsync(ClientEvent.ContactDisconnected, result.UserId!.Value);
         }
     }
 
@@ -112,6 +112,12 @@ public class ChatHub : Hub
         }
 
         _pullService.Complete(Context.ConnectionId);
+    }
+
+    public async Task UpdateProfileImage(string profileImage)
+    {
+        var result = _chatService.UpdateProfileImage(Context.ConnectionId, profileImage);
+        await Clients.Clients(result.ContactConnectionIds).SendAsync(ClientEvent.ContactUpdatedProfileImage, result.UserId, profileImage);
     }
 
     public override async Task OnDisconnectedAsync(Exception? exception)

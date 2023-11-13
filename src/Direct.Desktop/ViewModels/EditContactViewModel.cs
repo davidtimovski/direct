@@ -30,7 +30,10 @@ public partial class EditContactViewModel : ObservableObject
 
     private void SettingsChanged(object? _, SettingsChangedEventArgs e)
     {
-        Theme = e.Theme;
+        if (e.ChangedSetting == Setting.Theme)
+        {
+            Theme = e.Theme;
+        }
     }
 
     [ObservableProperty]
@@ -61,7 +64,7 @@ public partial class EditContactViewModel : ObservableObject
         var id = new Guid(UserId);
         var nickname = Nickname.Trim();
 
-        await Repository.UpdateContactAsync(id, nickname);
+        await Repository.UpdateContactNicknameAsync(id, nickname);
         _eventService.RaiseContactEdited(id, nickname);
     }
 }

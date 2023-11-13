@@ -20,7 +20,7 @@
                       FontFamily="{StaticResource DefaultFontFamily}"
                       HorizontalAlignment="Right"
                       VerticalAlignment="Center">
-                <x:String>Default</x:String>
+                <x:String>System default</x:String>
                 <x:String>Light</x:String>
                 <x:String>Dark</x:String>
             </ComboBox>

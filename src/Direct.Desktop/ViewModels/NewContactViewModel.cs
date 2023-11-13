@@ -28,7 +28,10 @@ public partial class NewContactViewModel : ObservableObject
 
     private void SettingsChanged(object? _, SettingsChangedEventArgs e)
     {
-        Theme = e.Theme;
+        if (e.ChangedSetting == Setting.Theme)
+        {
+            Theme = e.Theme;
+        }
     }
 
     [ObservableProperty]
@@ -63,6 +66,7 @@ public partial class NewContactViewModel : ObservableObject
         (
             Guid.ParseExact(UserId, "N"),
             Nickname.Trim(),
+            null,
             DateTime.Now
         );
         await Repository.CreateContactAsync(contact);

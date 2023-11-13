@@ -1,6 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using Direct.Shared.Models;
-using Direct.Web.Models.SyncService;
+using Direct.Web.Models.PullService;
 
 namespace Direct.Web.Services;
 
@@ -13,7 +13,7 @@ public interface IPullService
 
     void AddMessage(string senderConnectionId, StreamedMessageDto message);
     string GetRecipientConnectionId(string senderConnectionId);
-    List<StreamedMessageDto> GetMessages(string recipientConnectionId);
+    IReadOnlyList<StreamedMessageDto> GetMessages(string recipientConnectionId);
 
     /// <summary>
     /// Removes the sync operation.
@@ -68,7 +68,7 @@ public class PullService : IPullService
         }
     }
 
-    public List<StreamedMessageDto> GetMessages(string recipientConnectionId)
+    public IReadOnlyList<StreamedMessageDto> GetMessages(string recipientConnectionId)
     {
         foreach (var operationKvp in _syncOperations)
         {

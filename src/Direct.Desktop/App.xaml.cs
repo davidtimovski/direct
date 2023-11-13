@@ -34,6 +34,8 @@ public partial class App : Application
         services.AddSingleton<MainWindow>();
         services.AddSingleton<MainViewModel>();
 
+        services.AddTransient<ProfileWindow>();
+        services.AddTransient<ProfileViewModel>();
         services.AddTransient<SettingsWindow>();
         services.AddTransient<SettingsViewModel>();
         services.AddTransient<GeneralSettingsViewModel>();

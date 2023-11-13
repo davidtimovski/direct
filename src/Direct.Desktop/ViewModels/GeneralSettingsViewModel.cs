@@ -7,13 +7,17 @@ namespace Direct.Desktop.ViewModels;
 
 public partial class GeneralSettingsViewModel : ObservableObject
 {
+    private const string DefaultThemeName = "System default";
+
     private readonly ISettingsService _settingsService;
 
     public GeneralSettingsViewModel(ISettingsService settingsService)
     {
         _settingsService = settingsService;
 
-        SelectedTheme = _settingsService.Theme.ToString();
+        SelectedTheme = _settingsService.Theme == ElementTheme.Default
+            ? DefaultThemeName
+            : _settingsService.Theme.ToString();
 
         FontSize = _settingsService.MessageFontSize;
         SpellCheckEnabled = _settingsService.SpellCheckEnabled;
@@ -33,9 +37,9 @@ public partial class GeneralSettingsViewModel : ObservableObject
 
     partial void OnSelectedThemeChanged(string value)
     {
-        _ = Enum.TryParse(value, out ElementTheme theme);
-
-        _settingsService.Theme = theme;
+        _settingsService.Theme = value == DefaultThemeName
+            ? ElementTheme.Default
+            : Enum.Parse<ElementTheme>(value);
     }
 
     partial void OnFontSizeChanged(double value)

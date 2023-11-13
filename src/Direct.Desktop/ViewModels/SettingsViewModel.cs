@@ -28,6 +28,9 @@ public partial class SettingsViewModel : ObservableObject
 
     private void SettingsChanged(object? _, SettingsChangedEventArgs e)
     {
-        Theme = e.Theme;
+        if (e.ChangedSetting == Setting.Theme)
+        {
+            Theme = e.Theme;
+        }
     }
 }

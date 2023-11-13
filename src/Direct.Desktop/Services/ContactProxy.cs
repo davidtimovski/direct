@@ -27,8 +27,14 @@ public interface IContactProxy
     /// </summary>
     event EventHandler<ContactRemovedEventArgs>? Removed;
 
+    /// <summary>
+    /// Invoked when a contact updates their profile image.
+    /// </summary>
+    event EventHandler<ContactUpdatedProfileImageEventArgs>? UpdatedProfileImage;
+
     Task AddContactAsync(Guid userId);
     Task RemoveContactAsync(Guid userId);
+    Task UpdateProfileImageAsync(string profileImage);
 }
 
 public class ContactProxy : IContactProxy
@@ -58,12 +64,18 @@ public class ContactProxy : IContactProxy
         {
             Removed?.Invoke(this, new ContactRemovedEventArgs(userId));
         });
+
+        _connectionService.Connection.On<Guid, string>(ClientEvent.ContactUpdatedProfileImage, (userId, profileImage) =>
+        {
+            UpdatedProfileImage?.Invoke(this, new ContactUpdatedProfileImageEventArgs(userId, profileImage));
+        });
     }
 
     public event EventHandler<ContactConnectedEventArgs>? Connected;
     public event EventHandler<ContactDisconnectedEventArgs>? Disconnected;
     public event EventHandler<ContactAddedEventArgs>? Added;
     public event EventHandler<ContactRemovedEventArgs>? Removed;
+    public event EventHandler<ContactUpdatedProfileImageEventArgs>? UpdatedProfileImage;
 
     public async Task AddContactAsync(Guid userId)
     {
@@ -74,11 +86,26 @@ public class ContactProxy : IContactProxy
     {
         await _connectionService.Connection.InvokeAsync(ServerEvent.RemoveContact, userId);
     }
+
+    public async Task UpdateProfileImageAsync(string profileImage)
+    {
+        await _connectionService.Connection.InvokeAsync(ServerEvent.UpdateProfileImage, profileImage);
+    }
 }
 
 public class ContactConnectedEventArgs : EventArgs
 {
     public ContactConnectedEventArgs(Guid userId)
+    {
+        UserId = userId;
+    }
+
+    public Guid UserId { get; init; }
+}
+
+public class ContactDisconnectedEventArgs : EventArgs
+{
+    public ContactDisconnectedEventArgs(Guid userId)
     {
         UserId = userId;
     }
@@ -108,12 +135,14 @@ public class ContactRemovedEventArgs : EventArgs
     public Guid UserId { get; init; }
 }
 
-public class ContactDisconnectedEventArgs : EventArgs
+public class ContactUpdatedProfileImageEventArgs : EventArgs
 {
-    public ContactDisconnectedEventArgs(Guid userId)
+    public ContactUpdatedProfileImageEventArgs(Guid userId, string profileImage)
     {
         UserId = userId;
+        ProfileImage = profileImage;
     }
 
     public Guid UserId { get; init; }
+    public string ProfileImage { get; init; }
 }

@@ -10,7 +10,6 @@ using Direct.Desktop.Storage.Entities;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Windows.ApplicationModel.DataTransfer;
 
 namespace Direct.Desktop.ViewModels;
 
@@ -44,6 +43,7 @@ public partial class MainViewModel : ObservableObject
         _contactProxy.Disconnected += ContactDisconnected;
         _contactProxy.Added += ContactAdded;
         _contactProxy.Removed += ContactRemoved;
+        _contactProxy.UpdatedProfileImage += ContactUpdatedProfileImage;
 
         _messagingProxy = messagingProxy;
         _messagingProxy.Sent += MessageSent;
@@ -64,7 +64,6 @@ public partial class MainViewModel : ObservableObject
         Theme = _settingsService.Theme;
         EmojiPickerVisible = _settingsService.EmojiPickerEnabled;
         SpellCheckEnabled = _settingsService.SpellCheckEnabled;
-        UserId = _settingsService.UserId!.Value.ToString("N");
 
         ConnectionStatus = new(_connectionService, dispatcherQueue);
     }
@@ -77,9 +76,6 @@ public partial class MainViewModel : ObservableObject
 
     [ObservableProperty]
     private bool spellCheckEnabled;
-
-    [ObservableProperty]
-    private string userId = string.Empty;
 
     public ObservableCollection<ContactViewModel> Contacts = new();
 
@@ -97,11 +93,11 @@ public partial class MainViewModel : ObservableObject
 
         foreach (var contact in contacts)
         {
-            Contacts.Add(new ContactViewModel(contact.Id, contact.Nickname, _settingsService.Theme, _settingsService.MessageFontSize));
+            Contacts.Add(new ContactViewModel(contact.Id, contact.Nickname, contact.ProfileImage, _settingsService.Theme, _settingsService.MessageFontSize));
         }
 
         var contactIds = contacts.Select(x => x.Id).ToHashSet();
-        return await _connectionService.ConnectAsync(_settingsService.UserId!.Value, contactIds);
+        return await _connectionService.ConnectAsync(_settingsService.UserId!.Value, _settingsService.ProfileImage, contactIds);
     }
 
     public async Task SelectedContactChangedAsync()
@@ -170,13 +166,6 @@ public partial class MainViewModel : ObservableObject
         SelectedContact!.MessageText += emoji;
     }
 
-    public void CopyID()
-    {
-        var package = new DataPackage();
-        package.SetText(UserId);
-        Clipboard.SetContent(package);
-    }
-
     public async void DeleteContactAsync(bool deleteMessages)
     {
         await Repository.DeleteContactAsync(SelectedContact!.Id, deleteMessages);
@@ -219,13 +208,22 @@ public partial class MainViewModel : ObservableObject
         EmojiPickerVisible = e.EmojiPickerEnabled;
     }
 
-    private void ConnectedContactsRetrieved(object? eee, ConnectedContactsRetrievedEventArgs e)
+    private async void ConnectedContactsRetrieved(object? eee, ConnectedContactsRetrievedEventArgs e)
     {
+        var param = e.ConnectedUsers.Select(x => new KeyValuePair<Guid, string>(x.UserId, x.ProfileImage)).ToList();
+        await Repository.UpdateContactsProfileImagesAsync(param);
+
         _dispatcherQueue.TryEnqueue(() =>
         {
-            var connectedContacts = Contacts.Where(x => e.ConnectedUserIds.Contains(x.Id)).ToList();
-            foreach (var contact in connectedContacts)
+            foreach (var connectedContact in e.ConnectedUsers)
             {
+                var contact = Contacts.FirstOrDefault(x => x.Id == connectedContact.UserId);
+                if (contact is null)
+                {
+                    continue;
+                }
+
+                contact.SetProfileImage(connectedContact.ProfileImage);
                 contact.Connected = true;
             }
         });
@@ -301,6 +299,22 @@ public partial class MainViewModel : ObservableObject
         {
             contact.MessageGroups.Clear();
             Contacts.Remove(contact);
+        });
+    }
+
+    private async void ContactUpdatedProfileImage(object? _, ContactUpdatedProfileImageEventArgs e)
+    {
+        var contact = Contacts.FirstOrDefault(x => x.Id == e.UserId);
+        if (contact is null)
+        {
+            return;
+        }
+
+        await Repository.UpdateContactProfileImageAsync(e.UserId, e.ProfileImage);
+
+        _dispatcherQueue.TryEnqueue(() =>
+        {
+            contact.SetProfileImage(e.ProfileImage);
         });
     }
 
@@ -485,7 +499,7 @@ public partial class MainViewModel : ObservableObject
 
     private void ContactAddedLocally(object? _, ContactAddedLocallyEventArgs e)
     {
-        Contacts.Add(new ContactViewModel(e.UserId, e.Nickname, _settingsService.Theme, _settingsService.MessageFontSize));
+        Contacts.Add(new ContactViewModel(e.UserId, e.Nickname, null, _settingsService.Theme, _settingsService.MessageFontSize));
     }
 
     private void ContactEdited(object? _, ContactEditedLocallyEventArgs e)

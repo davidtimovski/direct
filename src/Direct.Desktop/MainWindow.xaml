@@ -3,7 +3,7 @@
     x:Class="Direct.Desktop.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:Direct.Desktop.UserControls"
+    xmlns:uc="using:Direct.Desktop.UserControls"
     xmlns:vm="using:Direct.Desktop.ViewModels">
 
     <Grid RequestedTheme="{x:Bind ViewModel.Theme, Mode=OneWay}"
@@ -34,7 +34,7 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <local:TitleBar x:Name="AppTitleBar" Grid.Row="0" Title="{x:Bind Title}" />
+        <uc:TitleBar x:Name="AppTitleBar" Grid.Row="0" Title="{x:Bind Title}" />
 
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
@@ -55,50 +55,11 @@
                 <CommandBar Grid.Row="0"
                             HorizontalAlignment="Left"
                             DefaultLabelPosition="Right">
-                    <AppBarButton Icon="Contact2"
+
+                    <AppBarButton Click="ProfileButton_Click"
+                                  Icon="Contact2"
                                   LabelPosition="Collapsed"
-                                  ToolTipService.ToolTip="ID">
-                        <AppBarButton.Flyout>
-                            <Flyout>
-                                <StackPanel>
-                                    <TextBlock FontFamily="{StaticResource DefaultFontFamilyLight}"
-                                               Foreground="{StaticResource OrangeBrush}"
-                                               FontSize="18"
-                                               Margin="0 0 0 10">Your ID</TextBlock>
-
-                                    <TextBlock FontFamily="{StaticResource DefaultFontFamily}"
-                                               Foreground="{ThemeResource WindowForeground}"
-                                               Margin="0 0 0 6">Share it only with people that you know</TextBlock>
-
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="Auto" />
-                                        </Grid.ColumnDefinitions>
-
-                                        <TextBox Grid.Column="0"
-                                                 ToolTipService.ToolTip="ID"
-                                                 Text="{x:Bind ViewModel.UserId, Mode=OneWay}"
-                                                 FontFamily="{StaticResource DefaultFontFamily}"
-                                                 IsReadOnly="True"
-                                                 TextAlignment="Center"
-                                                 FontSize="12"
-                                                 VerticalAlignment="Center" />
-
-                                        <Button Grid.Column="1"
-                                                Click="{x:Bind ViewModel.CopyID}"
-                                                ToolTipService.ToolTip="Copy"
-                                                VerticalAlignment="Stretch"
-                                                Margin="10 0 0 0">
-                                            <FontIcon
-                                                Glyph="&#xE8C8;"
-                                                FontFamily="Segoe MDL2 Assets" />
-                                        </Button>
-                                    </Grid>
-                                </StackPanel>
-                            </Flyout>
-                        </AppBarButton.Flyout>
-                    </AppBarButton>
+                                  ToolTipService.ToolTip="Profile" />
 
                     <AppBarButton Click="SettingsButton_Click"
                                   Icon="Setting"
@@ -121,10 +82,14 @@
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
 
-                                <Border Grid.Column="0" Padding="10 15 15 15">
-                                    <FontIcon Glyph="&#xE77B;"
-                                              FontFamily="Segoe MDL2 Assets"
-                                              FontSize="36" />
+                                <Border Grid.Column="0"
+                                        Margin="5 8 15 8"
+                                        CornerRadius="100">
+                                    <Image Source="{x:Bind ProfileImageSource, Mode=OneWay}"
+                                           Stretch="Uniform"  
+                                           Width="50"
+                                           Height="50"
+                                           AutomationProperties.AccessibilityView="Raw" />
                                 </Border>
 
                                 <Border Grid.Column="1" Padding="5 0 0 0">
@@ -251,7 +216,7 @@
                                         FlowDirection="RightToLeft"
                                         AutomationProperties.Name="Setting">
                             <DropDownButton.Content>
-                                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE713;" />
+                                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xEA4A;" />
                             </DropDownButton.Content>
                             <DropDownButton.Flyout>
                                 <MenuFlyout Placement="Bottom">
@@ -330,7 +295,7 @@
                                     Padding="15 0">
                                 <Button.Flyout>
                                     <Flyout x:Name="EmojiFlyout">
-                                        <local:EmojiGrid AddCommand="{x:Bind AddEmojiCommand}" />
+                                        <uc:EmojiGrid AddCommand="{x:Bind AddEmojiCommand}" />
                                     </Flyout>
                                 </Button.Flyout>
 

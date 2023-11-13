@@ -14,10 +14,17 @@ public sealed partial class NewContactWindow : Window
         InitializeComponent();
         Title = "Add new contact";
 
+        UserIdTextBox.Loaded += UserIdTextBox_Loaded;
+
         ExtendsContentIntoTitleBar = true;
         SetTitleBar(AppTitleBar);
 
         ViewModel = viewModel;
+    }
+
+    private void UserIdTextBox_Loaded(object sender, RoutedEventArgs e)
+    {
+        UserIdTextBox.Focus(FocusState.Programmatic);
     }
 
     private async void AddContact_Click(object _, RoutedEventArgs e)
