@@ -114,6 +114,11 @@ public partial class ContactViewModel : ObservableObject
     }
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ProfileImageOpacity))]
+    [NotifyPropertyChangedFor(nameof(MessageTextBoxPlaceholder))]
+    private bool connected;
+
+    [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(MessageTextBoxPlaceholder))]
     private string nickname;
 
@@ -123,16 +128,10 @@ public partial class ContactViewModel : ObservableObject
     public ObservableCollection<DailyMessageGroup> MessageGroups = new();
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(MessageTextBoxPlaceholder))]
-    private bool connected;
-
-    [ObservableProperty]
     private bool hasUnreadMessages;
 
     [ObservableProperty]
     private string messageText = string.Empty;
-
-    public string? MessageTextBoxPlaceholder => Connected ? null : $"{Nickname} is currently offline";
 
     [ObservableProperty]
     private int messageSelectionStart;
@@ -145,4 +144,7 @@ public partial class ContactViewModel : ObservableObject
 
     [ObservableProperty]
     private InfoBarSeverity infoBarSeverity;
+
+    public double ProfileImageOpacity => Connected ? 1 : 0.45;
+    public string? MessageTextBoxPlaceholder => Connected ? null : $"{Nickname} is currently offline";
 }

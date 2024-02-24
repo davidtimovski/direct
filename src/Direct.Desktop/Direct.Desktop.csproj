@@ -31,6 +31,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\Direct.Shared\Direct.Shared.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<Content Remove="Assets\Images\VisualAssets\logo.altform-lightunplated_targetsize-16.png" />
 		<Content Remove="Assets\Images\VisualAssets\logo.altform-lightunplated_targetsize-24.png" />
 		<Content Remove="Assets\Images\VisualAssets\logo.altform-lightunplated_targetsize-256.png" />
@@ -50,10 +54,6 @@
 	<ItemGroup>
 		<Folder Include="Assets\Fonts\" />
 		<Folder Include="Assets\Images\ProfileImages\" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<ProjectReference Include="..\Direct.Shared\Direct.Shared.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

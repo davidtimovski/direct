@@ -21,12 +21,11 @@
                 <DataTemplate x:Key="ImageTemplate" x:DataType="models:ProfileImageOption">
                     <Border CornerRadius="100" Margin="5">
                         <Image Source="{x:Bind Source}"
-                               Stretch="Uniform"  
                                AutomationProperties.Name="{x:Bind Name}"
                                ToolTipService.ToolTip="{x:Bind Name}"
+                               Stretch="Uniform"  
                                Width="80"
-                               Height="80"
-                               AutomationProperties.AccessibilityView="Raw" />
+                               Height="80" />
                     </Border>
                 </DataTemplate>
             </Grid.Resources>

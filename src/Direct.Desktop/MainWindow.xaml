@@ -86,10 +86,10 @@
                                         Margin="5 8 15 8"
                                         CornerRadius="100">
                                     <Image Source="{x:Bind ProfileImageSource, Mode=OneWay}"
-                                           Stretch="Uniform"  
+                                           Opacity="{x:Bind ProfileImageOpacity, Mode=OneWay}"
+                                           Stretch="Uniform"
                                            Width="50"
-                                           Height="50"
-                                           AutomationProperties.AccessibilityView="Raw" />
+                                           Height="50" />
                                 </Border>
 
                                 <Border Grid.Column="1" Padding="5 0 0 0">
@@ -184,7 +184,7 @@
                                         HorizontalAlignment="{x:Bind Alignment}"
                                         CornerRadius="{StaticResource ComboBoxItemCornerRadius}"
                                         Padding="12 5">
-                                        
+
                                         <TextBlock
                                             Text="{x:Bind Text, Mode=OneWay}"
                                             FontSize="{x:Bind MessageFontSize, Mode=OneWay}"
