@@ -47,7 +47,7 @@ public class MessagingProxy : IMessagingProxy
 
         _connectionService.Connection.On<Guid>(ClientEvent.MessageSendingFailed, (recipientId) =>
         {
-            SendingFailed?.Invoke(this, new MessageSendingFailedEventArgs(recipientId));
+            SendingFailed?.Invoke(this, new MessageSendingFailedEventArgs { RecipientId = recipientId });
         });
 
         _connectionService.Connection.On<MessageUpdateDto>(ClientEvent.MessageUpdated, (message) =>
@@ -57,7 +57,7 @@ public class MessagingProxy : IMessagingProxy
 
         _connectionService.Connection.On<Guid, Guid>(ClientEvent.MessageUpdatingFailed, (messageId, recipientId) =>
         {
-            UpdatingFailed?.Invoke(this, new MessageUpdatingFailedEventArgs(messageId, recipientId));
+            UpdatingFailed?.Invoke(this, new MessageUpdatingFailedEventArgs { MessageId = messageId, RecipientId = recipientId });
         });
     }
 
@@ -77,60 +77,31 @@ public class MessagingProxy : IMessagingProxy
     }
 }
 
-public class MessageSentEventArgs : EventArgs
+public class MessageSentEventArgs(NewMessageDto message) : EventArgs
 {
-    public MessageSentEventArgs(NewMessageDto message)
-    {
-        Id = message.Id;
-        SenderId = message.SenderId;
-        RecipientId = message.RecipientId;
-        Text = message.Text;
-        SentAt = message.SentAtUtc.ToLocalTime();
-    }
-
-    public Guid Id { get; }
-    public Guid SenderId { get; }
-    public Guid RecipientId { get; }
-    public string Text { get; }
-    public DateTime SentAt { get; }
+    public Guid Id { get; } = message.Id;
+    public Guid SenderId { get; } = message.SenderId;
+    public Guid RecipientId { get; } = message.RecipientId;
+    public string Text { get; } = message.Text;
+    public DateTime SentAt { get; } = message.SentAtUtc.ToLocalTime();
 }
 
-public class MessageUpdatedEventArgs : EventArgs
+public class MessageUpdatedEventArgs(MessageUpdateDto message) : EventArgs
 {
-    public MessageUpdatedEventArgs(MessageUpdateDto message)
-    {
-        Id = message.Id;
-        SenderId = message.SenderId;
-        RecipientId = message.RecipientId;
-        Text = message.Text;
-        EditedAt = message.EditedAtUtc.ToLocalTime();
-    }
-
-    public Guid Id { get; }
-    public Guid SenderId { get; }
-    public Guid RecipientId { get; }
-    public string Text { get; }
-    public DateTime EditedAt { get; }
+    public Guid Id { get; } = message.Id;
+    public Guid SenderId { get; } = message.SenderId;
+    public Guid RecipientId { get; } = message.RecipientId;
+    public string Text { get; } = message.Text;
+    public DateTime EditedAt { get; } = message.EditedAtUtc.ToLocalTime();
 }
 
 public class MessageSendingFailedEventArgs : EventArgs
 {
-    public MessageSendingFailedEventArgs(Guid recipientId)
-    {
-        RecipientId = recipientId;
-    }
-
-    public Guid RecipientId { get; init; }
+    public required Guid RecipientId { get; init; }
 }
 
 public class MessageUpdatingFailedEventArgs : EventArgs
 {
-    public MessageUpdatingFailedEventArgs(Guid messageId, Guid recipientId)
-    {
-        MessageId = messageId;
-        RecipientId = recipientId;
-    }
-
-    public Guid MessageId { get; init; }
-    public Guid RecipientId { get; init; }
+    public required Guid MessageId { get; init; }
+    public required Guid RecipientId { get; init; }
 }

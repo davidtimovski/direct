@@ -47,27 +47,27 @@ public class ContactProxy : IContactProxy
 
         _connectionService.Connection.On<Guid>(ClientEvent.ContactConnected, (userId) =>
         {
-            Connected?.Invoke(this, new ContactConnectedEventArgs(userId));
+            Connected?.Invoke(this, new ContactConnectedEventArgs { UserId = userId });
         });
 
         _connectionService.Connection.On<Guid>(ClientEvent.ContactDisconnected, (userId) =>
         {
-            Disconnected?.Invoke(this, new ContactDisconnectedEventArgs(userId));
+            Disconnected?.Invoke(this, new ContactDisconnectedEventArgs { UserId = userId });
         });
 
         _connectionService.Connection.On<Guid, bool>(ClientEvent.ContactAdded, (userId, isConnected) =>
         {
-            Added?.Invoke(this, new ContactAddedEventArgs(userId, isConnected));
+            Added?.Invoke(this, new ContactAddedEventArgs { UserId = userId, IsConnected = isConnected });
         });
 
         _connectionService.Connection.On<Guid>(ClientEvent.ContactRemoved, (userId) =>
         {
-            Removed?.Invoke(this, new ContactRemovedEventArgs(userId));
+            Removed?.Invoke(this, new ContactRemovedEventArgs { UserId = userId });
         });
 
         _connectionService.Connection.On<Guid, string>(ClientEvent.ContactUpdatedProfileImage, (userId, profileImage) =>
         {
-            UpdatedProfileImage?.Invoke(this, new ContactUpdatedProfileImageEventArgs(userId, profileImage));
+            UpdatedProfileImage?.Invoke(this, new ContactUpdatedProfileImageEventArgs { UserId = userId, ProfileImage = profileImage });
         });
     }
 
@@ -95,54 +95,27 @@ public class ContactProxy : IContactProxy
 
 public class ContactConnectedEventArgs : EventArgs
 {
-    public ContactConnectedEventArgs(Guid userId)
-    {
-        UserId = userId;
-    }
-
-    public Guid UserId { get; init; }
+    public required Guid UserId { get; init; }
 }
 
 public class ContactDisconnectedEventArgs : EventArgs
 {
-    public ContactDisconnectedEventArgs(Guid userId)
-    {
-        UserId = userId;
-    }
-
-    public Guid UserId { get; init; }
+    public required Guid UserId { get; init; }
 }
 
 public class ContactAddedEventArgs : EventArgs
 {
-    public ContactAddedEventArgs(Guid userId, bool isConnected)
-    {
-        UserId = userId;
-        IsConnected = isConnected;
-    }
-
-    public Guid UserId { get; init; }
-    public bool IsConnected { get; init; }
+    public required Guid UserId { get; init; }
+    public required bool IsConnected { get; init; }
 }
 
 public class ContactRemovedEventArgs : EventArgs
 {
-    public ContactRemovedEventArgs(Guid userId)
-    {
-        UserId = userId;
-    }
-
-    public Guid UserId { get; init; }
+    public required Guid UserId { get; init; }
 }
 
 public class ContactUpdatedProfileImageEventArgs : EventArgs
 {
-    public ContactUpdatedProfileImageEventArgs(Guid userId, string profileImage)
-    {
-        UserId = userId;
-        ProfileImage = profileImage;
-    }
-
-    public Guid UserId { get; init; }
-    public string ProfileImage { get; init; }
+    public required Guid UserId { get; init; }
+    public required string ProfileImage { get; init; }
 }

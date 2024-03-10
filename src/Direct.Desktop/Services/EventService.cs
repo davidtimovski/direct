@@ -18,35 +18,23 @@ public class EventService : IEventService
 
     public void RaiseContactAdded(Guid userId, string nickname)
     {
-        ContactAddedLocally?.Invoke(this, new ContactAddedLocallyEventArgs(userId, nickname));
+        ContactAddedLocally?.Invoke(this, new ContactAddedLocallyEventArgs { UserId = userId, Nickname = nickname });
     }
 
     public void RaiseContactEdited(Guid userId, string nickname)
     {
-        ContactEditedLocally?.Invoke(this, new ContactEditedLocallyEventArgs(userId, nickname));
+        ContactEditedLocally?.Invoke(this, new ContactEditedLocallyEventArgs { UserId = userId, Nickname = nickname });
     }
 }
 
 public class ContactAddedLocallyEventArgs : EventArgs
 {
-    public ContactAddedLocallyEventArgs(Guid userId, string nickname)
-    {
-        UserId = userId;
-        Nickname = nickname;
-    }
-
-    public Guid UserId { get; init; }
-    public string Nickname { get; init; }
+    public required Guid UserId { get; init; }
+    public required string Nickname { get; init; }
 }
 
 public class ContactEditedLocallyEventArgs : EventArgs
 {
-    public ContactEditedLocallyEventArgs(Guid userId, string nickname)
-    {
-        UserId = userId;
-        Nickname = nickname;
-    }
-
-    public Guid UserId { get; init; }
-    public string Nickname { get; init; }
+    public required Guid UserId { get; init; }
+    public required string Nickname { get; init; }
 }

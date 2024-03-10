@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Direct.Desktop.Services;
 using Microsoft.UI.Dispatching;

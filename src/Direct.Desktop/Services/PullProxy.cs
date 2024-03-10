@@ -57,7 +57,7 @@ public class PullProxy : IPullProxy
 
         _connectionService.Connection.On<Guid>(ClientEvent.StartMessageUpstream, async (contactId) =>
         {
-            UpstreamStarted?.Invoke(this, new MessagePullUpstreamEventArgs(contactId));
+            UpstreamStarted?.Invoke(this, new MessagePullUpstreamEventArgs { ContactId = contactId });
 
             var messages = await Repository.GetMessagesForSyncAsync(contactId);
             var streamedMessages = messages.Select(x => new StreamedMessageDto(x.Id, x.IsRecipient, x.Text, x.Reaction, x.SentAt.ToUniversalTime(), x.EditedAt?.ToUniversalTime()));
@@ -72,7 +72,7 @@ public class PullProxy : IPullProxy
 
             await _connectionService.Connection.SendAsync(ServerEvent.MessageUpstream, streamData());
 
-            UpstreamCompleted?.Invoke(this, new MessagePullUpstreamEventArgs(contactId));
+            UpstreamCompleted?.Invoke(this, new MessagePullUpstreamEventArgs { ContactId = contactId });
         });
 
         _connectionService.Connection.On(ClientEvent.StartMessageDownstream, async () =>
@@ -89,14 +89,14 @@ public class PullProxy : IPullProxy
 
                 if (pulled == batch * StreamingNotificationBatchSize)
                 {
-                    BatchReceived?.Invoke(this, new MessagePullBatchReceivedEventArgs(pulled));
+                    BatchReceived?.Invoke(this, new MessagePullBatchReceivedEventArgs { Count = pulled });
                     batch++;
                 }
             }
 
             var created = await Repository.CreateMissingMessagesAsync(messages);
 
-            Completed?.Invoke(this, new MessagePullCompletedEventArgs(steamingSenderId!.Value, pulled, created));
+            Completed?.Invoke(this, new MessagePullCompletedEventArgs { ContactId = steamingSenderId!.Value, Pulled = pulled, Created = created });
         });
     }
 
@@ -117,7 +117,7 @@ public class PullProxy : IPullProxy
     {
         streamingCTS?.Cancel();
 
-        Canceled?.Invoke(this, new MessagePullCanceledEventArgs(steamingSenderId!.Value));
+        Canceled?.Invoke(this, new MessagePullCanceledEventArgs { ContactId = steamingSenderId!.Value });
 
         steamingSenderId = null;
     }
@@ -125,44 +125,22 @@ public class PullProxy : IPullProxy
 
 public class MessagePullUpstreamEventArgs : EventArgs
 {
-    public MessagePullUpstreamEventArgs(Guid contactId)
-    {
-        ContactId = contactId;
-    }
-
-    public Guid ContactId { get; init; }
+    public required Guid ContactId { get; init; }
 }
 
 public class MessagePullBatchReceivedEventArgs : EventArgs
 {
-    public MessagePullBatchReceivedEventArgs(int count)
-    {
-        Count = count;
-    }
-
-    public int Count { get; init; }
+    public required int Count { get; init; }
 }
 
 public class MessagePullCompletedEventArgs : EventArgs
 {
-    public MessagePullCompletedEventArgs(Guid contactId, int pulled, int created)
-    {
-        ContactId = contactId;
-        Pulled = pulled;
-        Created = created;
-    }
-
-    public Guid ContactId { get; init; }
-    public int Pulled { get; init; }
-    public int Created { get; init; }
+    public required Guid ContactId { get; init; }
+    public required int Pulled { get; init; }
+    public required int Created { get; init; }
 }
 
 public class MessagePullCanceledEventArgs : EventArgs
 {
-    public MessagePullCanceledEventArgs(Guid contactId)
-    {
-        ContactId = contactId;
-    }
-
-    public Guid ContactId { get; init; }
+    public required Guid ContactId { get; init; }
 }

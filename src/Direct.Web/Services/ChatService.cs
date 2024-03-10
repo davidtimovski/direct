@@ -48,17 +48,17 @@ public class ChatService : IChatService
         _connectedUsers.TryAdd(Guid.Parse("018955e6-3bbd-4af9-ab08-1bf6a2d98fe9"), new ConnectedUser
         {
             Id = Guid.Parse("018955e6-3bbd-4af9-ab08-1bf6a2d98fe9"),
-            ProfileImage = "Haluna",
-            ContactIds = new HashSet<Guid> { testUserId },
-            ConnectionIds = new HashSet<string> { "something else" }
+            ProfileImage = "Velmillon",
+            ContactIds = [testUserId],
+            ConnectionIds = ["something else"]
         });
 
         _connectedUsers.TryAdd(Guid.Parse("018955e6-3bbe-469d-bb1a-e0f74724d46d"), new ConnectedUser
         {
             Id = Guid.Parse("018955e6-3bbe-469d-bb1a-e0f74724d46d"),
-            ProfileImage = "Ubos",
-            ContactIds = new HashSet<Guid> { testUserId },
-            ConnectionIds = new HashSet<string> { "something" }
+            ProfileImage = "Theter",
+            ContactIds = [testUserId],
+            ConnectionIds = ["something"]
         });
     }
 
@@ -76,7 +76,7 @@ public class ChatService : IChatService
                 Id = userId,
                 ProfileImage = profileImage,
                 ContactIds = contactIds,
-                ConnectionIds = new HashSet<string> { connectionId }
+                ConnectionIds = [connectionId]
             };
             _connectedUsers.TryAdd(userId, connectedUser);
         }
@@ -89,7 +89,7 @@ public class ChatService : IChatService
         var connectedUser = GetUser(connectionId);
         if (connectedUser is null)
         {
-            return new List<string>();
+            return [];
         }
 
         if (connectedUser.ConnectionIds.Count > 1)
@@ -120,10 +120,7 @@ public class ChatService : IChatService
             throw new InvalidOperationException("User cannot add themselves as a contact");
         }
 
-        if (!user.ContactIds.Contains(contactId))
-        {
-            user.ContactIds.Add(contactId);
-        }
+        user.ContactIds.Add(contactId);
 
         if (_connectedUsers.TryGetValue(contactId, out var contact))
         {
@@ -135,17 +132,14 @@ public class ChatService : IChatService
         }
 
         // Contact is not online
-        return new AddContactResult(false, null, null, new List<string>());
+        return new AddContactResult(false, null, null, []);
     }
 
     public RemoveContactResult RemoveContact(string connectionId, Guid contactId)
     {
         ConnectedUser? user = GetUser(connectionId) ?? throw new InvalidOperationException($"Could not find a user for this connectionId: {connectionId}");
 
-        if (user.ContactIds.Contains(contactId))
-        {
-            user.ContactIds.Remove(contactId);
-        }
+        user.ContactIds.Remove(contactId);
 
         if (_connectedUsers.TryGetValue(contactId, out var contact))
         {
@@ -156,7 +150,7 @@ public class ChatService : IChatService
             }
         }
 
-        return new RemoveContactResult(false, null, new List<string>());
+        return new RemoveContactResult(false, null, []);
     }
 
     /// <inheritdoc />
@@ -180,7 +174,7 @@ public class ChatService : IChatService
         {
             return new SendMessageResult(
                 false,
-                new List<string>(),
+                [],
                 null);
         }
 
@@ -207,7 +201,7 @@ public class ChatService : IChatService
         {
             return new UpdateMessageResult(
                 false,
-                new List<string>(),
+                [],
                 null);
         }
 
@@ -279,13 +273,9 @@ public class ChatService : IChatService
         return null;
     }
 
-    private IReadOnlyList<string> GetConnectionIds(Guid senderId, Guid recipientId)
-    {
-        return _connectedUsers[senderId].ConnectionIds.Concat(_connectedUsers[recipientId].ConnectionIds).ToList();
-    }
+    private List<string> GetConnectionIds(Guid senderId, Guid recipientId)
+        => _connectedUsers[senderId].ConnectionIds.Concat(_connectedUsers[recipientId].ConnectionIds).ToList();
 
-    private IReadOnlyList<string> GetMatchingContactConnectionIds(Guid userId, HashSet<Guid> contactIds)
-    {
-        return _connectedUsers.Where(x => contactIds.Contains(x.Value.Id) && x.Value.ContactIds.Contains(userId)).SelectMany(x => x.Value.ConnectionIds).ToList();
-    }
+    private List<string> GetMatchingContactConnectionIds(Guid userId, HashSet<Guid> contactIds)
+        => _connectedUsers.Where(x => contactIds.Contains(x.Value.Id) && x.Value.ContactIds.Contains(userId)).SelectMany(x => x.Value.ConnectionIds).ToList();
 }

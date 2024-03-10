@@ -48,7 +48,7 @@ public class ConnectionService : IConnectionService
 
         Connection.On<IReadOnlyList<ConnectedContactDto>>(ClientEvent.ConnectedContactsRetrieved, (connectedUsers) =>
         {
-            ConnectedContactsRetrieved?.Invoke(this, new ConnectedContactsRetrievedEventArgs(connectedUsers));
+            ConnectedContactsRetrieved?.Invoke(this, new ConnectedContactsRetrievedEventArgs { ConnectedUsers = connectedUsers });
         });
 
         Connection.Reconnecting += (Exception? arg) =>
@@ -128,10 +128,5 @@ public class ConnectionService : IConnectionService
 
 public class ConnectedContactsRetrievedEventArgs : EventArgs
 {
-    public ConnectedContactsRetrievedEventArgs(IReadOnlyList<ConnectedContactDto> connectedUsers)
-    {
-        ConnectedUsers = connectedUsers;
-    }
-
-    public IReadOnlyList<ConnectedContactDto> ConnectedUsers { get; init; }
+    public required IReadOnlyList<ConnectedContactDto> ConnectedUsers { get; init; }
 }

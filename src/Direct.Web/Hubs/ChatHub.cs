@@ -6,16 +6,10 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace Direct.Web.Hubs;
 
-public class ChatHub : Hub
+public class ChatHub(IChatService chatService, IPullService pullService) : Hub
 {
-    private readonly IChatService _chatService;
-    private readonly IPullService _pullService;
-
-    public ChatHub(IChatService chatService, IPullService pullService)
-    {
-        _chatService = chatService;
-        _pullService = pullService;
-    }
+    private readonly IChatService _chatService = chatService;
+    private readonly IPullService _pullService = pullService;
 
     public async Task UserJoin(Guid userId, string profileImage, HashSet<Guid> contactIds)
     {

@@ -125,7 +125,7 @@ public partial class ContactViewModel : ObservableObject
     [ObservableProperty]
     private string profileImageSource;
 
-    public ObservableCollection<DailyMessageGroup> MessageGroups = new();
+    public ObservableCollection<DailyMessageGroup> MessageGroups = [];
 
     [ObservableProperty]
     private bool hasUnreadMessages;

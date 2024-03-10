@@ -31,10 +31,7 @@ public static partial class ValidationUtil
 
     private static bool IsAlphanumeric(string text)
     {
-        if (text == null)
-        {
-            throw new ArgumentNullException(nameof(text));
-        }
+        ArgumentNullException.ThrowIfNull(text);
 
         text = text.Trim();
 

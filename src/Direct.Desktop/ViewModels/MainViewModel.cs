@@ -77,7 +77,7 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private bool spellCheckEnabled;
 
-    public ObservableCollection<ContactViewModel> Contacts = new();
+    public ObservableCollection<ContactViewModel> Contacts = [];
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ContactIsSelected))]
@@ -356,13 +356,13 @@ public partial class MainViewModel : ObservableObject
                     }
                     else
                     {
-                        var todaysGroup = new DailyMessageGroup(new List<MessageViewModel> { message }, messageSentDate, localDate, _settingsService.MessageFontSize);
+                        var todaysGroup = new DailyMessageGroup([message], messageSentDate, localDate, _settingsService.MessageFontSize);
                         contact.MessageGroups.Add(todaysGroup);
                     }
                 }
                 else
                 {
-                    contact.MessageGroups.Add(new DailyMessageGroup(new List<MessageViewModel> { message }, messageSentDate, localDate, _settingsService.MessageFontSize));
+                    contact.MessageGroups.Add(new DailyMessageGroup([message], messageSentDate, localDate, _settingsService.MessageFontSize));
                 }
             }
             else

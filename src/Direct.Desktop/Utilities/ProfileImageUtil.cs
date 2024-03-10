@@ -8,8 +8,8 @@ public static class ProfileImageUtil
 {
     private static readonly Random Random = new();
 
-    private static readonly IReadOnlyList<string> ProfileImages = new List<string>
-    {
+    private static readonly IReadOnlyList<string> ProfileImages =
+    [
         "Avestea",
         "Bodonia",
         "Cionus",
@@ -34,7 +34,7 @@ public static class ProfileImageUtil
         "Vupra",
         "Xeitis",
         "Zolara"
-    };
+    ];
 
     static ProfileImageUtil()
     {

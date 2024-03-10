@@ -5,8 +5,8 @@ namespace Direct.Desktop.Utilities;
 
 internal static class EmojiUtil
 {
-    private static readonly Replacement[] replacements = new Replacement[]
-    {
+    private static readonly Replacement[] replacements =
+    [
         new Replacement(":)", "🙂"),
         new Replacement(":(", "🙁"),
         new Replacement(";)", "😉"),
@@ -20,7 +20,7 @@ internal static class EmojiUtil
         new Replacement(":*", "😗"),
         new Replacement(";*", "😘"),
         new Replacement("<3", "❤️")
-    };
+    ];
 
     internal static string GenerateEmojis(string text)
     {

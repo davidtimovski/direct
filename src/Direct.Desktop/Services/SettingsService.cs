@@ -43,11 +43,11 @@ public class SettingsService : ISettingsService
         WindowWidth = windowWidthValue is null ? DefaultWindowWidth : (int)windowWidthValue;
         WindowHeight = windowHeightValue is null ? DefaultWindowHeight : (int)windowHeightValue;
         UserId = userIdValue is null ? null : new Guid((string)userIdValue);
-        _profileImage = profileImageValue is null ? ProfileImageUtil.GetRandom() : (string)profileImageValue;
-        _theme = themeValue is null ? ElementTheme.Default : (ElementTheme)themeValue;
-        _messageFontSize = messageFontSizeValue is null ? DefaultMessageFontSize : (double)messageFontSizeValue;
-        _spellCheckEnabled = spellCheckEnabledValue is null || (bool)spellCheckEnabledValue;
-        _emojiPickerEnabled = emojiPickerEnabledValue is not null && (bool)emojiPickerEnabledValue;
+        profileImage = profileImageValue is null ? ProfileImageUtil.GetRandom() : (string)profileImageValue;
+        theme = themeValue is null ? ElementTheme.Default : (ElementTheme)themeValue;
+        messageFontSize = messageFontSizeValue is null ? DefaultMessageFontSize : (double)messageFontSizeValue;
+        spellCheckEnabled = spellCheckEnabledValue is null || (bool)spellCheckEnabledValue;
+        emojiPickerEnabled = emojiPickerEnabledValue is not null && (bool)emojiPickerEnabledValue;
     }
 
     public int WindowWidth { get; set; }
@@ -55,75 +55,75 @@ public class SettingsService : ISettingsService
 
     public Guid? UserId { get; set; }
 
-    private string _profileImage;
+    private string profileImage;
     public string ProfileImage
     {
-        get => _profileImage;
+        get => profileImage;
         set
         {
-            if (_profileImage != value)
+            if (profileImage != value)
             {
-                _profileImage = value;
+                profileImage = value;
                 Save();
                 Changed?.Invoke(this, CurrentSettingsEventArgs(Setting.ProfileImage));
             }
         }
     }
 
-    private ElementTheme _theme;
+    private ElementTheme theme;
     public ElementTheme Theme
     {
-        get => _theme; 
+        get => theme; 
         set
         {
-            if (_theme != value)
+            if (theme != value)
             {
-                _theme = value;
+                theme = value;
                 Save();
                 Changed?.Invoke(this, CurrentSettingsEventArgs(Setting.Theme));
             }
         }
     }
 
-    private double _messageFontSize;
+    private double messageFontSize;
     public double MessageFontSize
     {
-        get => _messageFontSize;
+        get => messageFontSize;
         set
         {
-            if (_messageFontSize != value)
+            if (messageFontSize != value)
             {
-                _messageFontSize = value;
+                messageFontSize = value;
                 Save();
                 Changed?.Invoke(this, CurrentSettingsEventArgs(Setting.MessageFontSize));
             }
         }
     }
 
-    private bool _spellCheckEnabled;
+    private bool spellCheckEnabled;
     public bool SpellCheckEnabled
     {
-        get => _spellCheckEnabled;
+        get => spellCheckEnabled;
         set
         {
-            if (_spellCheckEnabled != value)
+            if (spellCheckEnabled != value)
             {
-                _spellCheckEnabled = value;
+                spellCheckEnabled = value;
                 Save();
                 Changed?.Invoke(this, CurrentSettingsEventArgs(Setting.SpellCheckEnabled));
             }
         }
     }
 
-    private bool _emojiPickerEnabled;
+    private bool emojiPickerEnabled;
     public bool EmojiPickerEnabled
     {
-        get => _emojiPickerEnabled;
+        get => emojiPickerEnabled;
         set
         {
-            if (_emojiPickerEnabled != value)
+            if (emojiPickerEnabled != value)
             {
-                _emojiPickerEnabled = value;
+                emojiPickerEnabled = value;
                 Save();
                 Changed?.Invoke(this, CurrentSettingsEventArgs(Setting.EmojiPickerEnabled));
             }
@@ -150,11 +150,11 @@ public class SettingsService : ISettingsService
     {
         return new SettingsChangedEventArgs
         {
-            ProfileImage = _profileImage,
-            Theme = _theme,
-            MessageFontSize = _messageFontSize,
-            SpellCheckEnabled = _spellCheckEnabled,
-            EmojiPickerEnabled = _emojiPickerEnabled,
+            ProfileImage = profileImage,
+            Theme = theme,
+            MessageFontSize = messageFontSize,
+            SpellCheckEnabled = spellCheckEnabled,
+            EmojiPickerEnabled = emojiPickerEnabled,
             ChangedSetting = changedSetting
         };
     }
