@@ -35,7 +35,7 @@ public interface IConnectionService
 
 public class ConnectionService : IConnectionService
 {
-    private readonly HashSet<Guid> _contactIds = new();
+    private readonly HashSet<Guid> _contactIds = [];
     private Guid? userId;
 
     public ConnectionService()
