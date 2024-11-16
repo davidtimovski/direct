@@ -3,13 +3,15 @@ Description=Direct running on Ubuntu
 
 [Service]
 WorkingDirectory=/home/davidtimovski/direct
-ExecStart=/snap/bin/dotnet /home/davidtimovski/direct/Direct.Web.dll
+ExecStart=dotnet /home/davidtimovski/direct/Direct.Web.dll
 Restart=always
-RestartSec=10  # Restart service after 10 seconds if dotnet service crashes
+# Restart service after 10 seconds if the dotnet service crashes:
+RestartSec=10
+KillSignal=SIGINT
 SyslogIdentifier=dotnet-direct
 User=davidtimovski
 Environment=ASPNETCORE_ENVIRONMENT=Production
-Environment=DOTNET_PRINT_TELEMETRY_MESSAGE=false
+Environment=DOTNET_NOLOGO=true
 
 [Install]
 WantedBy=multi-user.target
